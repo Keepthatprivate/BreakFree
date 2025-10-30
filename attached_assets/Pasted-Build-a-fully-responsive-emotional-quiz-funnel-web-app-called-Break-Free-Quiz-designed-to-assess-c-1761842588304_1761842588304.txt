@@ -1,0 +1,52 @@
+Build a fully responsive emotional quiz funnel web app called “Break Free Quiz” designed to assess childhood trauma patterns and convert visitors into leads for a healing app. Use modern clean UI (TailwindCSS or vanilla CSS) and soft animations.
+
+### 🎯 Core Requirements
+1. **Framework**: HTML, CSS (Tailwind preferred), and vanilla JavaScript (or React if easier).
+2. **Flow**:
+   - 4 chapters: “Your Past”, “Your Patterns”, “Your Healing”, “Your Future”.
+   - Each chapter shows progressive questions (radio or multi-choice).
+   - Smooth transitions (fade or slide).
+   - Progress bar at top showing active chapter.
+   - Include empathy messages between sections (“You’re doing great”, “This awareness is the first step toward healing.”).
+
+3. **Question Logic**:
+   - Use the question set provided below (from gender to email).
+   - Randomize subtle empathy messages between tougher questions.
+   - Allow previous navigation and auto-save answers in localStorage.
+
+4. **Data Capture**:
+   - Ask for name and email at the end.
+   - Validate and store in localStorage (later can be connected to backend or webhook).
+
+5. **Final Results Page**:
+   - Split screen “Before vs After” (dark vs light mode).
+   - Show headline: “You’re closer to peace than you think.”
+   - Include testimonial card (James, 34, healed from childhood neglect, 4.9⭐).
+   - Show CTA: “Continue to your personalized healing plan.”
+   - Include 3 donation buttons (1€, 10€, 17.34€) with “Choose what feels right” copy and subtle animation.
+   - Display final reassuring note: “We work to keep mental health resources accessible to everyone.”
+
+6. **Styling & UX**:
+   - Use calming palette (light blue, soft beige, green for CTA).
+   - Rounded corners, subtle shadows, glassy cards.
+   - Mobile-first responsive layout.
+   - Micro-interactions (button hover glow, progress bar animation).
+
+7. **Behavioral Enhancements**:
+   - Short empathy texts after certain answers.
+   - Delay before showing next question (300–500ms).
+   - Smooth scroll transitions.
+   - Animated “92% of users feel better” stat.
+
+8. **Structure**:
+   - index.html (structure)
+   - style.css or Tailwind
+   - script.js (logic and transitions)
+   - assets folder for icons and background images
+
+9. **Goal**:
+   - Create an immersive, emotionally engaging experience.
+   - Easy to customize questions or connect to API later.
+   - Clean and well-commented code.
+
+Start by scaffolding the HTML/CSS/JS structure, implement the first 3 questions, and a placeholder for results and payment step. Make the UI emotionally appealing and conversion-focused.
