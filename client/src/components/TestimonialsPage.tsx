@@ -1,4 +1,6 @@
 import { Star } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import profileImage from '@assets/generated_images/Professional_male_headshot_portrait_5510e40e.png';
 
 interface TestimonialsPageProps {
   onContinue: () => void;
@@ -22,8 +24,13 @@ export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) 
             {/* Testimonial overlay card */}
             <div className="absolute bottom-6 left-6 right-6 bg-card/95 backdrop-blur-md rounded-2xl p-6 border border-card-border/50">
               <div className="flex items-start gap-4">
+                <Avatar className="w-14 h-14 sm:w-16 sm:h-16 shrink-0" data-testid="avatar-testimonial">
+                  <AvatarImage src={profileImage} alt="James profile picture" />
+                  <AvatarFallback>J</AvatarFallback>
+                </Avatar>
+                
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Liam</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-2">James</h3>
                   
                   <div className="flex items-center gap-1 mb-3">
                     {[1, 2, 3, 4, 5].map((star) => (
