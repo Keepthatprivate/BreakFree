@@ -8,7 +8,6 @@ import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import BreakScreenComponent from '@/components/BreakScreen';
 import ChapterTransition from '@/components/ChapterTransition';
-import PersonalizedJourney from '@/components/PersonalizedJourney';
 import TraumaPatterns from '@/components/TraumaPatterns';
 import BenefitsPage from '@/components/BenefitsPage';
 import TestimonialsPage from '@/components/TestimonialsPage';
@@ -16,7 +15,7 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'journey' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq';
+type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -184,10 +183,6 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    setState('journey');
-  };
-
-  const handleJourneyContinue = () => {
     setState('patterns');
   };
 
@@ -218,10 +213,6 @@ export default function Quiz() {
 
   if (state === 'results') {
     return <ResultsPage userName={userName} onContinue={handleResultsContinue} />;
-  }
-
-  if (state === 'journey') {
-    return <PersonalizedJourney onContinue={handleJourneyContinue} />;
   }
 
   if (state === 'patterns') {
