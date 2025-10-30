@@ -4,11 +4,12 @@ import { useState } from 'react';
 
 interface ResultsPageProps {
   userName: string;
+  onContinue: () => void;
 }
 
-export default function ResultsPage({ userName }: ResultsPageProps) {
+export default function ResultsPage({ userName, onContinue }: ResultsPageProps) {
   const handleGetNow = () => {
-    console.log('Get Now clicked');
+    onContinue();
   };
 
   const handleSkip = () => {

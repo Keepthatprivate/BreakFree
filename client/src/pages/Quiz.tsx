@@ -8,9 +8,15 @@ import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import BreakScreenComponent from '@/components/BreakScreen';
 import ChapterTransition from '@/components/ChapterTransition';
+import PersonalizedJourney from '@/components/PersonalizedJourney';
+import TraumaPatterns from '@/components/TraumaPatterns';
+import BenefitsPage from '@/components/BenefitsPage';
+import TestimonialsPage from '@/components/TestimonialsPage';
+import TrialTimeline from '@/components/TrialTimeline';
+import FAQPage from '@/components/FAQPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results';
+type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'journey' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -177,12 +183,65 @@ export default function Quiz() {
     setState('results');
   };
 
+  const handleResultsContinue = () => {
+    setState('journey');
+  };
+
+  const handleJourneyContinue = () => {
+    setState('patterns');
+  };
+
+  const handlePatternsContinue = () => {
+    setState('benefits');
+  };
+
+  const handleBenefitsContinue = () => {
+    setState('testimonials');
+  };
+
+  const handleTestimonialsContinue = () => {
+    setState('timeline');
+  };
+
+  const handleTimelineContinue = () => {
+    setState('faq');
+  };
+
+  const handleFAQContinue = () => {
+    // Final CTA - could redirect to payment page or show success message
+    console.log('Quiz funnel completed!');
+  };
+
   if (state === 'donation') {
     return <DonationPage userName={userName} onContinue={handleDonationContinue} />;
   }
 
   if (state === 'results') {
-    return <ResultsPage userName={userName} />;
+    return <ResultsPage userName={userName} onContinue={handleResultsContinue} />;
+  }
+
+  if (state === 'journey') {
+    return <PersonalizedJourney onContinue={handleJourneyContinue} />;
+  }
+
+  if (state === 'patterns') {
+    return <TraumaPatterns onContinue={handlePatternsContinue} />;
+  }
+
+  if (state === 'benefits') {
+    return <BenefitsPage onContinue={handleBenefitsContinue} />;
+  }
+
+  if (state === 'testimonials') {
+    return <TestimonialsPage onContinue={handleTestimonialsContinue} />;
+  }
+
+  if (state === 'timeline') {
+    return <TrialTimeline onContinue={handleTimelineContinue} />;
+  }
+
+  if (state === 'faq') {
+    return <FAQPage onContinue={handleFAQContinue} />;
   }
 
   return (
