@@ -7,9 +7,10 @@ import ContactForm from '@/components/ContactForm';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import BreakScreenComponent from '@/components/BreakScreen';
+import ChapterTransition from '@/components/ChapterTransition';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'results';
+type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -24,9 +25,10 @@ export default function Quiz() {
   });
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [state, setState] = useState<QuizState>('quiz');
+  const [state, setState] = useState<QuizState>('chapter-transition');
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
+  const [previousChapter, setPreviousChapter] = useState<string>('');
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -63,19 +65,43 @@ export default function Quiz() {
     return breakMap[currentQuestionIndex];
   };
 
+  const isChapterTransition = () => {
+    // Check if we're moving to a new chapter
+    const nextQuestion = questions[currentQuestionIndex];
+    if (!nextQuestion) return false;
+    
+    const isNewChapter = previousChapter && previousChapter !== nextQuestion.chapter;
+    return isNewChapter;
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
+      // Priority order: break screens -> empathy messages -> chapter transitions -> regular advance
+      
+      // 1. Check for break screens first (highest priority)
       if (showBreakScreen()) {
         const breakIndex = getBreakScreenForCurrentQuestion();
         setCurrentBreakIndex(breakIndex);
         setState('break');
-      } else if (showEmpathyMessage()) {
+      }
+      // 2. Check for empathy messages
+      else if (showEmpathyMessage()) {
         setState('empathy');
         setEmpathyMessageIndex(Math.floor(Math.random() * empathyMessages.length));
-      } else {
-        setTimeout(() => {
-          setCurrentQuestionIndex((prev) => prev + 1);
-        }, 300);
+      }
+      // 3. Check for chapter transitions
+      else {
+        const nextIndex = currentQuestionIndex + 1;
+        const nextQuestion = questions[nextIndex];
+        
+        if (previousChapter && previousChapter !== nextQuestion.chapter) {
+          setCurrentQuestionIndex(nextIndex);
+          setState('chapter-transition');
+        } else {
+          setTimeout(() => {
+            setCurrentQuestionIndex(nextIndex);
+          }, 300);
+        }
       }
     } else {
       setState('contact');
@@ -91,18 +117,53 @@ export default function Quiz() {
   };
 
   const handleEmpathyContinue = () => {
-    setState('quiz');
-    setTimeout(() => {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }, 300);
+    // After empathy message, check if we need to show a chapter transition before the next question
+    const nextIndex = currentQuestionIndex + 1;
+    const nextQuestion = questions[nextIndex];
+    
+    if (nextQuestion && previousChapter && previousChapter !== nextQuestion.chapter) {
+      // Moving to a new chapter - show transition first
+      setCurrentQuestionIndex(nextIndex);
+      setState('chapter-transition');
+    } else {
+      // Same chapter - continue to next question
+      setState('quiz');
+      setTimeout(() => {
+        setCurrentQuestionIndex(nextIndex);
+      }, 300);
+    }
   };
 
   const handleBreakContinue = () => {
-    setState('quiz');
-    setTimeout(() => {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }, 300);
+    // After a break, check if we need to show a chapter transition before the next question
+    const nextIndex = currentQuestionIndex + 1;
+    const nextQuestion = questions[nextIndex];
+    
+    if (nextQuestion && previousChapter && previousChapter !== nextQuestion.chapter) {
+      // Moving to a new chapter - show transition first
+      setCurrentQuestionIndex(nextIndex);
+      setState('chapter-transition');
+    } else {
+      // Same chapter - continue to next question
+      setState('quiz');
+      setTimeout(() => {
+        setCurrentQuestionIndex(nextIndex);
+      }, 300);
+    }
   };
+
+  const handleChapterTransitionContinue = () => {
+    setPreviousChapter(currentQuestion.chapter);
+    setState('quiz');
+  };
+
+  // Track chapter changes
+  useEffect(() => {
+    if (currentQuestion && !previousChapter && state === 'chapter-transition') {
+      // First chapter - just set it and move to quiz
+      setPreviousChapter(currentQuestion.chapter);
+    }
+  }, [currentQuestion, previousChapter, state]);
 
   const handleContactSubmit = (data: { name: string; email: string }) => {
     setUserName(data.name);
@@ -172,6 +233,13 @@ export default function Quiz() {
             onContinue={handleBreakContinue}
           />
         </>
+      )}
+
+      {state === 'chapter-transition' && currentChapter && (
+        <ChapterTransition
+          chapter={currentChapter}
+          onContinue={handleChapterTransitionContinue}
+        />
       )}
 
       {state === 'contact' && (
