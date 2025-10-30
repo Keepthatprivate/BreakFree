@@ -11,47 +11,51 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
   const progressPercentage = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
-    <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b-2 border-secondary/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between mb-3">
+    <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-6">
           {chapters.map((chapter, index) => (
             <div
               key={chapter.id}
-              className="flex items-center flex-1"
+              className="flex items-center"
               data-testid={`chapter-indicator-${chapter.id}`}
             >
-              <div className="flex flex-col items-center gap-1 flex-1">
-                <div
-                  className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                    index <= currentChapterIndex
-                      ? 'bg-primary scale-125 shadow-lg shadow-primary/50'
-                      : 'bg-muted scale-100'
-                  }`}
-                />
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
+                      index < currentChapterIndex
+                        ? 'bg-primary border-primary text-primary-foreground'
+                        : index === currentChapterIndex
+                          ? 'bg-transparent border-primary text-primary'
+                          : 'bg-transparent border-muted text-muted-foreground'
+                    }`}
+                  >
+                    {index < currentChapterIndex ? '✓' : index + 1}
+                  </div>
+                  {index < currentChapterIndex && (
+                    <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                  )}
+                </div>
                 <span
-                  className={`text-xs font-semibold tracking-wide hidden sm:block transition-colors ${
-                    index === currentChapterIndex
+                  className={`text-xs font-medium hidden sm:block transition-colors ${
+                    index <= currentChapterIndex
                       ? 'text-foreground'
-                      : index < currentChapterIndex
-                        ? 'text-accent'
-                        : 'text-muted-foreground/60'
+                      : 'text-muted-foreground'
                   }`}
                 >
                   {chapter.title}
                 </span>
               </div>
               {index < chapters.length - 1 && (
-                <div className="h-px bg-secondary/20 flex-1 mx-2" />
+                <div
+                  className={`h-0.5 w-8 sm:w-16 mx-2 transition-all duration-300 ${
+                    index < currentChapterIndex ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
               )}
             </div>
           ))}
-        </div>
-        <div className="relative h-3 bg-muted rounded-full overflow-hidden border border-secondary/20">
-          <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-600 ease-out shadow-lg shadow-primary/30"
-            style={{ width: `${progressPercentage}%` }}
-            data-testid="progress-fill"
-          />
         </div>
       </div>
     </div>

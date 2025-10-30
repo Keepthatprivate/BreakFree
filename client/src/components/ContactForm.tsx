@@ -40,17 +40,17 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-8">
+    <div className="w-full max-w-lg mx-auto px-4 sm:px-6 py-8">
       <div
-        className="bg-card/90 backdrop-blur-sm border-2 border-secondary/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-secondary/20"
+        className="bg-card rounded-3xl p-8 sm:p-10 border border-card-border/50"
         data-testid="contact-form"
       >
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Almost there
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            Get your personalized results
           </h2>
-          <p className="text-base text-accent">
-            Share your details to see your personalized results
+          <p className="text-base text-muted-foreground">
+            Enter your details to see your healing journey plan
           </p>
         </div>
 
@@ -97,12 +97,12 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
             )}
           </div>
 
-          <Button type="submit" className="w-full h-12 text-base font-bold rounded-2xl shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/50" data-testid="button-submit-contact">
-            See my results
+          <Button type="submit" className="w-full h-14 text-lg font-bold rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40" data-testid="button-submit-contact">
+            Get my results
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground/80 mt-4">
-            We respect your privacy. Your information is safe with us.
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            🔒 Your information is completely safe and private
           </p>
         </form>
       </div>

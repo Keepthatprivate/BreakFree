@@ -6,9 +6,9 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: "1rem", /* 16px - gaming style */
-        md: ".75rem", /* 12px - gaming style */
-        sm: ".5rem", /* 8px - gaming style */
+        lg: "1.5rem", /* 24px - wellness app style */
+        md: "1rem", /* 16px - wellness app style */
+        sm: ".75rem", /* 12px - wellness app style */
       },
       colors: {
         // Flat / base colors (regular buttons)

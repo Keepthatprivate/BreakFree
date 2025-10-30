@@ -50,16 +50,13 @@ export default function QuestionCard({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div
-        className="bg-card/90 backdrop-blur-sm border-2 border-secondary/40 rounded-3xl p-6 sm:p-12 shadow-2xl shadow-secondary/20 min-h-[400px] flex flex-col"
+        className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
         data-testid="question-card"
       >
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-widest text-accent mb-4 font-bold">
-            {chapterTitle}
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-snug">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
             {question.text}
           </h2>
         </div>
@@ -71,23 +68,25 @@ export default function QuestionCard({
               <button
                 key={option.value}
                 onClick={() => handleOptionClick(option.value)}
-                className={`w-full p-4 sm:p-6 rounded-2xl border-2 text-left transition-all duration-200 hover-elevate active-elevate-2 ${
+                className={`w-full p-5 rounded-2xl text-left transition-all duration-200 border-2 ${
                   isSelected
-                    ? 'border-accent bg-accent/20 shadow-lg shadow-accent/30'
-                    : 'border-secondary/30 bg-card/60 hover:border-secondary/50'
+                    ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
+                    : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                 }`}
                 data-testid={`option-${option.value}`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                       isSelected
-                        ? 'border-accent bg-accent shadow-md shadow-accent/50'
-                        : 'border-secondary/40'
+                        ? 'border-accent bg-accent'
+                        : 'border-muted-foreground/40'
                     }`}
                   >
                     {isSelected && (
-                      <div className="w-3 h-3 bg-foreground rounded-full" />
+                      <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
                     )}
                   </div>
                   <span className={`text-base sm:text-lg ${isSelected ? 'font-semibold text-foreground' : 'font-normal text-foreground/90'}`}>
@@ -99,29 +98,24 @@ export default function QuestionCard({
           })}
         </div>
 
-        <div className="flex items-center justify-between gap-4 mt-auto">
-          {canGoBack ? (
-            <Button
-              variant="outline"
-              onClick={onPrevious}
-              className="px-6 border-2 border-secondary/40 hover:border-secondary/60 rounded-2xl"
-              data-testid="button-previous"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Previous
-            </Button>
-          ) : (
-            <div />
-          )}
+        <div className="flex flex-col gap-3 mt-auto">
           <Button
             onClick={handleNext}
             disabled={selectedValues.length === 0}
-            className="px-8 rounded-2xl shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/50 font-semibold"
+            className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
             data-testid="button-next"
           >
-            {isLastQuestion ? 'Complete' : 'Continue'}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {isLastQuestion ? 'Complete Quiz' : 'Continue'}
           </Button>
+          {canGoBack && (
+            <button
+              onClick={onPrevious}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              data-testid="button-previous"
+            >
+              ← Back
+            </button>
+          )}
         </div>
       </div>
     </div>
