@@ -89,14 +89,14 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
                 <div className="w-24 h-24 mb-4">
                   <span className="text-7xl">🌷</span>
                 </div>
-                <h3 className="text-xl font-bold text-foreground">After</h3>
+                <h3 className="text-xl font-bold text-black">After</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center mt-0.5 flex-shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>
-                  <p className="text-sm text-foreground font-medium leading-snug">
+                  <p className="text-sm text-black font-medium leading-snug">
                     Recognizing what affects your mood
                   </p>
                 </div>
@@ -104,7 +104,7 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
                   <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center mt-0.5 flex-shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>
-                  <p className="text-sm text-foreground font-medium leading-snug">
+                  <p className="text-sm text-black font-medium leading-snug">
                     Thoughts feel easier to navigate
                   </p>
                 </div>
@@ -112,7 +112,7 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
                   <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center mt-0.5 flex-shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>
-                  <p className="text-sm text-foreground font-medium leading-snug">
+                  <p className="text-sm text-black font-medium leading-snug">
                     Have with tools to sooth yourself
                   </p>
                 </div>
@@ -120,7 +120,7 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
                   <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center mt-0.5 flex-shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>
-                  <p className="text-sm text-foreground font-medium leading-snug">
+                  <p className="text-sm text-black font-medium leading-snug">
                     Follow routines that feel doable
                   </p>
                 </div>
