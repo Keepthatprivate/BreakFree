@@ -50,7 +50,7 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
                   <h2 className="text-xl font-bold text-foreground mb-2">
                     {benefit.title}
                   </h2>
-                  <p className="text-foreground/80 text-sm sm:text-base leading-relaxed">
+                  <p className="text-foreground/60 text-xs sm:text-sm leading-relaxed">
                     {benefit.description}
                   </p>
                 </div>
