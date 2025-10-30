@@ -28,8 +28,14 @@ export default function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
+      
+      // Clean up: pause and revoke blob URL to prevent memory leaks
+      audio.pause();
+      if (audioSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(audioSrc);
+      }
     };
-  }, []);
+  }, [audioSrc]);
 
   const togglePlay = () => {
     const audio = audioRef.current;

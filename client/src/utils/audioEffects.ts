@@ -31,8 +31,10 @@ export function createFootstepsAudio(): string {
     }
   }
 
-  // Convert buffer to WAV blob URL
-  return bufferToWavUrl(buffer);
+  // Convert buffer to WAV blob URL and close AudioContext to free resources
+  const blobUrl = bufferToWavUrl(buffer);
+  audioContext.close();
+  return blobUrl;
 }
 
 export function createDoorClosingAudio(): string {
@@ -90,7 +92,10 @@ export function createDoorClosingAudio(): string {
     }
   }
 
-  return bufferToWavUrl(buffer);
+  // Convert buffer to WAV blob URL and close AudioContext to free resources
+  const blobUrl = bufferToWavUrl(buffer);
+  audioContext.close();
+  return blobUrl;
 }
 
 // Helper function to convert AudioBuffer to WAV Blob URL

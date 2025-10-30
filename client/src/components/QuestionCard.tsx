@@ -33,6 +33,17 @@ export default function QuestionCard({
   );
   const isGenderQuestion = question.id === 'q1';
 
+  // Generate audio URL for audio-test questions (must be at top level per Rules of Hooks)
+  const audioUrl = useMemo(() => {
+    if (question.type !== 'audio-test') return '';
+    if (question.id === 'q4') {
+      return createFootstepsAudio();
+    } else if (question.id === 'q8') {
+      return createDoorClosingAudio();
+    }
+    return '';
+  }, [question.type, question.id]);
+
   useEffect(() => {
     setSelectedValues(savedAnswer);
     if (question.type === 'slider' && savedAnswer[0]) {
@@ -475,16 +486,6 @@ export default function QuestionCard({
 
   // Audio Test Question
   if (question.type === 'audio-test') {
-    // Generate audio URL based on question ID
-    const audioUrl = useMemo(() => {
-      if (question.id === 'q4') {
-        return createFootstepsAudio();
-      } else if (question.id === 'q8') {
-        return createDoorClosingAudio();
-      }
-      return '';
-    }, [question.id]);
-
     return (
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
