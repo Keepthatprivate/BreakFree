@@ -41,7 +41,21 @@ export interface PopupQuestion extends BaseQuestion {
   options: { value: string; label: string }[];
 }
 
-export type Question = RadioQuestion | SliderQuestion | EmojiGridQuestion | ImageChoiceQuestion | QuoteReflectionQuestion | PopupQuestion;
+export interface AudioTestQuestion extends BaseQuestion {
+  type: 'audio-test';
+  soundDescription: string;
+  audioPrompt: string;
+  options: { value: string; label: string; interpretation: string }[];
+}
+
+export interface VisualTestQuestion extends BaseQuestion {
+  type: 'visual-test';
+  imageDescription: string;
+  visualPattern: string;
+  options: { value: string; label: string; interpretation: string }[];
+}
+
+export type Question = RadioQuestion | SliderQuestion | EmojiGridQuestion | ImageChoiceQuestion | QuoteReflectionQuestion | PopupQuestion | AudioTestQuestion | VisualTestQuestion;
 
 export interface DataBreak {
   type: 'data-break';
@@ -135,14 +149,15 @@ export const questions: Question[] = [
   {
     id: 'q4',
     chapter: 'past',
-    text: 'Which of these experiences resonates with your childhood? (Select all that apply)',
-    type: 'multi',
+    type: 'audio-test',
+    text: 'Imagine you hear footsteps approaching. What emotion comes up?',
+    soundDescription: '🔊 Footsteps getting closer',
+    audioPrompt: 'Close your eyes and imagine: Footsteps slowly approaching your door.',
     options: [
-      { value: 'emotional-neglect', label: 'Feeling emotionally neglected' },
-      { value: 'criticism', label: 'Frequent criticism or judgment' },
-      { value: 'instability', label: 'Unstable home environment' },
-      { value: 'high-expectations', label: 'Pressure to meet high expectations' },
-      { value: 'none', label: 'None of these' },
+      { value: 'curiosity', label: 'Curiosity or excitement', interpretation: 'You associate presence with positive connection' },
+      { value: 'anxiety', label: 'Anxiety or tension', interpretation: 'You may have experienced unpredictable parental moods' },
+      { value: 'safety', label: 'Safety and comfort', interpretation: 'You felt protected in your environment' },
+      { value: 'fear', label: 'Fear or dread', interpretation: 'Approaching figures may trigger past trauma' },
     ],
   },
   {
@@ -183,13 +198,15 @@ export const questions: Question[] = [
   {
     id: 'q8',
     chapter: 'patterns',
-    type: 'popup',
-    text: 'Do you often feel on edge or easily startled?',
+    type: 'audio-test',
+    text: 'Listen to this sound. What does it remind you of?',
+    soundDescription: '🔊 A door closing firmly',
+    audioPrompt: 'Close your eyes and imagine: A door closing with a firm click.',
     options: [
-      { value: 'yes-often', label: 'Yes, often' },
-      { value: 'sometimes', label: 'Sometimes' },
-      { value: 'rarely', label: 'Rarely' },
-      { value: 'no', label: 'No' },
+      { value: 'safety', label: 'Safety and boundaries', interpretation: 'You associate closure with protection' },
+      { value: 'isolation', label: 'Being shut out or alone', interpretation: 'You may fear abandonment or isolation' },
+      { value: 'finality', label: 'Something ending', interpretation: 'You connect sounds to loss or finality' },
+      { value: 'neutral', label: 'Just a door closing', interpretation: 'You process sensory input neutrally' },
     ],
   },
   {
@@ -207,14 +224,15 @@ export const questions: Question[] = [
   {
     id: 'q10',
     chapter: 'healing',
-    text: 'What does healing look like to you? (Select all that apply)',
-    type: 'multi',
+    type: 'visual-test',
+    text: 'Look at this pattern. What do you see first?',
+    imageDescription: '👁️ Abstract flowing pattern',
+    visualPattern: 'waves',
     options: [
-      { value: 'inner-peace', label: 'Finding inner peace' },
-      { value: 'healthy-relationships', label: 'Building healthy relationships' },
-      { value: 'self-love', label: 'Learning to love myself' },
-      { value: 'breaking-patterns', label: 'Breaking old patterns' },
-      { value: 'joy', label: 'Experiencing more joy' },
+      { value: 'waves', label: 'Gentle waves flowing', interpretation: 'You seek peace and natural rhythm in healing' },
+      { value: 'barriers', label: 'Walls or barriers', interpretation: 'You may still feel protected or guarded' },
+      { value: 'paths', label: 'Paths leading forward', interpretation: 'You\'re ready to move toward growth' },
+      { value: 'chaos', label: 'Unclear, chaotic shapes', interpretation: 'You may feel overwhelmed by the journey ahead' },
     ],
   },
   {
@@ -231,13 +249,15 @@ export const questions: Question[] = [
   {
     id: 'q12',
     chapter: 'future',
-    text: 'Imagine yourself one year from now, having done the healing work. What do you see?',
-    type: 'radio',
+    type: 'visual-test',
+    text: 'Imagine a tree. What does it look like?',
+    imageDescription: '🌳 A tree in your mind',
+    visualPattern: 'tree',
     options: [
-      { value: 'confident', label: 'A more confident, grounded version of myself' },
-      { value: 'connected', label: 'Deeper connections with loved ones' },
-      { value: 'peaceful', label: 'A sense of peace I\'ve never known' },
-      { value: 'free', label: 'Freedom from my past' },
+      { value: 'full-bloom', label: 'Full of leaves, blooming', interpretation: 'You envision abundant growth and vitality' },
+      { value: 'growing', label: 'Young, still growing', interpretation: 'You see yourself in the early stages of transformation' },
+      { value: 'weathered', label: 'Strong but weathered', interpretation: 'You value resilience through hardship' },
+      { value: 'bare', label: 'Bare branches, resting', interpretation: 'You may be in a season of reflection and recovery' },
     ],
   },
   {
