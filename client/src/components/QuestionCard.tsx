@@ -562,26 +562,6 @@ export default function QuestionCard({
 
   // Visual Test Question
   if (question.type === 'visual-test') {
-    const visualPatterns: { [key: string]: string } = {
-      waves: `
-        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <path d="M0 150 Q 50 100, 100 150 T 200 150 T 300 150 T 400 150" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.7"/>
-          <path d="M0 180 Q 50 130, 100 180 T 200 180 T 300 180 T 400 180" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.5"/>
-          <path d="M0 120 Q 50 70, 100 120 T 200 120 T 300 120 T 400 120" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.6"/>
-          <path d="M0 210 Q 50 160, 100 210 T 200 210 T 300 210 T 400 210" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.4"/>
-        </svg>
-      `,
-      tree: `
-        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <rect x="180" y="200" width="40" height="100" fill="currentColor" opacity="0.6"/>
-          <circle cx="200" cy="150" r="80" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.5"/>
-          <circle cx="160" cy="120" r="50" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6"/>
-          <circle cx="240" cy="120" r="50" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6"/>
-          <circle cx="200" cy="90" r="40" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7"/>
-        </svg>
-      `,
-    };
-
     return (
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
@@ -589,18 +569,13 @@ export default function QuestionCard({
           data-testid="question-card"
         >
           <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-4">
               {question.text}
             </h2>
-            
-            {/* Visual pattern display */}
-            <div className="bg-muted/20 border-2 border-muted/40 rounded-2xl p-8 mb-6 flex items-center justify-center min-h-[240px]">
-              <div className="w-full max-w-md h-48 text-primary/70" dangerouslySetInnerHTML={{ __html: visualPatterns[question.visualPattern] || '' }} />
-            </div>
 
-            <p className="text-sm text-muted-foreground text-center mb-4 flex items-center justify-center gap-2">
-              <span className="text-2xl">{question.imageDescription.split(' ')[0]}</span>
-              <span>Look closely and choose what resonates</span>
+            <p className="text-center text-muted-foreground mb-6 flex items-center justify-center gap-2">
+              <span className="text-3xl">{question.imageDescription.split(' ')[0]}</span>
+              <span className="text-base">{question.imageDescription.substring(question.imageDescription.indexOf(' ') + 1)}</span>
             </p>
           </div>
 
