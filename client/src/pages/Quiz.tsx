@@ -13,9 +13,10 @@ import BenefitsPage from '@/components/BenefitsPage';
 import TestimonialsPage from '@/components/TestimonialsPage';
 import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
+import UpsellPage from '@/components/UpsellPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq';
+type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -203,7 +204,17 @@ export default function Quiz() {
   };
 
   const handleFAQContinue = () => {
-    // Final CTA - could redirect to payment page or show success message
+    setState('upsell');
+  };
+
+  const handleUpsellAccept = () => {
+    console.log('User accepted upsell offer!');
+    // Could redirect to payment page for the guides
+    console.log('Quiz funnel completed with upsell!');
+  };
+
+  const handleUpsellSkip = () => {
+    console.log('User skipped upsell offer');
     console.log('Quiz funnel completed!');
   };
 
@@ -233,6 +244,10 @@ export default function Quiz() {
 
   if (state === 'faq') {
     return <FAQPage onContinue={handleFAQContinue} />;
+  }
+
+  if (state === 'upsell') {
+    return <UpsellPage onAccept={handleUpsellAccept} onSkip={handleUpsellSkip} />;
   }
 
   return (
