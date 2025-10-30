@@ -17,7 +17,6 @@ interface Testimonial {
   rating: number;
   text: string;
   image: string;
-  gradient: string;
 }
 
 export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) {
@@ -26,50 +25,43 @@ export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) 
       name: 'Sarah M.',
       rating: 4.8,
       text: 'This program helped me understand patterns I\'ve carried since childhood. I finally feel free.',
-      image: sarahImage,
-      gradient: 'from-purple-400/30 to-pink-400/30'
+      image: sarahImage
     },
     {
       name: 'Michael T.',
       rating: 4.9,
       text: 'The 28-day plan gave me tools I never knew I needed. My relationships have never been better.',
-      image: michaelImage,
-      gradient: 'from-blue-400/30 to-cyan-400/30'
+      image: michaelImage
     },
     {
       name: 'Emily R.',
       rating: 4.7,
       text: 'I was skeptical at first, but the insights I gained were life-changing. Highly recommend.',
-      image: emilyImage,
-      gradient: 'from-green-400/30 to-teal-400/30'
+      image: emilyImage
     },
     {
       name: 'David L.',
       rating: 4.9,
       text: 'Finally found a program that addresses the root cause. My anxiety has significantly decreased.',
-      image: davidImage,
-      gradient: 'from-indigo-400/30 to-purple-400/30'
+      image: davidImage
     },
     {
       name: 'Rachel K.',
       rating: 4.8,
       text: 'The empathy and understanding in this program is unlike anything I\'ve experienced before.',
-      image: rachelImage,
-      gradient: 'from-pink-400/30 to-rose-400/30'
+      image: rachelImage
     },
     {
       name: 'John P.',
       rating: 4.7,
       text: 'This helped me break free from limiting beliefs I didn\'t even know I had. Truly transformative.',
-      image: johnImage,
-      gradient: 'from-cyan-400/30 to-blue-400/30'
+      image: johnImage
     },
     {
       name: 'James',
       rating: 4.9,
       text: 'Breeze provided me with a safe space to explore and understand my true self.',
-      image: jamesImage,
-      gradient: 'from-blue-400/30 to-green-400/30'
+      image: jamesImage
     }
   ];
 
@@ -100,45 +92,39 @@ export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) 
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 sm:py-12 flex items-center justify-center">
-      <div className="max-w-5xl mx-auto px-5 sm:px-6 w-full">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-8 leading-tight">
+    <div className="min-h-screen bg-background py-6 sm:py-8 flex items-center justify-center">
+      <div className="max-w-4xl mx-auto px-5 sm:px-6 w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
             People trust us
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="animate-in fade-in slide-in-from-bottom-4"
+              className="bg-card/80 backdrop-blur-sm rounded-2xl p-4 border border-card-border/30 animate-in fade-in slide-in-from-bottom-4"
               style={{ animationDelay: `${index * 50}ms` }}
               data-testid={`testimonial-card-${index}`}
             >
-              <div className={`relative bg-gradient-to-br ${testimonial.gradient} rounded-3xl overflow-hidden h-72`}>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/90"></div>
+              <div className="flex items-start gap-3">
+                <Avatar className="w-12 h-12 shrink-0" data-testid={`avatar-testimonial-${index}`}>
+                  <AvatarImage src={testimonial.image} alt={`${testimonial.name} profile picture`} />
+                  <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
+                </Avatar>
                 
-                <div className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-md rounded-2xl p-5 border border-card-border/50">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="w-12 h-12 shrink-0" data-testid={`avatar-testimonial-${index}`}>
-                      <AvatarImage src={testimonial.image} alt={`${testimonial.name} profile picture`} />
-                      <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground mb-1">{testimonial.name}</h3>
-                      
-                      <div className="flex items-center gap-1 mb-2">
-                        {renderStars(testimonial.rating)}
-                        <span className="text-foreground/80 ml-1 text-sm font-medium">{testimonial.rating}</span>
-                      </div>
-
-                      <p className="text-foreground/90 text-sm leading-relaxed">
-                        "{testimonial.text}"
-                      </p>
-                    </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-bold text-foreground mb-1">{testimonial.name}</h3>
+                  
+                  <div className="flex items-center gap-1 mb-2">
+                    {renderStars(testimonial.rating)}
+                    <span className="text-foreground/80 ml-1 text-xs font-medium">{testimonial.rating}</span>
                   </div>
+
+                  <p className="text-foreground/80 text-xs leading-snug">
+                    "{testimonial.text}"
+                  </p>
                 </div>
               </div>
             </div>
