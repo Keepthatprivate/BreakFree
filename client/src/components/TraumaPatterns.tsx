@@ -83,37 +83,37 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center py-8 sm:py-12">
-        <div className="max-w-5xl mx-auto px-5 sm:px-6 w-full">
-          <div className="text-center mb-10">
-            <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 leading-tight">
+      <div className="flex-1 flex items-center justify-center py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full h-full flex flex-col">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
               This plan will help if you experience
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 flex-1">
             {patterns.map((pattern, index) => {
               const Icon = pattern.icon;
               return (
                 <div
                   key={index}
-                  className="bg-card/60 backdrop-blur-sm rounded-2xl p-7 border border-card-border/30 animate-in fade-in slide-in-from-bottom-4"
+                  className="bg-card/60 backdrop-blur-sm rounded-2xl p-5 border border-card-border/30 animate-in fade-in slide-in-from-bottom-4 flex flex-col"
                   style={{ animationDelay: `${index * 100}ms` }}
                   data-testid={`pattern-card-${index}`}
                 >
-                  <div className="flex flex-col items-center text-center mb-5">
+                  <div className="flex items-center gap-3 mb-4">
                     {/* Icon Circle */}
-                    <div className={`w-14 h-14 rounded-full ${pattern.iconBg} flex items-center justify-center mb-4 shadow-lg`}>
-                      <Icon className="w-7 h-7 text-white" />
+                    <div className={`w-12 h-12 rounded-full ${pattern.iconBg} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                      <Icon className="w-6 h-6 text-white" />
                     </div>
-                    <h2 className="text-lg font-bold text-foreground">{pattern.title}</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-foreground">{pattern.title}</h2>
                   </div>
                   
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 flex-1">
                     {pattern.items.map((item, itemIndex) => (
-                      <li key={itemIndex} className="flex items-start gap-2.5">
-                        <span className="text-foreground/50 text-xs mt-1.5">◆</span>
-                        <span className="text-foreground/70 text-sm leading-relaxed">{item}</span>
+                      <li key={itemIndex} className="flex items-start gap-2">
+                        <span className="text-foreground/50 text-xs mt-1">◆</span>
+                        <span className="text-foreground/70 text-xs sm:text-sm leading-snug">{item}</span>
                       </li>
                     ))}
                   </ul>
