@@ -1,54 +1,148 @@
 import { Star } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import profileImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761862009838.jpg';
+import jamesImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761862009838.jpg';
+import sarahImage from '@assets/stock_images/professional_woman_s_42c21774.jpg';
+import michaelImage from '@assets/stock_images/professional_man_smi_9cfe1802.jpg';
+import emilyImage from '@assets/stock_images/professional_woman_s_d4fbbe22.jpg';
+import davidImage from '@assets/stock_images/professional_man_smi_e2a3db08.jpg';
+import rachelImage from '@assets/stock_images/professional_woman_s_535cd02e.jpg';
+import johnImage from '@assets/stock_images/professional_man_smi_25966cd2.jpg';
 
 interface TestimonialsPageProps {
   onContinue: () => void;
 }
 
+interface Testimonial {
+  name: string;
+  rating: number;
+  text: string;
+  image: string;
+  gradient: string;
+}
+
 export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) {
+  const testimonials: Testimonial[] = [
+    {
+      name: 'Sarah M.',
+      rating: 4.8,
+      text: 'This program helped me understand patterns I\'ve carried since childhood. I finally feel free.',
+      image: sarahImage,
+      gradient: 'from-purple-400/30 to-pink-400/30'
+    },
+    {
+      name: 'Michael T.',
+      rating: 4.9,
+      text: 'The 28-day plan gave me tools I never knew I needed. My relationships have never been better.',
+      image: michaelImage,
+      gradient: 'from-blue-400/30 to-cyan-400/30'
+    },
+    {
+      name: 'Emily R.',
+      rating: 4.7,
+      text: 'I was skeptical at first, but the insights I gained were life-changing. Highly recommend.',
+      image: emilyImage,
+      gradient: 'from-green-400/30 to-teal-400/30'
+    },
+    {
+      name: 'David L.',
+      rating: 4.9,
+      text: 'Finally found a program that addresses the root cause. My anxiety has significantly decreased.',
+      image: davidImage,
+      gradient: 'from-indigo-400/30 to-purple-400/30'
+    },
+    {
+      name: 'Rachel K.',
+      rating: 4.8,
+      text: 'The empathy and understanding in this program is unlike anything I\'ve experienced before.',
+      image: rachelImage,
+      gradient: 'from-pink-400/30 to-rose-400/30'
+    },
+    {
+      name: 'John P.',
+      rating: 4.7,
+      text: 'This helped me break free from limiting beliefs I didn\'t even know I had. Truly transformative.',
+      image: johnImage,
+      gradient: 'from-cyan-400/30 to-blue-400/30'
+    },
+    {
+      name: 'James',
+      rating: 4.9,
+      text: 'Breeze provided me with a safe space to explore and understand my true self.',
+      image: jamesImage,
+      gradient: 'from-blue-400/30 to-green-400/30'
+    }
+  ];
+
+  const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+      );
+    }
+
+    if (hasHalfStar && stars.length < 5) {
+      stars.push(
+        <Star key="half" className="w-4 h-4 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+      );
+    }
+
+    while (stars.length < 5) {
+      stars.push(
+        <Star key={`empty-${stars.length}`} className="w-4 h-4 text-yellow-400/30" />
+      );
+    }
+
+    return stars;
+  };
+
   return (
     <div className="min-h-screen bg-background py-8 sm:py-12 flex items-center justify-center">
-      <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
+      <div className="max-w-5xl mx-auto px-5 sm:px-6 w-full">
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-8 leading-tight">
             People trust us
           </h1>
         </div>
 
-        <div className="relative mb-10 animate-in fade-in slide-in-from-bottom-4" data-testid="testimonial-card">
-          {/* Background image placeholder - using gradient instead */}
-          <div className="relative bg-gradient-to-br from-blue-400/30 to-green-400/30 rounded-3xl overflow-hidden h-96 sm:h-[450px]">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/90"></div>
-            
-            {/* Testimonial overlay card */}
-            <div className="absolute bottom-6 left-6 right-6 bg-card/95 backdrop-blur-md rounded-2xl p-6 border border-card-border/50">
-              <div className="flex items-start gap-4">
-                <Avatar className="w-14 h-14 sm:w-16 sm:h-16 shrink-0" data-testid="avatar-testimonial">
-                  <AvatarImage src={profileImage} alt="James profile picture" />
-                  <AvatarFallback>J</AvatarFallback>
-                </Avatar>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+          {testimonials.map((testimonial, index) => (
+            <div
+              key={index}
+              className="animate-in fade-in slide-in-from-bottom-4"
+              style={{ animationDelay: `${index * 50}ms` }}
+              data-testid={`testimonial-card-${index}`}
+            >
+              <div className={`relative bg-gradient-to-br ${testimonial.gradient} rounded-3xl overflow-hidden h-72`}>
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/90"></div>
                 
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-foreground mb-2">James</h3>
-                  
-                  <div className="flex items-center gap-1 mb-3">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className="w-5 h-5 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                    <span className="text-foreground/80 ml-2 text-sm font-medium">4.9</span>
-                  </div>
+                <div className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-md rounded-2xl p-5 border border-card-border/50">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-12 h-12 shrink-0" data-testid={`avatar-testimonial-${index}`}>
+                      <AvatarImage src={testimonial.image} alt={`${testimonial.name} profile picture`} />
+                      <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-foreground mb-1">{testimonial.name}</h3>
+                      
+                      <div className="flex items-center gap-1 mb-2">
+                        {renderStars(testimonial.rating)}
+                        <span className="text-foreground/80 ml-1 text-sm font-medium">{testimonial.rating}</span>
+                      </div>
 
-                  <p className="text-foreground text-base leading-relaxed">
-                    "Breeze provided me with a safe space to explore and understand my true self."
-                  </p>
+                      <p className="text-foreground/90 text-sm leading-relaxed">
+                        "{testimonial.text}"
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
 
         <div className="text-center">
