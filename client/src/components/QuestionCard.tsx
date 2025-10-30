@@ -4,8 +4,8 @@ import { Slider } from '@/components/ui/slider';
 import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
-import { createDoorClosingAudio } from '@/utils/audioEffects';
 import footstepsAudio from '@assets/footsteps_1761858527619.mp3';
+import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
 interface QuestionCardProps {
   question: Question;
@@ -42,31 +42,11 @@ export default function QuestionCard({
       // Use the uploaded MP3 file for footsteps
       return footstepsAudio;
     } else if (question.id === 'q8') {
-      // Use procedurally generated audio for door closing
-      return createDoorClosingAudio();
+      // Use the uploaded MP3 file for door closing
+      return doorClosingAudio;
     }
     return '';
   }, [question.type, question.id]);
-
-  // Clean up blob URLs when switching questions
-  useEffect(() => {
-    const prevUrl = previousAudioUrlRef.current;
-    
-    // Revoke previous blob URL if it exists and is different from current
-    if (prevUrl && prevUrl !== audioUrl && prevUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(prevUrl);
-    }
-    
-    // Store current URL for next cleanup
-    previousAudioUrlRef.current = audioUrl;
-
-    // Cleanup on unmount
-    return () => {
-      if (audioUrl && audioUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
-  }, [audioUrl]);
 
   useEffect(() => {
     setSelectedValues(savedAnswer);
