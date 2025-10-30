@@ -33,7 +33,7 @@ export const questions: Question[] = [
   {
     id: 'q2',
     chapter: 'past',
-    text: 'Growing up, how often did you feel truly heard by your caregivers?',
+    text: 'Growing up, how often did you feel truly heard by your parents?',
     type: 'radio',
     options: [
       { value: 'always', label: 'Almost always' },
