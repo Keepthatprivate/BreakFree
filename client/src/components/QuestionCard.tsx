@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
+import AudioPlayer from './AudioPlayer';
+import { createFootstepsAudio, createDoorClosingAudio } from '@/utils/audioEffects';
 
 interface QuestionCardProps {
   question: Question;
@@ -473,6 +475,16 @@ export default function QuestionCard({
 
   // Audio Test Question
   if (question.type === 'audio-test') {
+    // Generate audio URL based on question ID
+    const audioUrl = useMemo(() => {
+      if (question.id === 'q4') {
+        return createFootstepsAudio();
+      } else if (question.id === 'q8') {
+        return createDoorClosingAudio();
+      }
+      return '';
+    }, [question.id]);
+
     return (
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
@@ -484,20 +496,10 @@ export default function QuestionCard({
               {question.text}
             </h2>
             
-            {/* Audio prompt section */}
-            <div className="bg-primary/10 border-2 border-primary/30 rounded-2xl p-6 mb-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-5xl animate-pulse">{question.soundDescription.split(' ')[0]}</div>
-                <div className="flex-1">
-                  <p className="text-lg font-semibold text-primary">{question.soundDescription}</p>
-                </div>
-              </div>
-              <p className="text-foreground/80 italic text-base leading-relaxed">
-                {question.audioPrompt}
-              </p>
-            </div>
+            {/* Audio Player */}
+            <AudioPlayer audioSrc={audioUrl} label={question.soundDescription.replace('🔊 ', '')} />
 
-            <p className="text-sm text-muted-foreground text-center mb-4">
+            <p className="text-sm text-muted-foreground text-center mb-4 mt-6">
               What does this sound make you think of?
             </p>
           </div>

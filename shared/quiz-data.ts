@@ -150,7 +150,7 @@ export const questions: Question[] = [
     id: 'q4',
     chapter: 'past',
     type: 'audio-test',
-    text: 'Imagine you hear footsteps approaching. What emotion comes up?',
+    text: 'Listen to this sound. What emotion comes up?',
     soundDescription: '🔊 Footsteps getting closer',
     audioPrompt: 'Close your eyes and imagine: Footsteps slowly approaching your door.',
     options: [
