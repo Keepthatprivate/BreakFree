@@ -1,0 +1,103 @@
+Build a fully responsive emotional quiz funnel web app called **“Break Free Quiz”** designed to assess childhood trauma patterns and convert visitors into leads for a healing app. The quiz should feel immersive, personal, and varied — avoiding repetitive layouts. Use **HTML, TailwindCSS, and JavaScript (or React if simpler)**.
+
+---
+
+### 🎯 GOAL
+Create a **multi-format, emotionally engaging experience** where each question or break screen feels alive, human, and different — combining empathy, psychology, and visual storytelling.  
+Users should feel guided through a reflective journey, not like they’re filling out a form.
+
+---
+
+### 💎 CORE FLOW (4 Chapters)
+1. **Your Past** — nostalgic tone, warm light (beige/sepia), slow fades.  
+2. **Your Patterns** — introspective tone, cooler tones (light blue/grey), slide-in questions.  
+3. **Your Healing** — hopeful tone, brighter gradients, growth visuals.  
+4. **Your Future** — empowering tone, white/blue palette, clean modern design.
+
+Show a **progress bar with 4 dots** at the top (each labeled by chapter).
+
+---
+
+### 🧭 QUESTION FORMATS (ROTATE BETWEEN)
+1. **Multiple-choice cards** (rounded, soft hover animation)  
+2. **Quote reflection format** →  
+   “I often hide pain behind humor.”  
+   → 4 emotional reaction buttons (Strongly relate / Somewhat / Hardly / Not at all)
+3. **Popup question** → fade-in modal, blurred background (“Do you often feel on edge?”)  
+4. **Slider scale** → For intensity-based questions (“How much time are you willing to dedicate…”)  
+5. **Emoji grid** → For emotion-based questions (“What do you feel when seeing loved children?”)  
+6. **Image-choice cards** → Visual answers (e.g. peaceful room, chaotic home)  
+7. **Info / Data / Quote Breaks** → See below 👇  
+
+Each question or break should appear with a subtle motion (fade, slide-up, or pop-in) and a **0.3–0.5s delay** to create rhythm and anticipation.  
+Inject **empathy microcopy** randomly between steps (“You’re doing great.” “Awareness is healing.” “This reflection takes courage.”).
+
+---
+
+### 📊 INFO / DATA / QUOTE BREAKS (NEW)
+Insert 1–2 per chapter to reduce fatigue and increase authority & emotional connection.
+
+Each break can take one of these **formats**:
+
+**1. Data Card**
+> “🧠 Harvard School of Public Health found that people who experienced childhood neglect have a 30% higher risk of chronic stress.”  
+→ Subtext: “But awareness and guided healing can reverse much of that impact.”
+
+**2. Quote Reflection**
+> “It’s never too late to have a happy childhood.”  
+> — Tom Robbins  
+→ Subtext: “Many people begin healing in adulthood — and that’s powerful.”
+
+**3. Visual Pause**
+→ Fullscreen or half-screen photo/illustration (e.g. a sunrise, a hand letting go of rope)  
+→ Overlay short text: “Every question brings you closer to understanding.”
+
+**4. Testimonial Break**
+> “Break Free helped me stop repeating painful patterns. I finally feel peace.”  
+> — *James, 34* ⭐ 4.9 rating
+
+**Behavior:**
+- Auto-fade-in, small breathing delay (2–3 seconds before “Continue” button appears).  
+- Blend empathy + insight: users feel *seen* and *educated*.  
+- Optional subtle animation (slow parallax image movement).
+
+---
+
+### 🧠 INTERACTION LOGIC
+- Randomly select animation styles per question to keep flow dynamic.  
+- Allow previous navigation with smooth back animation.  
+- Auto-save answers in localStorage.  
+- Begin each chapter with a short title animation (“Chapter 2: Your Patterns”).
+
+---
+
+### 🎨 VISUAL STYLE
+- **Typography:** “Nunito” or “Inter” (rounded, warm feel).  
+- **Color Palette:** Beige, soft green, muted blue (#2563eb → #003666).  
+- **Design Language:** Rounded corners, glassy cards, soft shadows, airy spacing.  
+- **Backgrounds:**  
+  - Faint gradient overlays or blurred imagery.  
+  - Occasional animated particles or line art for depth.  
+- **Buttons:** Green primary (“Next”), rounded, glow hover, gentle tap feedback.
+
+---
+
+### 🧩 COMPONENTS TO INCLUDE
+- Progress indicator (dots or percentage).  
+- Empathy message system (rotating phrases).  
+- Dynamic question renderer (switch by `type`).  
+- Data/Quote/Visual Breaks system (render by `breakType`).  
+- Testimonial card.  
+- Before/After comparison split screen.  
+- Donation selector with “Choose what feels right” CTA.  
+- Email capture with privacy reassurance (lock icon).  
+- Animated “92% of users feel better” stat.  
+- Mobile-first responsive layout.
+
+---
+
+### 📁 PROJECT STRUCTURE
+- `/index.html` — root layout  
+- `/style.css` or Tailwind setup  
+- `/script.js` or React components  
+- `/data/questions.js
