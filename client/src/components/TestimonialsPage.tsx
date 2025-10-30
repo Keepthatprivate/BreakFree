@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import profileImage from '@assets/generated_images/Professional_male_headshot_portrait_5510e40e.png';
+import profileImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761862009838.jpg';
 
 interface TestimonialsPageProps {
   onContinue: () => void;
