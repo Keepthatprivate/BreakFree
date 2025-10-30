@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
-import { createFootstepsAudio, createDoorClosingAudio } from '@/utils/audioEffects';
+import { createDoorClosingAudio } from '@/utils/audioEffects';
+import footstepsAudio from '@assets/footsteps_1761858527619.mp3';
 
 interface QuestionCardProps {
   question: Question;
@@ -32,17 +33,40 @@ export default function QuestionCard({
     question.type === 'slider' ? (savedAnswer[0] ? Number(savedAnswer[0]) : question.defaultValue || 50) : 50
   );
   const isGenderQuestion = question.id === 'q1';
+  const previousAudioUrlRef = useRef<string>('');
 
   // Generate audio URL for audio-test questions (must be at top level per Rules of Hooks)
   const audioUrl = useMemo(() => {
     if (question.type !== 'audio-test') return '';
     if (question.id === 'q4') {
-      return createFootstepsAudio();
+      // Use the uploaded MP3 file for footsteps
+      return footstepsAudio;
     } else if (question.id === 'q8') {
+      // Use procedurally generated audio for door closing
       return createDoorClosingAudio();
     }
     return '';
   }, [question.type, question.id]);
+
+  // Clean up blob URLs when switching questions
+  useEffect(() => {
+    const prevUrl = previousAudioUrlRef.current;
+    
+    // Revoke previous blob URL if it exists and is different from current
+    if (prevUrl && prevUrl !== audioUrl && prevUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(prevUrl);
+    }
+    
+    // Store current URL for next cleanup
+    previousAudioUrlRef.current = audioUrl;
+
+    // Cleanup on unmount
+    return () => {
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   useEffect(() => {
     setSelectedValues(savedAnswer);
