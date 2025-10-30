@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
 import type { BreakScreen } from '@shared/quiz-data';
 import { useState, useEffect } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import jamesProfileImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761863003013.jpg';
 
 interface BreakScreenProps {
   breakScreen: BreakScreen;
@@ -91,6 +93,12 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-primary/20 shadow-2xl">
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24" data-testid="avatar-james-testimonial">
+                <AvatarImage src={jamesProfileImage} alt="James profile picture" />
+                <AvatarFallback>J</AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex justify-center gap-1 mb-6">
               {[...Array(5)].map((_, i) => (
                 <Star
