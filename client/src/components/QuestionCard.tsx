@@ -340,10 +340,12 @@ export default function QuestionCard({
         >
           <div className="flex-1 flex flex-col justify-center mb-8">
             <div className="text-center mb-12">
-              <div className="text-6xl text-primary mb-6">"</div>
-              <h2 className="text-2xl sm:text-3xl font-medium text-foreground leading-relaxed italic">
-                {question.quote}
+              <h2 className="text-xl sm:text-2xl font-normal text-foreground mb-6">
+                Do you relate to this quote?
               </h2>
+              <p className="text-2xl sm:text-3xl font-medium text-primary leading-relaxed italic">
+                "{question.quote}"
+              </p>
             </div>
 
             <div className="flex flex-col gap-3">
