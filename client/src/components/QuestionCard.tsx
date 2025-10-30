@@ -54,8 +54,6 @@ export default function QuestionCard({
     const genderOptions = [
       { value: 'male', label: 'Male', emoji: '👨', gradient: 'from-blue-500 to-cyan-500' },
       { value: 'female', label: 'Female', emoji: '👩', gradient: 'from-purple-500 to-pink-500' },
-      { value: 'non-binary', label: 'Non-binary', emoji: '🧑', gradient: 'from-green-500 to-teal-500' },
-      { value: 'prefer-not-to-say', label: 'Prefer not to say', emoji: '✨', gradient: 'from-amber-500 to-orange-500' },
     ];
 
     return (

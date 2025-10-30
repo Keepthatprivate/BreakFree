@@ -28,8 +28,6 @@ export const questions: Question[] = [
     options: [
       { value: 'male', label: 'Male' },
       { value: 'female', label: 'Female' },
-      { value: 'non-binary', label: 'Non-binary' },
-      { value: 'prefer-not-to-say', label: 'Prefer not to say' },
     ],
   },
   {
