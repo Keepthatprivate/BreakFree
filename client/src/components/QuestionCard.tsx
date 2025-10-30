@@ -39,7 +39,7 @@ export default function QuestionCard({
   }, [question.id, savedAnswer, question.type]);
 
   const handleOptionClick = (value: string) => {
-    if (question.type === 'radio' || question.type === 'popup' || question.type === 'quote-reflection') {
+    if (question.type === 'radio' || question.type === 'popup' || question.type === 'quote-reflection' || question.type === 'audio-test' || question.type === 'visual-test') {
       setSelectedValues([value]);
       onAnswer([value]);
     } else if (question.type === 'multi') {
@@ -442,6 +442,183 @@ export default function QuestionCard({
                       {option.label}
                     </span>
                   </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-3 mt-auto">
+            <Button
+              onClick={handleNext}
+              disabled={selectedValues.length === 0}
+              className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+              data-testid="button-next"
+            >
+              {isLastQuestion ? 'Complete Quiz' : 'Continue'}
+            </Button>
+            {canGoBack && (
+              <button
+                onClick={onPrevious}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                data-testid="button-previous"
+              >
+                ← Back
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Audio Test Question
+  if (question.type === 'audio-test') {
+    return (
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div
+          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
+          data-testid="question-card"
+        >
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-6">
+              {question.text}
+            </h2>
+            
+            {/* Audio prompt section */}
+            <div className="bg-primary/10 border-2 border-primary/30 rounded-2xl p-6 mb-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="text-5xl animate-pulse">{question.soundDescription.split(' ')[0]}</div>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold text-primary">{question.soundDescription}</p>
+                </div>
+              </div>
+              <p className="text-foreground/80 italic text-base leading-relaxed">
+                {question.audioPrompt}
+              </p>
+            </div>
+
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              What does this sound make you think of?
+            </p>
+          </div>
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {question.options.map((option) => {
+              const isSelected = selectedValues.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => handleOptionClick(option.value)}
+                  className={`flex flex-col gap-3 p-5 rounded-2xl transition-all duration-200 border-2 ${
+                    isSelected
+                      ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                      : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
+                  }`}
+                  data-testid={`option-${option.value}`}
+                >
+                  <span className={`text-base sm:text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
+                    {option.label}
+                  </span>
+                  {isSelected && (
+                    <p className="text-xs sm:text-sm text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+                      {option.interpretation}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-3 mt-auto">
+            <Button
+              onClick={handleNext}
+              disabled={selectedValues.length === 0}
+              className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+              data-testid="button-next"
+            >
+              {isLastQuestion ? 'Complete Quiz' : 'Continue'}
+            </Button>
+            {canGoBack && (
+              <button
+                onClick={onPrevious}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                data-testid="button-previous"
+              >
+                ← Back
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Visual Test Question
+  if (question.type === 'visual-test') {
+    const visualPatterns: { [key: string]: string } = {
+      waves: `
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M0 150 Q 50 100, 100 150 T 200 150 T 300 150 T 400 150" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.7"/>
+          <path d="M0 180 Q 50 130, 100 180 T 200 180 T 300 180 T 400 180" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.5"/>
+          <path d="M0 120 Q 50 70, 100 120 T 200 120 T 300 120 T 400 120" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.6"/>
+          <path d="M0 210 Q 50 160, 100 210 T 200 210 T 300 210 T 400 210" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.4"/>
+        </svg>
+      `,
+      tree: `
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <rect x="180" y="200" width="40" height="100" fill="currentColor" opacity="0.6"/>
+          <circle cx="200" cy="150" r="80" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.5"/>
+          <circle cx="160" cy="120" r="50" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6"/>
+          <circle cx="240" cy="120" r="50" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6"/>
+          <circle cx="200" cy="90" r="40" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7"/>
+        </svg>
+      `,
+    };
+
+    return (
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div
+          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
+          data-testid="question-card"
+        >
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-6">
+              {question.text}
+            </h2>
+            
+            {/* Visual pattern display */}
+            <div className="bg-muted/20 border-2 border-muted/40 rounded-2xl p-8 mb-6 flex items-center justify-center min-h-[240px]">
+              <div className="w-full max-w-md h-48 text-primary/70" dangerouslySetInnerHTML={{ __html: visualPatterns[question.visualPattern] || '' }} />
+            </div>
+
+            <p className="text-sm text-muted-foreground text-center mb-4 flex items-center justify-center gap-2">
+              <span className="text-2xl">{question.imageDescription.split(' ')[0]}</span>
+              <span>Look closely and choose what resonates</span>
+            </p>
+          </div>
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {question.options.map((option) => {
+              const isSelected = selectedValues.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => handleOptionClick(option.value)}
+                  className={`flex flex-col gap-3 p-5 rounded-2xl transition-all duration-200 border-2 ${
+                    isSelected
+                      ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                      : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
+                  }`}
+                  data-testid={`option-${option.value}`}
+                >
+                  <span className={`text-base sm:text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
+                    {option.label}
+                  </span>
+                  {isSelected && (
+                    <p className="text-xs sm:text-sm text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+                      {option.interpretation}
+                    </p>
+                  )}
                 </button>
               );
             })}
