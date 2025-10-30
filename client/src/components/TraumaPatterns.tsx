@@ -6,9 +6,9 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
   const patterns = [
     {
       title: 'Emotional Vulnerability:',
-      emoji: '💗',
-      color: 'from-pink-500/20 to-red-500/20',
-      borderColor: 'border-pink-500/30',
+      iconGradient: 'from-pink-400 to-red-400',
+      cardBg: 'bg-card/40',
+      borderColor: 'border-card-border/20',
       items: [
         'Difficulty sharing feelings openly and honestly',
         'Struggling with self-esteem and self-worth',
@@ -18,9 +18,9 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
     },
     {
       title: 'Feeling Stuck in Growth:',
-      emoji: '💎',
-      color: 'from-blue-500/20 to-cyan-500/20',
-      borderColor: 'border-blue-500/30',
+      iconGradient: 'from-blue-400 to-cyan-400',
+      cardBg: 'bg-card/40',
+      borderColor: 'border-card-border/20',
       items: [
         'Uncertainty and indecisiveness regarding career choices',
         'Difficulty finding passion and purpose in life',
@@ -30,9 +30,9 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
     },
     {
       title: 'Relationship Problems:',
-      emoji: '💔',
-      color: 'from-orange-500/20 to-amber-500/20',
-      borderColor: 'border-orange-500/30',
+      iconGradient: 'from-orange-400 to-yellow-400',
+      cardBg: 'bg-card/40',
+      borderColor: 'border-card-border/20',
       items: [
         'Toxic relationship dynamics and patterns',
         'Difficulty establishing and maintaining healthy boundaries',
@@ -42,9 +42,9 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
     },
     {
       title: 'Insomnia and Stress:',
-      emoji: '💤',
-      color: 'from-cyan-500/20 to-teal-500/20',
-      borderColor: 'border-cyan-500/30',
+      iconGradient: 'from-cyan-400 to-teal-400',
+      cardBg: 'bg-card/40',
+      borderColor: 'border-card-border/20',
       items: [
         'Chronic sleeplessness and difficulty falling or staying asleep',
         'Overwhelming stress from work, personal life, or both',
@@ -63,24 +63,27 @@ export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
           {patterns.map((pattern, index) => (
             <div
               key={index}
-              className={`bg-gradient-to-br ${pattern.color} backdrop-blur-sm rounded-2xl p-6 border-2 ${pattern.borderColor} animate-in fade-in slide-in-from-bottom-4`}
+              className={`${pattern.cardBg} backdrop-blur-sm rounded-2xl p-7 border ${pattern.borderColor} animate-in fade-in slide-in-from-bottom-4`}
               style={{ animationDelay: `${index * 100}ms` }}
               data-testid={`pattern-card-${index}`}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">{pattern.emoji}</div>
-                <h2 className="text-xl font-bold text-foreground">{pattern.title}</h2>
+              <div className="flex flex-col items-center text-center mb-5">
+                {/* Gradient Circle Icon */}
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${pattern.iconGradient} flex items-center justify-center mb-4 shadow-lg`}>
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${pattern.iconGradient} opacity-60`}></div>
+                </div>
+                <h2 className="text-lg font-bold text-foreground">{pattern.title}</h2>
               </div>
               
-              <ul className="space-y-2.5">
+              <ul className="space-y-3">
                 {pattern.items.map((item, itemIndex) => (
                   <li key={itemIndex} className="flex items-start gap-2.5">
-                    <span className="text-foreground/70 text-sm mt-1">◆</span>
-                    <span className="text-foreground/90 text-sm leading-relaxed">{item}</span>
+                    <span className="text-foreground/50 text-xs mt-1.5">◆</span>
+                    <span className="text-foreground/80 text-sm leading-relaxed">{item}</span>
                   </li>
                 ))}
               </ul>
