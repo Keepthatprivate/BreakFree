@@ -4,10 +4,11 @@ import ProgressBar from '@/components/ProgressBar';
 import QuestionCard from '@/components/QuestionCard';
 import EmpathyMessage from '@/components/EmpathyMessage';
 import ContactForm from '@/components/ContactForm';
+import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import { questions, empathyMessages, chapters } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'contact' | 'results';
+type QuizState = 'quiz' | 'empathy' | 'contact' | 'donation' | 'results';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -79,8 +80,16 @@ export default function Quiz() {
     setUserEmail(data.email);
     localStorage.setItem('userName', data.name);
     localStorage.setItem('userEmail', data.email);
+    setState('donation');
+  };
+
+  const handleDonationContinue = () => {
     setState('results');
   };
+
+  if (state === 'donation') {
+    return <DonationPage userName={userName} onContinue={handleDonationContinue} />;
+  }
 
   if (state === 'results') {
     return <ResultsPage userName={userName} />;
