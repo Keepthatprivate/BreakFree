@@ -25,31 +25,31 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-8 sm:py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-4 sm:py-6 flex items-center justify-center">
       <div className="max-w-3xl mx-auto px-5 sm:px-6 w-full">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
             How can 28-day Childhood Trauma healing plan help you:
           </h1>
         </div>
 
-        <div className="space-y-6 mb-12">
+        <div className="space-y-3 mb-6">
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 border border-card-border/20 animate-in fade-in slide-in-from-bottom-4"
+              className="bg-card/80 backdrop-blur-sm rounded-3xl p-5 border border-card-border/20 animate-in fade-in slide-in-from-bottom-4"
               style={{ animationDelay: `${index * 100}ms` }}
               data-testid={`benefit-card-${index}`}
             >
-              <div className="flex items-start gap-6">
-                <div className={`${benefit.iconBg} rounded-2xl p-4 flex-shrink-0 shadow-lg`}>
-                  <div className="text-4xl">{benefit.emoji}</div>
+              <div className="flex items-start gap-4">
+                <div className={`${benefit.iconBg} rounded-2xl p-3 flex-shrink-0 shadow-lg`}>
+                  <div className="text-3xl">{benefit.emoji}</div>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-foreground mb-3">
+                  <h2 className="text-lg font-bold text-foreground mb-2">
                     {benefit.title}
                   </h2>
-                  <p className="text-foreground/70 text-base leading-relaxed">
+                  <p className="text-foreground/70 text-sm leading-snug">
                     {benefit.description}
                   </p>
                 </div>
