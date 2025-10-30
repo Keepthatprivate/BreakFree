@@ -11,7 +11,7 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
   const progressPercentage = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
-    <div className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-card-border">
+    <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b-2 border-secondary/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between mb-3">
           {chapters.map((chapter, index) => (
@@ -22,18 +22,18 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
             >
               <div className="flex flex-col items-center gap-1 flex-1">
                 <div
-                  className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                  className={`h-3 w-3 rounded-full transition-all duration-300 ${
                     index <= currentChapterIndex
-                      ? 'bg-primary scale-125'
+                      ? 'bg-primary scale-125 shadow-lg shadow-primary/50'
                       : 'bg-muted scale-100'
                   }`}
                 />
                 <span
-                  className={`text-xs font-medium tracking-wide hidden sm:block transition-colors ${
+                  className={`text-xs font-semibold tracking-wide hidden sm:block transition-colors ${
                     index === currentChapterIndex
                       ? 'text-foreground'
                       : index < currentChapterIndex
-                        ? 'text-muted-foreground'
+                        ? 'text-accent'
                         : 'text-muted-foreground/60'
                   }`}
                 >
@@ -41,14 +41,14 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
                 </span>
               </div>
               {index < chapters.length - 1 && (
-                <div className="h-px bg-border flex-1 mx-2" />
+                <div className="h-px bg-secondary/20 flex-1 mx-2" />
               )}
             </div>
           ))}
         </div>
-        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+        <div className="relative h-3 bg-muted rounded-full overflow-hidden border border-secondary/20">
           <div
-            className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-600 ease-out"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-600 ease-out shadow-lg shadow-primary/30"
             style={{ width: `${progressPercentage}%` }}
             data-testid="progress-fill"
           />

@@ -42,14 +42,14 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-8">
       <div
-        className="bg-card/60 backdrop-blur-sm border border-card-border rounded-2xl p-6 sm:p-8"
+        className="bg-card/90 backdrop-blur-sm border-2 border-secondary/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-secondary/20"
         data-testid="contact-form"
       >
         <div className="mb-6 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Almost there
           </h2>
-          <p className="text-base text-muted-foreground">
+          <p className="text-base text-accent">
             Share your details to see your personalized results
           </p>
         </div>
@@ -97,11 +97,11 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
             )}
           </div>
 
-          <Button type="submit" className="w-full h-12 text-base" data-testid="button-submit-contact">
+          <Button type="submit" className="w-full h-12 text-base font-bold rounded-2xl shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/50" data-testid="button-submit-contact">
             See my results
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
+          <p className="text-xs text-center text-muted-foreground/80 mt-4">
             We respect your privacy. Your information is safe with us.
           </p>
         </form>

@@ -52,14 +52,14 @@ export default function QuestionCard({
   return (
     <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <div
-        className="bg-card/60 backdrop-blur-sm border border-card-border rounded-2xl p-6 sm:p-12 shadow-xl min-h-[400px] flex flex-col"
+        className="bg-card/90 backdrop-blur-sm border-2 border-secondary/40 rounded-3xl p-6 sm:p-12 shadow-2xl shadow-secondary/20 min-h-[400px] flex flex-col"
         data-testid="question-card"
       >
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-4 font-medium">
+          <p className="text-xs uppercase tracking-widest text-accent mb-4 font-bold">
             {chapterTitle}
           </p>
-          <h2 className="text-2xl sm:text-3xl font-medium text-foreground leading-snug">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-snug">
             {question.text}
           </h2>
         </div>
@@ -71,26 +71,26 @@ export default function QuestionCard({
               <button
                 key={option.value}
                 onClick={() => handleOptionClick(option.value)}
-                className={`w-full p-4 sm:p-6 rounded-xl border-2 text-left transition-all duration-200 hover-elevate active-elevate-2 ${
+                className={`w-full p-4 sm:p-6 rounded-2xl border-2 text-left transition-all duration-200 hover-elevate active-elevate-2 ${
                   isSelected
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border bg-card/40'
+                    ? 'border-accent bg-accent/20 shadow-lg shadow-accent/30'
+                    : 'border-secondary/30 bg-card/60 hover:border-secondary/50'
                 }`}
                 data-testid={`option-${option.value}`}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                       isSelected
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/40'
+                        ? 'border-accent bg-accent shadow-md shadow-accent/50'
+                        : 'border-secondary/40'
                     }`}
                   >
                     {isSelected && (
-                      <div className="w-2 h-2 bg-primary-foreground rounded-full" />
+                      <div className="w-3 h-3 bg-foreground rounded-full" />
                     )}
                   </div>
-                  <span className={`text-base sm:text-lg font-normal ${isSelected ? 'font-medium' : ''}`}>
+                  <span className={`text-base sm:text-lg ${isSelected ? 'font-semibold text-foreground' : 'font-normal text-foreground/90'}`}>
                     {option.label}
                   </span>
                 </div>
@@ -104,7 +104,7 @@ export default function QuestionCard({
             <Button
               variant="outline"
               onClick={onPrevious}
-              className="px-6"
+              className="px-6 border-2 border-secondary/40 hover:border-secondary/60 rounded-2xl"
               data-testid="button-previous"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -116,7 +116,7 @@ export default function QuestionCard({
           <Button
             onClick={handleNext}
             disabled={selectedValues.length === 0}
-            className="px-8"
+            className="px-8 rounded-2xl shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/50 font-semibold"
             data-testid="button-next"
           >
             {isLastQuestion ? 'Complete' : 'Continue'}

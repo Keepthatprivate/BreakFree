@@ -87,7 +87,7 @@ export default function Quiz() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
+    <div className="min-h-screen bg-background">
       {state === 'quiz' && (
         <>
           <ProgressBar

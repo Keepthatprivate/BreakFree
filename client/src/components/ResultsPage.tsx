@@ -26,40 +26,40 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div
-            className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl p-8 sm:p-12 flex flex-col justify-center"
+            className="bg-muted/40 border-2 border-secondary/30 rounded-3xl p-8 sm:p-12 flex flex-col justify-center"
             data-testid="before-section"
           >
-            <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-4">
+            <h3 className="text-sm uppercase tracking-widest text-secondary mb-4 font-bold">
               Before
             </h3>
             <div className="space-y-4">
-              <p className="text-lg text-foreground/80">
+              <p className="text-lg text-foreground/70">
                 Carrying the weight of unprocessed patterns
               </p>
-              <p className="text-lg text-foreground/80">
+              <p className="text-lg text-foreground/70">
                 Feeling stuck in familiar cycles
               </p>
-              <p className="text-lg text-foreground/80">
+              <p className="text-lg text-foreground/70">
                 Wondering if peace is truly possible
               </p>
             </div>
           </div>
 
           <div
-            className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 sm:p-12 flex flex-col justify-center border border-primary/20"
+            className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-3xl p-8 sm:p-12 flex flex-col justify-center border-2 border-primary/40 shadow-xl shadow-primary/20"
             data-testid="after-section"
           >
-            <h3 className="text-sm uppercase tracking-wider text-primary mb-4">
+            <h3 className="text-sm uppercase tracking-widest text-primary mb-4 font-bold">
               After
             </h3>
             <div className="space-y-4">
-              <p className="text-lg text-foreground font-medium">
+              <p className="text-lg text-foreground font-semibold">
                 Understanding your patterns with clarity
               </p>
-              <p className="text-lg text-foreground font-medium">
+              <p className="text-lg text-foreground font-semibold">
                 Breaking free from old cycles
               </p>
-              <p className="text-lg text-foreground font-medium">
+              <p className="text-lg text-foreground font-semibold">
                 Living with the peace you deserve
               </p>
             </div>
@@ -76,10 +76,10 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
           </p>
         </div>
 
-        <Card className="max-w-2xl mx-auto p-6 sm:p-8 mb-12" data-testid="testimonial-card">
+        <Card className="max-w-2xl mx-auto p-6 sm:p-8 mb-12 border-2 border-accent/30 rounded-3xl shadow-xl shadow-accent/20" data-testid="testimonial-card">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-xl font-semibold text-primary">J</span>
+            <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-accent/40">
+              <span className="text-xl font-bold text-accent">J</span>
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -117,15 +117,15 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
                 onClick={() => handleDonationClick(amount)}
                 className={`rounded-2xl border-2 p-6 transition-all duration-200 hover-elevate active-elevate-2 ${
                   selectedDonation === amount
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border bg-card/40'
+                    ? 'border-accent bg-accent/20 shadow-lg shadow-accent/30'
+                    : 'border-secondary/30 bg-card/60 hover:border-secondary/50'
                 }`}
                 data-testid={`donation-${amount}`}
               >
                 <div className="text-3xl font-bold text-foreground mb-1">
                   €{amount.toFixed(2)}
                 </div>
-                <div className="text-sm text-muted-foreground">{label}</div>
+                <div className="text-sm text-accent/80">{label}</div>
               </button>
             ))}
           </div>
@@ -135,14 +135,14 @@ export default function ResultsPage({ userName }: ResultsPageProps) {
         </div>
 
         <div className="text-center">
-          <Button size="lg" className="px-12 h-12 text-base" data-testid="button-continue-plan">
+          <Button size="lg" className="px-12 h-12 text-base font-bold rounded-2xl shadow-xl shadow-primary/40 hover:shadow-2xl hover:shadow-primary/50" data-testid="button-continue-plan">
             Continue to your personalized healing plan
           </Button>
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-primary">92%</span> of users feel better after
+          <p className="text-sm text-foreground/80">
+            <span className="font-bold text-primary text-lg">92%</span> of users feel better after
             completing their healing journey
           </p>
         </div>
