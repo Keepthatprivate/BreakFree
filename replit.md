@@ -1,0 +1,121 @@
+# Break Free Quiz
+
+## Overview
+
+Break Free Quiz is an emotionally-driven web application designed to assess childhood trauma patterns through an interactive, multi-format questionnaire. The application guides users through a reflective journey across four distinct chapters (Your Past, Your Patterns, Your Healing, Your Future), using various question formats and empathy-driven micro-interactions to create a safe, therapeutic experience. The ultimate goal is to convert visitors into leads for a healing app while providing immediate value through personalized insights.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+
+**Framework**: React with TypeScript using Vite as the build tool
+
+**UI Component System**: The application uses shadcn/ui components built on Radix UI primitives with Tailwind CSS for styling. This provides:
+- Accessible, composable UI components
+- Consistent design system following wellness/mental health app aesthetics
+- Dark mode support with custom color theming
+
+**Design Philosophy**: Reference-based wellness approach (inspired by Headspace, Calm, Better Help):
+- Emotional safety first with generous spacing and soft visual hierarchy
+- Progressive trust building through gentle UI transitions
+- Breathing room via generous padding and rounded corners (24px/16px/12px)
+- Calming color palette (light blue, soft beige, green for CTAs)
+
+**State Management**: 
+- React useState hooks for local component state
+- LocalStorage for answer persistence (allows users to resume quiz)
+- No global state management library needed due to simple, linear flow
+
+**Routing**: Wouter for lightweight client-side routing
+
+**Key UI Patterns**:
+- Progress tracking with chapter indicators (4-dot system)
+- Multiple question formats: radio buttons, sliders, emoji grids, image choices, quote reflections, popup modals
+- Animated transitions (fade, slide-up, pop-in with 0.3-0.5s delays)
+- Break screens between sections (data cards, quotes, empathy messages)
+- Split-screen results page ("Before vs After" visualization)
+
+### Backend Architecture
+
+**Server Framework**: Express.js with TypeScript
+
+**API Structure**: RESTful endpoints with `/api` prefix convention
+- Current implementation provides scaffolding for future API routes
+- Request/response logging middleware for development
+- JSON parsing with raw body preservation for webhook compatibility
+
+**Development Server**: Custom Vite integration with HMR (Hot Module Replacement)
+- Middleware mode for seamless development experience
+- Custom error overlay for runtime errors
+- Static file serving for production builds
+
+**Data Storage Strategy**:
+- In-memory storage interface (IStorage) for development
+- Prepared for database integration (schema suggests PostgreSQL with Drizzle ORM)
+- LocalStorage on client-side for quiz state persistence
+- User model scaffolded (id, username, password fields)
+
+### External Dependencies
+
+**Database**:
+- Drizzle ORM configured for PostgreSQL dialect
+- Neon Database serverless driver (`@neondatabase/serverless`)
+- Schema defined in TypeScript with Zod validation
+- Migration support via drizzle-kit
+
+**UI Libraries**:
+- Radix UI primitives for 25+ accessible components (dialogs, popovers, dropdowns, etc.)
+- Tailwind CSS v3+ for utility-first styling
+- Embla Carousel for potential multi-slide components
+- Lucide React for icon system
+
+**Form Management**:
+- React Hook Form with @hookform/resolvers for validation
+- Zod schemas for type-safe form validation
+
+**Data Fetching**:
+- TanStack Query (React Query) v5 for server state management
+- Configured with custom query functions for API requests
+- Aggressive caching strategy (staleTime: Infinity, no refetch on window focus)
+
+**Fonts**: 
+- Google Fonts integration (Inter for primary text, Lora for empathy messages/quotes)
+- Preconnected for performance optimization
+
+**Session Management**:
+- connect-pg-simple for PostgreSQL-backed sessions (when database is connected)
+- Express session handling prepared but not yet implemented
+
+**Development Tools**:
+- Replit-specific plugins for development banner, runtime error modal, and cartographer
+- TypeScript with strict mode enabled
+- Path aliases configured (@/, @shared/, @assets/)
+
+## Key Design Decisions
+
+**Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, chapter-transition, empathy, break, contact, donation, results). This was chosen to:
+- Create natural breathing room between sections
+- Build psychological safety through predictable patterns
+- Allow for dynamic content injection (empathy messages, data breaks) at specific trigger points
+
+**Client-Side Persistence**: Answers stored in localStorage rather than server-side to:
+- Allow instant resume functionality without authentication
+- Reduce server load for initial user engagement
+- Enable offline-first experience
+- Simplify data capture flow (only collect email/name at the end)
+
+**Component Modularity**: Each question type and screen type (break, empathy, results) is a separate component because:
+- Different question formats require distinct interaction patterns
+- Enables A/B testing of specific question types
+- Allows for gradual addition of new question formats
+- Simplifies maintenance and testing
+
+**Styling Approach**: Tailwind CSS with custom design tokens over CSS-in-JS because:
+- Faster development with utility classes
+- Smaller bundle size in production
+- Easy theme customization via CSS variables
+- Better integration with shadcn/ui component library
