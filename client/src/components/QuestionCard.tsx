@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 
 interface QuestionCardProps {
@@ -25,6 +25,7 @@ export default function QuestionCard({
   isLastQuestion,
 }: QuestionCardProps) {
   const [selectedValues, setSelectedValues] = useState<string[]>(savedAnswer);
+  const isGenderQuestion = question.id === 'q1';
 
   useEffect(() => {
     setSelectedValues(savedAnswer);
@@ -48,6 +49,91 @@ export default function QuestionCard({
       onNext();
     }
   };
+
+  if (isGenderQuestion) {
+    const genderOptions = [
+      { value: 'male', label: 'Male', emoji: '👨', gradient: 'from-blue-500 to-cyan-500' },
+      { value: 'female', label: 'Female', emoji: '👩', gradient: 'from-purple-500 to-pink-500' },
+      { value: 'non-binary', label: 'Non-binary', emoji: '🧑', gradient: 'from-green-500 to-teal-500' },
+      { value: 'prefer-not-to-say', label: 'Prefer not to say', emoji: '✨', gradient: 'from-amber-500 to-orange-500' },
+    ];
+
+    return (
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
+            What is your gender identity?
+          </h2>
+          <button className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+            <span>Why we ask</span>
+            <Info className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          {genderOptions.map((option) => {
+            const isSelected = selectedValues.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                onClick={() => handleOptionClick(option.value)}
+                className={`relative rounded-3xl overflow-hidden transition-all duration-300 border-2 ${
+                  isSelected
+                    ? 'border-primary shadow-2xl shadow-primary/30 scale-[1.02]'
+                    : 'border-card-border/50 hover:border-card-border hover:scale-[1.01]'
+                }`}
+                data-testid={`option-${option.value}`}
+              >
+                <div className="bg-card p-8 sm:p-10">
+                  <div className="flex flex-col items-center gap-6">
+                    <div className={`w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br ${option.gradient} flex items-center justify-center text-6xl sm:text-7xl relative`}>
+                      <div className="absolute inset-0 rounded-full bg-card/20 backdrop-blur-sm" />
+                      <span className="relative z-10">{option.emoji}</span>
+                      {isSelected && (
+                        <>
+                          <div className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center z-20">
+                            <svg className="w-5 h-5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary/40 animate-ping" />
+                        </>
+                      )}
+                    </div>
+                    <p className={`text-xl sm:text-2xl font-bold transition-colors ${
+                      isSelected ? 'text-foreground' : 'text-foreground/80'
+                    }`}>
+                      {option.label}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col gap-3 max-w-md mx-auto">
+          <Button
+            onClick={handleNext}
+            disabled={selectedValues.length === 0}
+            className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+            data-testid="button-next"
+          >
+            Continue
+          </Button>
+          {canGoBack && (
+            <button
+              onClick={onPrevious}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              data-testid="button-previous"
+            >
+              ← Back
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
