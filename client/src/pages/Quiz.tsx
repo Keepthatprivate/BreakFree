@@ -6,9 +6,10 @@ import EmpathyMessage from '@/components/EmpathyMessage';
 import ContactForm from '@/components/ContactForm';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
-import { questions, empathyMessages, chapters } from '@shared/quiz-data';
+import BreakScreenComponent from '@/components/BreakScreen';
+import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'contact' | 'donation' | 'results';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'results';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -25,6 +26,7 @@ export default function Quiz() {
   const [userEmail, setUserEmail] = useState('');
   const [state, setState] = useState<QuizState>('quiz');
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
+  const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -41,13 +43,33 @@ export default function Quiz() {
   };
 
   const showEmpathyMessage = () => {
-    const empathyTriggers = [2, 5, 7];
+    const empathyTriggers = [2, 6, 9];
     return empathyTriggers.includes(currentQuestionIndex);
+  };
+
+  const showBreakScreen = () => {
+    // Show break screens after questions 3, 7, 10, 12
+    const breakTriggers = [3, 7, 10, 12];
+    return breakTriggers.includes(currentQuestionIndex);
+  };
+
+  const getBreakScreenForCurrentQuestion = () => {
+    const breakMap: { [key: number]: number } = {
+      3: 0,  // After q4 (past chapter) -> data-break
+      7: 1,  // After q8 (patterns chapter) -> quote-break
+      10: 2, // After q11 (healing chapter) -> testimonial-break
+      12: 3, // After q13 (future chapter) -> visual-pause
+    };
+    return breakMap[currentQuestionIndex];
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      if (showEmpathyMessage()) {
+      if (showBreakScreen()) {
+        const breakIndex = getBreakScreenForCurrentQuestion();
+        setCurrentBreakIndex(breakIndex);
+        setState('break');
+      } else if (showEmpathyMessage()) {
         setState('empathy');
         setEmpathyMessageIndex(Math.floor(Math.random() * empathyMessages.length));
       } else {
@@ -69,6 +91,13 @@ export default function Quiz() {
   };
 
   const handleEmpathyContinue = () => {
+    setState('quiz');
+    setTimeout(() => {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }, 300);
+  };
+
+  const handleBreakContinue = () => {
     setState('quiz');
     setTimeout(() => {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -127,6 +156,20 @@ export default function Quiz() {
           <EmpathyMessage
             message={empathyMessages[empathyMessageIndex]}
             onContinue={handleEmpathyContinue}
+          />
+        </>
+      )}
+
+      {state === 'break' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <BreakScreenComponent
+            breakScreen={breakScreens[currentBreakIndex]}
+            onContinue={handleBreakContinue}
           />
         </>
       )}
