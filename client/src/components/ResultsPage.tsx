@@ -2,8 +2,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X } from 'lucide-react';
 import { useState } from 'react';
 
+interface QuizAnswers {
+  [questionId: string]: string[];
+}
+
 interface ResultsPageProps {
   userName: string;
+  answers: QuizAnswers;
   onContinue: () => void;
 }
 

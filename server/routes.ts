@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { auth } from "./auth";
 import Stripe from "stripe";
+import { getUncachableResendClient } from "./resend-client";
+import { generateResultsEmail } from "./email-templates";
+import { analyzeQuizAnswers } from "./quiz-analyzer";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -85,6 +88,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating upsell payment:", error);
       res.status(500).json({ message: "Error creating upsell payment: " + error.message });
+    }
+  });
+
+  // Send quiz results via email
+  app.post("/api/send-results-email", async (req, res) => {
+    try {
+      const { email, name, answers } = req.body;
+
+      if (!email || !name || !answers) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Analyze quiz answers
+      const analysis = analyzeQuizAnswers(answers);
+
+      // Get Resend client
+      const { client: resend, fromEmail } = await getUncachableResendClient();
+
+      // Send email
+      const { data, error } = await resend.emails.send({
+        from: fromEmail || 'Break Free <onboarding@resend.dev>',
+        to: [email],
+        subject: '🌸 Your Break Free Quiz Results',
+        html: generateResultsEmail({
+          userName: name,
+          traumaScore: analysis.traumaScore,
+          primaryPattern: analysis.primaryPattern,
+          recommendations: analysis.recommendations,
+        }),
+      });
+
+      if (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: "Error sending email: " + error.message });
+      }
+
+      res.json({ success: true, messageId: data?.id });
+    } catch (error: any) {
+      console.error("Error sending results email:", error);
+      res.status(500).json({ message: "Error sending email: " + error.message });
+    }
+  });
+
+  // Analyze quiz answers (without sending email)
+  app.post("/api/analyze-quiz", async (req, res) => {
+    try {
+      const { answers } = req.body;
+
+      if (!answers) {
+        return res.status(400).json({ message: "Missing quiz answers" });
+      }
+
+      const analysis = analyzeQuizAnswers(answers);
+      res.json(analysis);
+    } catch (error: any) {
+      console.error("Error analyzing quiz:", error);
+      res.status(500).json({ message: "Error analyzing quiz: " + error.message });
     }
   });
 
