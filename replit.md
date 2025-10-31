@@ -171,6 +171,20 @@ Preferred communication style: Simple, everyday language.
    - All question types maintained: radio, slider, emoji-grid, audio-test, visual-test, quote-reflection, image-choice
    - End-to-end testing verified improved user experience with clearer, more concise options
 
+12. **New Benefit Pages and Flow Optimization (October 31, 2025)**:
+   - Created three new benefit pages shown between donation and trial timeline:
+     - `SevenDaysPage.tsx`: "Feel the difference" messaging with 7-day benefits breakdown
+     - `PlanHelpPage.tsx`: "This plan will help you..." with specific outcome promises
+     - `TrustPage.tsx`: "People trust us" with credibility messaging
+   - Updated flow: Donation → Benefits → SevenDaysPage → PlanHelpPage → TrustPage → Trial Timeline → Trial Checkout → Results
+   - Removed "Continue without trial" option from TrialTimeline (simplified to single CTA)
+   - Updated button text across funnel for better conversion:
+     - DonationPage: "Continue to Checkout" → "Donate"
+     - TrialTimeline: "Start 7-Day Trial" → "Get my result and plan"
+     - CheckoutPage: "Pay" → "Access my result and plan"
+   - Made TrialTimeline.onContinue optional since skip button removed
+   - All benefit pages follow consistent design pattern: illustration, headline, supporting copy, single CTA
+
 ## Key Design Decisions
 
 **Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, empathy, break, contact, results, checkout). This was chosen to:
