@@ -133,12 +133,18 @@ Preferred communication style: Simple, everyday language.
 
 8. **Unified Checkout System**:
    - Created `CheckoutPage.tsx` component with Stripe Elements integration
-   - Supports all payment types: upsell guides (€14.99), donations (variable amount), and trial subscriptions
+   - Supports all payment types: upsell guides (€14.99), donations (variable amount), and trial subscriptions (€1.00)
    - Integrated Apple Pay and Google Pay for faster checkout
    - Saved payment methods enabled for subsequent purchases
-   - Updated Quiz.tsx flow: UpsellPage → CheckoutPage → DonationPage (optional) → CheckoutPage (if donation selected)
-   - DonationPage now has "Continue to Checkout" and "Skip contribution" options
+   - Updated Quiz.tsx flow: UpsellPage → CheckoutPage → DonationPage (optional) → CheckoutPage (if donation selected) → TrialTimeline → CheckoutPage (if trial selected)
+   - DonationPage has "Continue to Checkout" and "Skip contribution" options
+   - TrialTimeline has "Start 7-Day Trial" (routes to checkout) and "Continue without trial" options
    - Stripe integration uses `clientSecret` pattern with automatic payment methods
+
+9. **Branding Updates**:
+   - Replaced "Breeze" with "BreakFree App" throughout the application
+   - Updated TrialTimeline to show "Sign up for BreakFree App"
+   - Consistent branding across all user-facing text
 
 ## Key Design Decisions
 

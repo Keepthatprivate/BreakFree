@@ -2,15 +2,16 @@ import { Check, Lock, Bell, Shield } from 'lucide-react';
 
 interface TrialTimelineProps {
   onContinue: () => void;
+  onStartTrial: () => void;
 }
 
-export default function TrialTimeline({ onContinue }: TrialTimelineProps) {
+export default function TrialTimeline({ onContinue, onStartTrial }: TrialTimelineProps) {
   const steps = [
     {
       icon: Check,
       iconColor: 'text-primary',
       bgColor: 'bg-primary/20',
-      title: 'Sign up for Breeze',
+      title: 'Sign up for BreakFree App',
       titleColor: 'text-primary',
       description: 'You have successfully started your journey towards a more resilient and trauma-free version of yourself.'
     },
@@ -100,7 +101,7 @@ export default function TrialTimeline({ onContinue }: TrialTimelineProps) {
               </div>
 
               <p className="text-sm text-foreground/70 mt-3 leading-relaxed">
-                You'll have a full <span className="font-semibold text-foreground">7 days</span> to experience how Breeze can improve your life.
+                You'll have a full <span className="font-semibold text-foreground">7 days</span> to experience how BreakFree App can improve your life.
               </p>
             </div>
 
@@ -123,14 +124,23 @@ export default function TrialTimeline({ onContinue }: TrialTimelineProps) {
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <button
-            onClick={onContinue}
+            onClick={onStartTrial}
             className="w-full sm:w-auto min-w-[280px] bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
-            data-testid="button-continue-trial"
+            data-testid="button-start-trial"
           >
-            Get my result and plan
+            Start 7-Day Trial
           </button>
+          <div>
+            <button
+              onClick={onContinue}
+              className="text-foreground/70 hover:text-foreground font-medium text-base transition-colors py-2"
+              data-testid="button-skip-trial"
+            >
+              Continue without trial
+            </button>
+          </div>
         </div>
       </div>
     </div>

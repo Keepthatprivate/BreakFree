@@ -176,8 +176,16 @@ export default function Quiz() {
   };
 
   const handleTimelineContinue = () => {
-    // After timeline, show guides/benefits
+    // Skip trial, go to benefits
     setState('benefits');
+  };
+
+  const handleStartTrial = () => {
+    // User wants to start trial, go to checkout
+    setCheckoutAmount(100); // €1.00 trial price in cents
+    setCheckoutType('trial');
+    setCheckoutProductName('7-Day Trial Subscription');
+    setState('checkout');
   };
 
   const handleBenefitsContinue = () => {
@@ -231,7 +239,7 @@ export default function Quiz() {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <TrialTimeline onContinue={handleTimelineContinue} />
+        <TrialTimeline onContinue={handleTimelineContinue} onStartTrial={handleStartTrial} />
       </>
     );
   }
