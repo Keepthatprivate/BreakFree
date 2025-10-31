@@ -122,12 +122,11 @@ export const questions: Question[] = [
   {
     id: 'q2',
     chapter: 'past',
-    text: 'Did your parents listen to you growing up?',
+    text: 'Did your parents truly listen to you growing up?',
     type: 'radio',
     options: [
       { value: 'always', label: 'Always' },
       { value: 'sometimes', label: 'Sometimes' },
-      { value: 'rarely', label: 'Rarely' },
       { value: 'never', label: 'Never' },
     ],
   },
@@ -140,7 +139,6 @@ export const questions: Question[] = [
       { value: 'peaceful', emoji: '😌', label: 'Peaceful' },
       { value: 'anxious', emoji: '😰', label: 'Anxious' },
       { value: 'sad', emoji: '😢', label: 'Sad' },
-      { value: 'angry', emoji: '😠', label: 'Angry' },
     ],
   },
   {

@@ -6,35 +6,34 @@ interface VisualPatternProps {
 export default function VisualPattern({ pattern, className = "" }: VisualPatternProps) {
   if (pattern === 'lines') {
     return (
-      <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 ${className}`}>
+      <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 ${className}`}>
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+              <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
             </linearGradient>
           </defs>
           
-          {/* Multiple diagonal and horizontal lines with varied angles */}
-          {[...Array(12)].map((_, i) => {
-            const yPos = 40 + i * 30;
-            const angle = (i % 3) * 15 - 15; // Varies between -15, 0, 15 degrees
+          {/* Clean horizontal lines with subtle spacing */}
+          {[...Array(5)].map((_, i) => {
+            const yPos = 80 + i * 60;
             return (
               <g key={i}>
                 <line
                   x1="0"
                   y1={yPos}
                   x2="1200"
-                  y2={yPos + (angle * 10)}
+                  y2={yPos}
                   stroke="url(#line-gradient)"
-                  strokeWidth={2 + (i % 4)}
-                  opacity={0.4 + (i % 3) * 0.1}
+                  strokeWidth="3"
+                  opacity="0.4"
                 >
                   <animate
                     attributeName="opacity"
-                    values={`${0.3 + (i % 3) * 0.1};${0.6 + (i % 3) * 0.1};${0.3 + (i % 3) * 0.1}`}
-                    dur={`${4 + (i % 3) * 2}s`}
+                    values="0.3;0.5;0.3"
+                    dur="6s"
                     repeatCount="indefinite"
                   />
                 </line>
@@ -42,26 +41,26 @@ export default function VisualPattern({ pattern, className = "" }: VisualPattern
             );
           })}
           
-          {/* Floating particles along the lines */}
-          {[...Array(8)].map((_, i) => (
+          {/* Minimal floating particles */}
+          {[...Array(3)].map((_, i) => (
             <circle
               key={i}
-              cx={100 + i * 130}
-              cy={100 + (i % 4) * 60}
-              r="4"
+              cx={200 + i * 400}
+              cy={140 + i * 40}
+              r="5"
               fill="hsl(var(--primary))"
-              opacity="0.6"
+              opacity="0.4"
             >
               <animate
                 attributeName="cx"
-                values={`${100 + i * 130};${150 + i * 130};${100 + i * 130}`}
-                dur={`${5 + i * 0.5}s`}
+                values={`${200 + i * 400};${280 + i * 400};${200 + i * 400}`}
+                dur="8s"
                 repeatCount="indefinite"
               />
               <animate
                 attributeName="opacity"
-                values="0.6;0.2;0.6"
-                dur={`${5 + i * 0.5}s`}
+                values="0.4;0.15;0.4"
+                dur="8s"
                 repeatCount="indefinite"
               />
             </circle>
