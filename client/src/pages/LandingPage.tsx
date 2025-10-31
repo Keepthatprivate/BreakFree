@@ -58,6 +58,22 @@ export default function LandingPage() {
         >
           Take test
         </button>
+
+        {/* Footer */}
+        <footer className="mt-12 text-center">
+          <p className="text-sm text-gray-400 mb-2">
+            2025 © All Rights Reserved.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-400">
+            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <span>|</span>
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <span>|</span>
+            <a href="#" className="hover:text-white transition-colors">Subscription Terms</a>
+            <span>|</span>
+            <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+          </div>
+        </footer>
       </div>
     </div>
   );
