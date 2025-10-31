@@ -146,6 +146,12 @@ Preferred communication style: Simple, everyday language.
    - Updated TrialTimeline to show "Sign up for BreakFree App"
    - Consistent branding across all user-facing text
 
+10. **Payment Method Optimization**:
+   - Updated PaymentElement layout from 'tabs' to 'accordion' for better wallet visibility
+   - Apple Pay and Google Pay are now prominently displayed at the top
+   - Payment method order prioritizes: Apple Pay → Google Pay → Card
+   - Apple Pay is automatically selected when available on supported devices
+
 ## Key Design Decisions
 
 **Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, empathy, break, contact, results, checkout). This was chosen to:

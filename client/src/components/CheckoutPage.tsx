@@ -62,8 +62,8 @@ function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement 
         options={{
-          layout: 'tabs',
-          // Stripe integration: Enable saved payment methods and Apple Pay
+          layout: 'accordion',
+          // Stripe integration: Preselect Apple Pay by prioritizing wallets
           paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
         }}
       />
