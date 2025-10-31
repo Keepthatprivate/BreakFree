@@ -152,6 +152,19 @@ Preferred communication style: Simple, everyday language.
    - Payment method order prioritizes: Apple Pay → Google Pay → Card
    - Apple Pay is automatically selected when available on supported devices
 
+11. **Quiz Question Simplification (October 31, 2025)**:
+   - Reduced all questions to 2-4 answer options maximum (no questions exceed 4 options)
+   - Shortened all answer labels to 1-2 words maximum for clarity
+   - Simplified question wording for easier understanding while maintaining emotional impact
+   - Example changes:
+     - q2: 5 options → 4 options ("Always", "Sometimes", "Rarely", "Never")
+     - q3: 6 emoji options → 4 emoji options (Peaceful, Anxious, Sad, Angry)
+     - q4: "Curiosity or excitement" → "Curious" (all answers 1 word)
+     - q6: "Avoid getting too close to others" → "Avoid closeness" (2 words)
+     - q13: "Very ready - I'm committed" → "Very ready" (2 words)
+   - All question types maintained: radio, slider, emoji-grid, audio-test, visual-test, quote-reflection, image-choice
+   - End-to-end testing verified improved user experience with clearer, more concise options
+
 ## Key Design Decisions
 
 **Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, empathy, break, contact, results, checkout). This was chosen to:
