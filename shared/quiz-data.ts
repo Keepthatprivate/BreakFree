@@ -122,7 +122,7 @@ export const questions: Question[] = [
   {
     id: 'q2',
     chapter: 'past',
-    text: 'Did your parents truly listen to you growing up?',
+    text: 'Did you feel truly heard by your parents as a child?',
     type: 'radio',
     options: [
       { value: 'always', label: 'Always' },
@@ -163,7 +163,6 @@ export const questions: Question[] = [
     options: [
       { value: 'strongly', label: 'Always' },
       { value: 'somewhat', label: 'Sometimes' },
-      { value: 'hardly', label: 'Rarely' },
       { value: 'not-at-all', label: 'Never' },
     ],
   },
@@ -176,7 +175,6 @@ export const questions: Question[] = [
       { value: 'avoid', label: 'Avoid closeness' },
       { value: 'seek-validation', label: 'Seek approval' },
       { value: 'trust-easily', label: 'Trust easily' },
-      { value: 'guarded', label: 'Stay guarded' },
     ],
   },
   {
@@ -250,7 +248,6 @@ export const questions: Question[] = [
       { value: 'full-bloom', label: 'Blooming' },
       { value: 'growing', label: 'Growing' },
       { value: 'weathered', label: 'Weathered' },
-      { value: 'bare', label: 'Bare' },
     ],
   },
   {
@@ -260,7 +257,6 @@ export const questions: Question[] = [
     type: 'radio',
     options: [
       { value: 'very-ready', label: 'Very ready' },
-      { value: 'ready', label: 'Ready' },
       { value: 'somewhat', label: 'Nervous' },
       { value: 'exploring', label: 'Exploring' },
     ],
