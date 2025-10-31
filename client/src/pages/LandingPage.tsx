@@ -29,94 +29,69 @@ export default function LandingPage() {
         <div className="max-w-[460px] w-full text-center">
           {/* Illustration */}
           <div className="flex justify-center mb-8">
-            <div className="relative w-[200px] h-[200px]">
+            <div className="relative w-[180px] h-[180px]">
               <svg 
-                width="200" 
-                height="200" 
-                viewBox="0 0 200 200" 
+                width="180" 
+                height="180" 
+                viewBox="0 0 180 180" 
                 className="w-full h-full"
               >
                 <defs>
-                  {/* Glowing aura gradient */}
-                  <radialGradient id="auraGlow">
-                    <stop offset="0%" stopColor="#4ade80" stopOpacity="0.3" />
-                    <stop offset="50%" stopColor="#22c55e" stopOpacity="0.15" />
+                  <radialGradient id="calmGlow">
+                    <stop offset="0%" stopColor="#4ade80" stopOpacity="0.25" />
                     <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
                   </radialGradient>
-                  
-                  {/* Person gradient */}
-                  <linearGradient id="personGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4ade80" />
-                    <stop offset="100%" stopColor="#22c55e" />
-                  </linearGradient>
                 </defs>
                 
-                {/* Outer peaceful glow - pulsing */}
-                <circle cx="100" cy="100" r="85" fill="url(#auraGlow)" opacity="0.6">
-                  <animate attributeName="r" values="80;90;80" dur="4s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" repeatCount="indefinite" />
+                {/* Soft peaceful glow */}
+                <circle cx="90" cy="90" r="75" fill="url(#calmGlow)">
+                  <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite" />
                 </circle>
                 
-                {/* Middle glow layer */}
-                <circle cx="100" cy="100" r="65" fill="url(#auraGlow)" opacity="0.5">
-                  <animate attributeName="r" values="60;70;60" dur="3s" repeatCount="indefinite" />
-                </circle>
-                
-                {/* Person in meditation pose */}
-                <g transform="translate(100, 100)">
-                  {/* Head */}
-                  <circle cx="0" cy="-25" r="18" fill="url(#personGradient)" opacity="0.95" />
-                  
-                  {/* Body/torso */}
-                  <ellipse cx="0" cy="5" rx="20" ry="28" fill="url(#personGradient)" opacity="0.95" />
-                  
-                  {/* Legs crossed (meditation pose) */}
-                  <ellipse cx="-12" cy="30" rx="16" ry="10" fill="url(#personGradient)" opacity="0.95" transform="rotate(-10 -12 30)" />
-                  <ellipse cx="12" cy="30" rx="16" ry="10" fill="url(#personGradient)" opacity="0.95" transform="rotate(10 12 30)" />
-                  
-                  {/* Arms in meditation position */}
-                  <ellipse cx="-18" cy="8" rx="8" ry="20" fill="url(#personGradient)" opacity="0.9" transform="rotate(-20 -18 8)" />
-                  <ellipse cx="18" cy="8" rx="8" ry="20" fill="url(#personGradient)" opacity="0.9" transform="rotate(20 18 8)" />
-                  
-                  {/* Hands resting */}
-                  <circle cx="-15" cy="28" r="6" fill="url(#personGradient)" opacity="0.9" />
-                  <circle cx="15" cy="28" r="6" fill="url(#personGradient)" opacity="0.9" />
-                </g>
-                
-                {/* Floating calm energy particles */}
+                {/* Simple person meditating */}
                 <g fill="#4ade80">
-                  <circle cx="40" cy="60" r="2.5" opacity="0.7">
-                    <animate attributeName="cy" values="60;50;60" dur="3s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="160" cy="70" r="2.5" opacity="0.6">
-                    <animate attributeName="cy" values="70;60;70" dur="3.5s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.5s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="50" cy="130" r="2" opacity="0.65">
-                    <animate attributeName="cy" values="130;120;130" dur="4s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.4;0.75;0.4" dur="4s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="150" cy="140" r="2" opacity="0.7">
-                    <animate attributeName="cy" values="140;130;140" dur="3.2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.2s" repeatCount="indefinite" />
-                  </circle>
+                  {/* Head - simple circle */}
+                  <circle cx="90" cy="55" r="16" />
+                  
+                  {/* Neck */}
+                  <rect x="85" y="70" width="10" height="8" rx="2" />
+                  
+                  {/* Body - simple rounded rectangle */}
+                  <rect x="72" y="78" width="36" height="40" rx="8" />
+                  
+                  {/* Left arm bent */}
+                  <rect x="54" y="85" width="20" height="12" rx="6" transform="rotate(-15 64 91)" />
+                  {/* Left hand on lap */}
+                  <circle cx="58" cy="110" r="7" />
+                  
+                  {/* Right arm bent */}
+                  <rect x="106" y="85" width="20" height="12" rx="6" transform="rotate(15 116 91)" />
+                  {/* Right hand on lap */}
+                  <circle cx="122" cy="110" r="7" />
+                  
+                  {/* Left leg crossed */}
+                  <ellipse cx="72" cy="125" rx="18" ry="12" transform="rotate(-8 72 125)" />
+                  <rect x="52" y="128" width="22" height="10" rx="5" transform="rotate(-5 63 133)" />
+                  
+                  {/* Right leg crossed */}
+                  <ellipse cx="108" cy="125" rx="18" ry="12" transform="rotate(8 108 125)" />
+                  <rect x="106" y="128" width="22" height="10" rx="5" transform="rotate(5 117 133)" />
                 </g>
                 
-                {/* Peaceful sparkles */}
+                {/* Few gentle sparkles */}
                 <g fill="#fbbf24">
-                  <path d="M 65 45 L 66 47 L 68 48 L 66 49 L 65 51 L 64 49 L 62 48 L 64 47 Z" opacity="0.8">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
-                  </path>
-                  <path d="M 135 50 L 136 52 L 138 53 L 136 54 L 135 56 L 134 54 L 132 53 L 134 52 Z" opacity="0.75">
+                  <circle cx="45" cy="60" r="2" opacity="0.7">
+                    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="135" cy="65" r="2" opacity="0.6">
                     <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite" />
-                  </path>
-                  <path d="M 75 155 L 76 157 L 78 158 L 76 159 L 75 161 L 74 159 L 72 158 L 74 157 Z" opacity="0.7">
-                    <animate attributeName="opacity" values="0.4;0.85;0.4" dur="3s" repeatCount="indefinite" />
-                  </path>
-                  <path d="M 125 150 L 126 152 L 128 153 L 126 154 L 125 156 L 124 154 L 122 153 L 124 152 Z" opacity="0.8">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.3s" repeatCount="indefinite" />
-                  </path>
+                  </circle>
+                  <circle cx="50" cy="115" r="1.5" opacity="0.5">
+                    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="130" cy="120" r="1.5" opacity="0.6">
+                    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.8s" repeatCount="indefinite" />
+                  </circle>
                 </g>
               </svg>
             </div>
