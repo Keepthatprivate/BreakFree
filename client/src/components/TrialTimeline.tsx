@@ -124,23 +124,14 @@ export default function TrialTimeline({ onContinue, onStartTrial }: TrialTimelin
           </div>
         </div>
 
-        <div className="text-center space-y-3">
+        <div className="text-center">
           <button
             onClick={onStartTrial}
-            className="w-full sm:w-auto min-w-[280px] bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
+            className="w-full sm:w-auto min-w-[320px] bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
             data-testid="button-start-trial"
           >
-            Start 7-Day Trial
+            Get my result and plan
           </button>
-          <div>
-            <button
-              onClick={onContinue}
-              className="text-foreground/70 hover:text-foreground font-medium text-base transition-colors py-2"
-              data-testid="button-skip-trial"
-            >
-              Continue without trial
-            </button>
-          </div>
         </div>
       </div>
     </div>

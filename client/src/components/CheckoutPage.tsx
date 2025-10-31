@@ -79,7 +79,7 @@ function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
             Processing...
           </>
         ) : (
-          `Pay €${(amount / 100).toFixed(2)}`
+          'Access my result and plan'
         )}
       </Button>
     </form>

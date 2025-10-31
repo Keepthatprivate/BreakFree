@@ -110,7 +110,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
             className="w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40"
             data-testid="button-continue"
           >
-            Continue to Checkout
+            Donate
           </Button>
           <button
             onClick={handleSkip}
