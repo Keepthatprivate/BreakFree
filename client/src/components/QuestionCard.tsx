@@ -4,6 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
+import VisualPattern from './VisualPattern';
 import footstepsAudio from '@assets/footsteps_1761858527619.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
@@ -563,41 +564,43 @@ export default function QuestionCard({
   // Visual Test Question
   if (question.type === 'visual-test') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-4">
+          <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4">
               {question.text}
             </h2>
 
-            <p className="text-center text-muted-foreground mb-6 flex items-center justify-center gap-2">
-              <span className="text-3xl">{question.imageDescription.split(' ')[0]}</span>
-              <span className="text-base">{question.imageDescription.substring(question.imageDescription.indexOf(' ') + 1)}</span>
+            {/* Render the actual visual pattern */}
+            <VisualPattern pattern={question.visualPattern} className="mb-4" />
+            
+            <p className="text-center text-muted-foreground text-sm">
+              What do you see first?
             </p>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
                 <button
                   key={option.value}
                   onClick={() => handleOptionClick(option.value)}
-                  className={`flex flex-col gap-3 p-5 rounded-2xl transition-all duration-200 border-2 ${
+                  className={`flex flex-col gap-2 p-4 rounded-2xl transition-all duration-200 border-2 ${
                     isSelected
-                      ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                      ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
                       : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                   }`}
                   data-testid={`option-${option.value}`}
                 >
-                  <span className={`text-base sm:text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
+                  <span className={`text-sm sm:text-base font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
                     {option.label}
                   </span>
-                  {isSelected && (
-                    <p className="text-xs sm:text-sm text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+                  {isSelected && option.interpretation && (
+                    <p className="text-xs text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
                       {option.interpretation}
                     </p>
                   )}
@@ -606,11 +609,11 @@ export default function QuestionCard({
             })}
           </div>
 
-          <div className="flex flex-col gap-3 mt-auto">
+          <div className="flex flex-col gap-3">
             <Button
               onClick={handleNext}
               disabled={selectedValues.length === 0}
-              className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+              className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
               data-testid="button-next"
             >
               {isLastQuestion ? 'Complete Quiz' : 'Continue'}
