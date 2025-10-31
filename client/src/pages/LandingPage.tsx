@@ -31,7 +31,7 @@ export default function LandingPage() {
         />
 
         {/* Headline */}
-        <h1 className="text-[1.9rem] leading-[1.3] font-semibold text-white">
+        <h1 className="text-[1.9rem] leading-[1.3] font-semibold text-white w-full">
           Break free from childhood trauma
         </h1>
         
@@ -43,7 +43,7 @@ export default function LandingPage() {
         {/* CTA Button */}
         <button 
           onClick={handleStartQuiz}
-          className="bg-[#54d3bb] text-white border-none rounded-full px-[42px] py-[14px] text-[1.05rem] font-semibold cursor-pointer mt-4 transition-all duration-[250ms] ease-in-out hover:translate-y-[-2px] hover:scale-[1.03] hover:bg-[#6ee7b7]"
+          className="w-full bg-[#54d3bb] text-white border-none rounded-full px-[42px] py-[14px] text-[1.05rem] font-semibold cursor-pointer mt-4 transition-all duration-[250ms] ease-in-out hover:translate-y-[-2px] hover:scale-[1.03] hover:bg-[#6ee7b7]"
           style={{ 
             boxShadow: '0 4px 16px rgba(84, 211, 187, 0.3)'
           }}
