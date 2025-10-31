@@ -99,7 +99,10 @@ Preferred communication style: Simple, everyday language.
 
 1. **Chapter Indicators**: Removed dedicated chapter transition pages while maintaining chapter indicators visible on all quiz screens (shows current chapter: Your Past, Your Patterns, Your Healing, Your Future)
 
-2. **Visual Pattern Component**: Created `VisualPattern.tsx` with animated SVG patterns (waves, tree) using floating CSS animations for visual-test questions
+2. **Visual Pattern Component**: 
+   - Created `VisualPattern.tsx` with animated SVG patterns using floating CSS animations for visual-test questions
+   - Changed q10 from "waves" pattern to "lines" pattern with multiple diagonal/horizontal animated lines
+   - Removed tree visualization from q12 to avoid biasing users (changed from visual-test to radio question type)
 
 3. **Email Results Integration**: 
    - Set up Resend connector for sending personalized quiz results via email
@@ -109,6 +112,7 @@ Preferred communication style: Simple, everyday language.
 
 4. **Dynamic Results Generation**:
    - Created `quiz-analyzer.ts` to analyze quiz answers and detect trauma patterns
+   - Fixed critical bug: Both frontend and backend now properly iterate through ALL selected values in multi-select questions (especially q6)
    - Results page now displays personalized content based on user's primary pattern (abandonment, control, emotional, trust)
    - Added `/api/analyze-quiz` endpoint for real-time result calculation
    - "Before" and "After" states adapt to detected pattern
@@ -123,6 +127,18 @@ Preferred communication style: Simple, everyday language.
    - Removed all button animation delays across the application
    - Eliminated 2-second setTimeout delay in BreakScreen component
    - Buttons now appear instantly on all pages (welcome, quiz, break screens, results, etc.)
+
+7. **Audio Optimization**:
+   - Reduced footsteps audio (q4) from 12 seconds to 3 seconds using ffmpeg
+
+8. **Unified Checkout System**:
+   - Created `CheckoutPage.tsx` component with Stripe Elements integration
+   - Supports all payment types: upsell guides (€14.99), donations (variable amount), and trial subscriptions
+   - Integrated Apple Pay and Google Pay for faster checkout
+   - Saved payment methods enabled for subsequent purchases
+   - Updated Quiz.tsx flow: UpsellPage → CheckoutPage → DonationPage (optional) → CheckoutPage (if donation selected)
+   - DonationPage now has "Continue to Checkout" and "Skip contribution" options
+   - Stripe integration uses `clientSecret` pattern with automatic payment methods
 
 ## Key Design Decisions
 

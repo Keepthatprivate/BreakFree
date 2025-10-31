@@ -13,9 +13,10 @@ import TestimonialsPage from '@/components/TestimonialsPage';
 import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
+import CheckoutPage from '@/components/CheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -34,6 +35,9 @@ export default function Quiz() {
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
+  const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
+  const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
+  const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -128,20 +132,47 @@ export default function Quiz() {
   };
 
   const handlePaymentComplete = () => {
-    setHasPaid(true);
-    localStorage.setItem('hasPaid', 'true');
-    // After payment, show contribution page
-    setState('donation');
+    // When user clicks "Get Now" on UpsellPage, go to checkout
+    setCheckoutAmount(1499); // €14.99 in cents
+    setCheckoutType('upsell');
+    setCheckoutProductName('Mental Well-Being Guides');
+    setState('checkout');
   };
 
   const handlePaymentSkip = () => {
-    // If user skips payment, redirect to signup
-    setLocation('/signup');
+    // If user skips payment, go to donation page
+    setState('donation');
   };
 
-  const handleDonationContinue = () => {
-    // After contribution, show trial timeline
-    setState('timeline');
+  const handleDonationContinue = (donationAmount?: number) => {
+    // If donation amount is provided, go to checkout
+    if (donationAmount && donationAmount > 0) {
+      setCheckoutAmount(Math.round(donationAmount * 100)); // Convert to cents
+      setCheckoutType('donation');
+      setCheckoutProductName(`Contribution - €${donationAmount.toFixed(2)}`);
+      setState('checkout');
+    } else {
+      // Skip donation, go to timeline
+      setState('timeline');
+    }
+  };
+
+  const handleCheckoutComplete = () => {
+    // After successful checkout, mark as paid and continue to next step
+    setHasPaid(true);
+    localStorage.setItem('hasPaid', 'true');
+    
+    // Determine next step based on checkout type
+    if (checkoutType === 'upsell') {
+      // After buying guides, can still contribute
+      setState('donation');
+    } else if (checkoutType === 'donation') {
+      // After donation, show trial timeline
+      setState('timeline');
+    } else if (checkoutType === 'trial') {
+      // After trial payment, show benefits
+      setState('benefits');
+    }
   };
 
   const handleTimelineContinue = () => {
@@ -173,6 +204,18 @@ export default function Quiz() {
 
   if (state === 'payment') {
     return <UpsellPage onAccept={handlePaymentComplete} onSkip={handlePaymentSkip} />;
+  }
+
+  if (state === 'checkout') {
+    return (
+      <CheckoutPage
+        amount={checkoutAmount}
+        productType={checkoutType}
+        productName={checkoutProductName}
+        email={userEmail}
+        onComplete={handleCheckoutComplete}
+      />
+    );
   }
 
   if (state === 'donation') {

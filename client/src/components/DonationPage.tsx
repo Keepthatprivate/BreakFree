@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface DonationPageProps {
   userName: string;
-  onContinue: () => void;
+  onContinue: (donationAmount?: number) => void;
 }
 
 export default function DonationPage({ userName, onContinue }: DonationPageProps) {
@@ -23,7 +23,13 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
 
   const handleContinue = () => {
     console.log('Donation selected:', selectedDonation);
-    onContinue();
+    // Pass the selected donation amount to trigger checkout
+    onContinue(selectedDonation || undefined);
+  };
+
+  const handleSkip = () => {
+    // Pass undefined to skip donation
+    onContinue(undefined);
   };
 
   return (
@@ -96,15 +102,23 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <Button
             onClick={handleContinue}
+            disabled={!selectedDonation}
             size="lg"
             className="w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40"
             data-testid="button-continue"
           >
-            Continue
+            Continue to Checkout
           </Button>
+          <button
+            onClick={handleSkip}
+            className="w-full text-foreground/70 hover:text-foreground font-medium text-base transition-colors py-2"
+            data-testid="button-skip-donation"
+          >
+            Skip contribution
+          </button>
         </div>
       </div>
     </div>
