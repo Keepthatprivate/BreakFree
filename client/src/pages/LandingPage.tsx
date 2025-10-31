@@ -37,7 +37,7 @@ export default function LandingPage() {
         </h1>
         
         {/* Subheadline */}
-        <p className="text-base text-[#b5b5b5] font-normal leading-[1.6] max-w-[420px]">
+        <p className="text-base text-white font-normal leading-[1.6] max-w-[420px]">
           Uncover your trauma score and learn how to move forward with confidence
         </p>
 
