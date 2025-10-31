@@ -6,45 +6,79 @@ interface VisualPatternProps {
 export default function VisualPattern({ pattern, className = "" }: VisualPatternProps) {
   if (pattern === 'lines') {
     return (
-      <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 ${className}`}>
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
+      <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900/30 via-slate-800/30 to-slate-900/30 ${className}`}>
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="#10b981" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.6" />
+            <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.5" />
+            </linearGradient>
+            <linearGradient id="barrier-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#dc2626" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           
-          {/* Discontinuous green lines - broken segments */}
-          {[...Array(6)].map((_, i) => {
-            const yPos = 60 + i * 50;
-            const segments = [0, 1, 2, 3, 4];
-            return (
-              <g key={i}>
-                {segments.map((seg) => (
-                  <line
-                    key={seg}
-                    x1={seg * 250 + 20}
-                    y1={yPos}
-                    x2={seg * 250 + 180}
-                    y2={yPos}
-                    stroke="url(#line-gradient)"
-                    strokeWidth="2.5"
-                    strokeDasharray="5,5"
-                    opacity="0.5"
-                  >
-                    <animate
-                      attributeName="opacity"
-                      values="0.3;0.6;0.3"
-                      dur={`${5 + i}s`}
-                      repeatCount="indefinite"
-                    />
-                  </line>
-                ))}
-              </g>
-            );
-          })}
+          {/* Horizontal paths - some continuous, some broken */}
+          <line x1="20" y1="80" x2="180" y2="80" stroke="url(#path-gradient)" strokeWidth="2.5" opacity="0.6">
+            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" repeatCount="indefinite" />
+          </line>
+          <line x1="220" y1="150" x2="380" y2="150" stroke="url(#path-gradient)" strokeWidth="2.5" opacity="0.6">
+            <animate attributeName="opacity" values="0.5;0.8;0.5" dur="5s" repeatCount="indefinite" />
+          </line>
+          <line x1="20" y1="220" x2="150" y2="220" stroke="url(#path-gradient)" strokeWidth="2.5" opacity="0.6">
+            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="6s" repeatCount="indefinite" />
+          </line>
+          
+          {/* Vertical barriers - blocking some paths */}
+          <rect x="180" y="60" width="8" height="50" fill="url(#barrier-gradient)" rx="2" opacity="0.5">
+            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite" />
+          </rect>
+          <rect x="210" y="130" width="8" height="60" fill="url(#barrier-gradient)" rx="2" opacity="0.5">
+            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" repeatCount="indefinite" />
+          </rect>
+          <rect x="150" y="200" width="8" height="50" fill="url(#barrier-gradient)" rx="2" opacity="0.5">
+            <animate attributeName="opacity" values="0.3;0.5;0.3" dur="5s" repeatCount="indefinite" />
+          </rect>
+          
+          {/* Diagonal paths - navigating around barriers */}
+          <line x1="180" y1="85" x2="210" y2="145" stroke="url(#path-gradient)" strokeWidth="2" opacity="0.5" strokeDasharray="4,4">
+            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="5s" repeatCount="indefinite" />
+          </line>
+          <line x1="220" y1="155" x2="280" y2="210" stroke="url(#path-gradient)" strokeWidth="2" opacity="0.5" strokeDasharray="4,4">
+            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="6s" repeatCount="indefinite" />
+          </line>
+          
+          {/* Small chaotic elements - scattered dots representing complexity */}
+          {[
+            { cx: 100, cy: 60, delay: 0 },
+            { cx: 250, cy: 100, delay: 1 },
+            { cx: 320, cy: 180, delay: 2 },
+            { cx: 80, cy: 190, delay: 0.5 },
+            { cx: 300, cy: 70, delay: 1.5 },
+          ].map((dot, i) => (
+            <circle
+              key={i}
+              cx={dot.cx}
+              cy={dot.cy}
+              r="2.5"
+              fill="#22c55e"
+              opacity="0.4"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.2;0.6;0.2"
+                dur={`${3 + dot.delay}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="r"
+                values="2;3.5;2"
+                dur={`${3 + dot.delay}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          ))}
         </svg>
       </div>
     );
