@@ -197,12 +197,13 @@ Preferred communication style: Simple, everyday language.
    - Updated routing: "/" now shows landing page, "/quiz" starts the quiz
    - Design elements:
      - BreakFree bird logo absolutely positioned in top-left corner (26px size)
-     - Simple illustration image (160px) from CDN: mental health/mindfulness icon
+     - Freedom illustration (160px): Stock image of hands breaking free from chains/handcuffs to symbolize liberation from childhood trauma
      - Headline: "Break free from childhood trauma" (1.9rem, font-weight 600)
      - Subheadline: "Uncover your trauma score and learn how to move forward with confidence" (1rem, #b5b5b5 color)
      - Teal CTA button (#54d3bb): "Take test" with hover effects (lift and scale)
      - Bluish-black background (#0d0d16) for softer aesthetic
      - Button has glow shadow effects and smooth transitions
+     - Button width matches headline width for visual alignment
      - Max-width 600px container, centered layout
    - Clean, minimal design following exact HTML/CSS reference structure provided by user
 

@@ -1,5 +1,6 @@
 import { useLocation } from 'wouter';
 import logoImage from '@assets/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.png';
+import freedomImage from '@assets/stock_images/hands_breaking_free__7ba45173.jpg';
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
@@ -24,9 +25,9 @@ export default function LandingPage() {
       <div className="max-w-[600px] flex flex-col items-center gap-5">
         {/* Illustration */}
         <img
-          src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
-          alt="Illustration"
-          className="w-40 h-auto mb-4"
+          src={freedomImage}
+          alt="Hands breaking free from chains"
+          className="w-40 h-auto mb-4 rounded-lg"
           style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.05))' }}
         />
 
