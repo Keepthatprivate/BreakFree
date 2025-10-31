@@ -157,11 +157,17 @@ Preferred communication style: Simple, everyday language.
    - Shortened all answer labels to 1-2 words maximum for clarity
    - Simplified question wording for easier understanding while maintaining emotional impact
    - Example changes:
-     - q2: 5 options → 4 options ("Always", "Sometimes", "Rarely", "Never")
-     - q3: 6 emoji options → 4 emoji options (Peaceful, Anxious, Sad, Angry)
+     - q2: 5 options → 4 options → 3 options ("Always", "Sometimes", "Never")
+     - q2 text: "Did your parents listen to you growing up?" → "Did your parents truly listen to you growing up?"
+     - q3: 6 emoji options → 4 emoji options → 3 emoji options (Peaceful, Anxious, Sad)
      - q4: "Curiosity or excitement" → "Curious" (all answers 1 word)
      - q6: "Avoid getting too close to others" → "Avoid closeness" (2 words)
      - q13: "Very ready - I'm committed" → "Very ready" (2 words)
+   - Visual pattern (q10) redesigned for cleaner appearance:
+     - Reduced from 12 lines to 5 horizontal lines with better spacing
+     - Reduced from 8 particles to 3 for minimal distraction
+     - Softened background gradient and animations
+     - Result: Leaner, easier to interpret visual test
    - All question types maintained: radio, slider, emoji-grid, audio-test, visual-test, quote-reflection, image-choice
    - End-to-end testing verified improved user experience with clearer, more concise options
 
