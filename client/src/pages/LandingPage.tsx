@@ -1,6 +1,6 @@
 import { useLocation } from 'wouter';
 import logoImage from '@assets/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.png';
-import freedomImage from '@assets/stock_images/hands_only_broken_ha_a133968a.jpg';
+import freedomImage from '@assets/pexels-pixabay-247851_1761942102191.jpg';
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
@@ -27,7 +27,7 @@ export default function LandingPage() {
         <img
           src={freedomImage}
           alt="Hands breaking free from chains"
-          className="w-40 h-auto mb-4 rounded-lg"
+          className="w-40 h-40 object-cover mb-4 rounded-full"
           style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.05))' }}
         />
 
