@@ -9,6 +9,9 @@ import ResultsPage from '@/components/ResultsPage';
 import BreakScreenComponent from '@/components/BreakScreen';
 import TraumaPatterns from '@/components/TraumaPatterns';
 import BenefitsPage from '@/components/BenefitsPage';
+import SevenDaysPage from '@/components/SevenDaysPage';
+import PlanHelpPage from '@/components/PlanHelpPage';
+import TrustPage from '@/components/TrustPage';
 import TestimonialsPage from '@/components/TestimonialsPage';
 import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
@@ -16,7 +19,7 @@ import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -152,8 +155,8 @@ export default function Quiz() {
       setCheckoutProductName(`Contribution - €${donationAmount.toFixed(2)}`);
       setState('checkout');
     } else {
-      // Skip donation, go to timeline
-      setState('timeline');
+      // Skip donation, go to benefits pages
+      setState('benefits');
     }
   };
 
@@ -167,17 +170,12 @@ export default function Quiz() {
       // After buying guides, can still contribute
       setState('donation');
     } else if (checkoutType === 'donation') {
-      // After donation, show trial timeline
-      setState('timeline');
-    } else if (checkoutType === 'trial') {
-      // After trial payment, show benefits
+      // After donation, show benefits pages
       setState('benefits');
+    } else if (checkoutType === 'trial') {
+      // After trial payment, show results
+      setState('results');
     }
-  };
-
-  const handleTimelineContinue = () => {
-    // Skip trial, go to benefits
-    setState('benefits');
   };
 
   const handleStartTrial = () => {
@@ -189,8 +187,23 @@ export default function Quiz() {
   };
 
   const handleBenefitsContinue = () => {
-    // After benefits, show actual results
-    setState('results');
+    // After benefits page, show seven days page
+    setState('seven-days');
+  };
+
+  const handleSevenDaysContinue = () => {
+    // After seven days page, show plan help page
+    setState('plan-help');
+  };
+
+  const handlePlanHelpContinue = () => {
+    // After plan help page, show trust page
+    setState('trust');
+  };
+
+  const handleTrustContinue = () => {
+    // After trust page, show timeline
+    setState('timeline');
   };
 
   const handleResultsContinue = () => {
@@ -235,20 +248,47 @@ export default function Quiz() {
     );
   }
 
-  if (state === 'timeline') {
-    return (
-      <>
-        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <TrialTimeline onContinue={handleTimelineContinue} onStartTrial={handleStartTrial} />
-      </>
-    );
-  }
-
   if (state === 'benefits') {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
         <BenefitsPage onContinue={handleBenefitsContinue} />
+      </>
+    );
+  }
+
+  if (state === 'seven-days') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <SevenDaysPage onContinue={handleSevenDaysContinue} />
+      </>
+    );
+  }
+
+  if (state === 'plan-help') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <PlanHelpPage onContinue={handlePlanHelpContinue} />
+      </>
+    );
+  }
+
+  if (state === 'trust') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <TrustPage onContinue={handleTrustContinue} />
+      </>
+    );
+  }
+
+  if (state === 'timeline') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <TrialTimeline onStartTrial={handleStartTrial} />
       </>
     );
   }

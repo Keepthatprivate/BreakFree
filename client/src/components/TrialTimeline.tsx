@@ -1,11 +1,10 @@
 import { Check, Lock, Bell, Shield } from 'lucide-react';
 
 interface TrialTimelineProps {
-  onContinue: () => void;
   onStartTrial: () => void;
 }
 
-export default function TrialTimeline({ onContinue, onStartTrial }: TrialTimelineProps) {
+export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
   const steps = [
     {
       icon: Check,
