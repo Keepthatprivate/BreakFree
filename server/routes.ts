@@ -46,9 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, name } = req.body;
       
-      // Create payment intent for 7-day trial (you can adjust the amount)
+      // Create payment intent for 7-day trial at €1.00
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 0, // Free trial - no charge initially
+        amount: 100, // €1.00 in cents for 7-day trial
         currency: "eur",
         automatic_payment_methods: {
           enabled: true,
