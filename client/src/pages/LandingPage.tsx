@@ -1,5 +1,4 @@
 import { useLocation } from 'wouter';
-import { Button } from '@/components/ui/button';
 import logoImage from '@assets/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.png';
 
 export default function LandingPage() {
@@ -10,104 +9,107 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       {/* Header with Logo */}
-      <header className="p-6 sm:p-8">
+      <header className="p-6">
         <div className="flex items-center gap-3">
           <img 
             src={logoImage} 
             alt="BreakFree Logo" 
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl"
+            className="w-9 h-9 rounded-lg"
           />
-          <span className="text-xl sm:text-2xl font-semibold text-foreground">
+          <span className="text-lg font-medium text-white">
             BreakFree
           </span>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 sm:py-20">
-        <div className="max-w-2xl w-full text-center space-y-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 -mt-12">
+        <div className="max-w-[460px] w-full text-center">
           {/* Illustration */}
           <div className="flex justify-center mb-8">
-            <div className="relative">
+            <div className="relative w-[160px] h-[220px]">
               <svg 
-                width="200" 
-                height="240" 
-                viewBox="0 0 200 240" 
-                className="drop-shadow-lg"
+                width="160" 
+                height="220" 
+                viewBox="0 0 160 220" 
+                className="w-full h-full"
               >
-                {/* Person with plant growing from head */}
-                {/* Body/Shirt */}
-                <ellipse cx="100" cy="200" rx="60" ry="40" fill="#60a5fa" />
+                {/* Body/Shirt - blue */}
+                <path 
+                  d="M 80 160 Q 50 160 40 180 L 40 220 L 120 220 L 120 180 Q 110 160 80 160 Z" 
+                  fill="#60a5fa" 
+                />
                 
-                {/* Head */}
-                <circle cx="100" cy="140" r="45" fill="#fde68a" />
+                {/* Head - peach/tan */}
+                <circle cx="80" cy="125" r="38" fill="#f5dbb8" />
                 
-                {/* Green hair/plant base */}
-                <ellipse cx="100" cy="115" rx="48" ry="35" fill="#86efac" />
+                {/* Green hair base - large rounded shape */}
+                <ellipse cx="80" cy="100" rx="42" ry="32" fill="#86efac" />
                 
-                {/* Plant stem */}
-                <rect x="98" y="70" width="4" height="45" fill="#22c55e" rx="2" />
+                {/* Plant stem coming from top of head */}
+                <rect x="78" y="55" width="4" height="45" fill="#4ade80" rx="2" />
                 
-                {/* Leaves */}
-                <ellipse cx="85" cy="85" rx="8" ry="12" fill="#4ade80" transform="rotate(-30 85 85)" />
-                <ellipse cx="115" cy="80" rx="8" ry="12" fill="#4ade80" transform="rotate(30 115 80)" />
-                <ellipse cx="90" cy="70" rx="7" ry="10" fill="#86efac" transform="rotate(-20 90 70)" />
-                <ellipse cx="110" cy="68" rx="7" ry="10" fill="#86efac" transform="rotate(20 110 68)" />
+                {/* Leaves on sides */}
+                <ellipse cx="68" cy="72" rx="10" ry="14" fill="#4ade80" transform="rotate(-35 68 72)" />
+                <ellipse cx="92" cy="68" rx="10" ry="14" fill="#4ade80" transform="rotate(35 92 68)" />
+                <ellipse cx="72" cy="58" rx="8" ry="11" fill="#86efac" transform="rotate(-25 72 58)" />
+                <ellipse cx="88" cy="56" rx="8" ry="11" fill="#86efac" transform="rotate(25 88 56)" />
                 
-                {/* Flower on top */}
-                <circle cx="100" cy="55" r="8" fill="#f472b6" />
-                <circle cx="94" cy="50" r="6" fill="#ec4899" />
-                <circle cx="106" cy="50" r="6" fill="#ec4899" />
-                <circle cx="100" cy="45" r="6" fill="#f472b6" />
+                {/* Pink flower on very top */}
+                <circle cx="80" cy="42" r="7" fill="#f472b6" />
+                <circle cx="75" cy="38" r="5.5" fill="#ec4899" />
+                <circle cx="85" cy="38" r="5.5" fill="#ec4899" />
+                <circle cx="80" cy="34" r="5" fill="#f472b6" />
                 
-                {/* Blue butterfly */}
-                <g transform="translate(130, 30)">
-                  <ellipse cx="0" cy="0" rx="8" ry="12" fill="#60a5fa" transform="rotate(-20 0 0)" />
-                  <ellipse cx="8" cy="0" rx="8" ry="12" fill="#60a5fa" transform="rotate(20 8 0)" />
-                  <line x1="4" y1="-2" x2="4" y2="8" stroke="#1e40af" strokeWidth="1.5" />
+                {/* Blue butterfly - top right */}
+                <g transform="translate(115, 22)">
+                  <ellipse cx="-2" cy="0" rx="7" ry="10" fill="#60a5fa" transform="rotate(-25 -2 0)" />
+                  <ellipse cx="6" cy="0" rx="7" ry="10" fill="#60a5fa" transform="rotate(25 6 0)" />
+                  <line x1="2" y1="-3" x2="2" y2="6" stroke="#1e40af" strokeWidth="1.2" />
                 </g>
                 
-                {/* Sparkles */}
-                <g fill="#fbbf24">
-                  <path d="M 40 140 L 42 145 L 47 147 L 42 149 L 40 154 L 38 149 L 33 147 L 38 145 Z" />
-                  <path d="M 160 160 L 162 165 L 167 167 L 162 169 L 160 174 L 158 169 L 153 167 L 158 165 Z" />
+                {/* Left sparkle - yellow/gold star */}
+                <g transform="translate(28, 118)">
+                  <path d="M 0 -6 L 1.5 -2 L 6 -1 L 1.5 0 L 0 4 L -1.5 0 L -6 -1 L -1.5 -2 Z" fill="#fbbf24" />
                 </g>
-                <g fill="#fde68a">
-                  <circle cx="45" cy="180" r="2" opacity="0.8" />
-                  <circle cx="155" cy="185" r="2" opacity="0.8" />
+                
+                {/* Right sparkle */}
+                <g transform="translate(132, 128)">
+                  <path d="M 0 -6 L 1.5 -2 L 6 -1 L 1.5 0 L 0 4 L -1.5 0 L -6 -1 L -1.5 -2 Z" fill="#fbbf24" />
                 </g>
+                
+                {/* Small dots/stars */}
+                <circle cx="34" cy="110" r="1.5" fill="#fde68a" opacity="0.9" />
+                <circle cx="126" cy="120" r="1.5" fill="#fde68a" opacity="0.9" />
               </svg>
             </div>
           </div>
 
           {/* Headline */}
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Break free from childhood trauma
-            </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto">
-              Uncover your trauma score and learn how to move forward with confidence
-            </p>
-          </div>
+          <h1 className="text-[44px] leading-[52px] font-bold text-white mb-4">
+            Break free from childhood trauma
+          </h1>
+          
+          {/* Subheadline */}
+          <p className="text-[17px] leading-[24px] text-white/80 mb-10">
+            Uncover your trauma score and learn how to move forward with confidence
+          </p>
 
           {/* CTA Button */}
-          <div className="pt-4">
-            <Button 
-              onClick={handleStartQuiz}
-              size="lg"
-              className="w-full sm:w-auto px-16 py-6 text-lg font-semibold rounded-full"
-              data-testid="button-start"
-            >
-              Take test
-            </Button>
-          </div>
+          <button 
+            onClick={handleStartQuiz}
+            className="w-full max-w-[460px] h-[52px] bg-[#4ade80] hover:bg-[#3dcc72] text-white text-[17px] font-semibold rounded-full transition-colors"
+            data-testid="button-start"
+          >
+            Take test
+          </button>
         </div>
       </main>
 
       {/* Footer spacing */}
-      <div className="h-12"></div>
+      <div className="h-16"></div>
     </div>
   );
 }

@@ -192,6 +192,18 @@ Preferred communication style: Simple, everyday language.
    - Made TrialTimeline.onContinue optional since skip button removed
    - All benefit pages follow consistent design pattern: illustration, headline, supporting copy, single CTA
 
+13. **Landing Page Creation (October 31, 2025)**:
+   - Created new `LandingPage.tsx` component as the entry point before the quiz
+   - Updated routing: "/" now shows landing page, "/quiz" starts the quiz
+   - Design elements matching reference:
+     - BreakFree bird logo in top left corner with brand name
+     - SVG illustration of person with plant growing from head (green hair, blue shirt, pink flower, butterfly, sparkles)
+     - Headline: "Break free from childhood trauma"
+     - Subheadline: "Uncover your trauma score and learn how to move forward with confidence"
+     - Green CTA button: "Take test" (leads to quiz)
+     - Dark background (#0a0a0a) consistent with app theme
+   - Exact dimensions and styling replicated from reference design
+
 ## Key Design Decisions
 
 **Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, empathy, break, contact, results, checkout). This was chosen to:
