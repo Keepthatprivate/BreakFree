@@ -197,20 +197,12 @@ Preferred communication style: Simple, everyday language.
    - Updated routing: "/" now shows landing page, "/quiz" starts the quiz
    - Design elements:
      - BreakFree bird logo in top left corner with brand name
-     - Custom SVG illustration (200x200px) matching exact reference design:
-       - Side profile of person facing right
-       - Peach/skin-toned face with simple features (nose, ear)
-       - Green plant-like shapes growing from head (rounded organic forms)
-       - Pink/red flowers blooming from the plants (3 main flowers with yellow centers)
-       - Small blue butterfly flying near the top
-       - Blue shirt visible on shoulders
-       - Golden sparkles positioned on left and right sides (cross-shaped stars)
-       - Small twinkling sparkle dots with animation
+     - Simple illustration image (200x200px) from CDN: mental health/mindfulness icon
      - Headline: "Break free from childhood trauma"
      - Subheadline: "Uncover your trauma score and learn how to move forward with confidence"
      - Green CTA button: "Take test" (leads to quiz)
      - Dark background (#0a0a0a) consistent with app theme
-   - Illustration symbolizes growth, renewal, and healing journey with nature emerging from the mind
+   - Clean, minimal design following HTML reference structure provided by user
 
 ## Key Design Decisions
 
