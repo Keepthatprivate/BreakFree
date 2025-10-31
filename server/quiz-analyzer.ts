@@ -24,62 +24,65 @@ export function analyzeQuizAnswers(answers: QuizAnswers): AnalysisResult {
 
   // Weight different question types
   Object.entries(answers).forEach(([questionId, values]) => {
-    const answer = values[0]; // Get first answer
-
-    // Analyze childhood experiences (q2-q5)
-    if (questionId === 'q2') {
-      if (answer === 'yes') patterns.emotional += 20;
-      if (answer === 'sometimes') patterns.emotional += 10;
-    }
-
-    if (questionId === 'q3') {
-      const score = parseInt(answer) || 50;
-      if (score > 70) patterns.abandonment += 25;
-      else if (score > 40) patterns.abandonment += 15;
-    }
-
-    if (questionId === 'q4') {
-      if (answer === 'running-away') patterns.abandonment += 20;
-      if (answer === 'crying-alone') patterns.emotional += 20;
-      if (answer === 'hiding') patterns.trust += 15;
-    }
-
-    // Analyze current patterns (q6-q9)
-    if (questionId === 'q6') {
-      if (answer?.includes('overwhelmed')) patterns.emotional += 15;
-      if (answer?.includes('stuck')) patterns.control += 15;
-      if (answer?.includes('disconnected')) patterns.abandonment += 15;
-    }
-
-    if (questionId === 'q7') {
-      const score = parseInt(answer) || 50;
-      if (score > 70) patterns.control += 20;
-      else if (score > 40) patterns.control += 10;
-    }
-
-    if (questionId === 'q8') {
-      if (answer === 'scared') patterns.trust += 20;
-      if (answer === 'relieved') patterns.abandonment += 15;
-      if (answer === 'anxious') patterns.emotional += 20;
-    }
-
-    if (questionId === 'q9') {
-      if (answer === 'waves') patterns.emotional += 15;
-      if (answer === 'chaos') patterns.control += 15;
-    }
-
-    // Healing readiness (q11-q13)
-    if (questionId === 'q11') {
-      if (answer === 'very-much') patterns.emotional += 10;
-      if (answer === 'somewhat') patterns.emotional += 5;
-    }
-
-    if (questionId === 'q13') {
-      if (answer === 'ready-now') {
-        patterns.emotional += 10;
-        patterns.control += 10;
+    // Iterate through all selected values (handles multi-select questions)
+    values.forEach(answer => {
+      // Analyze childhood experiences (q2-q5)
+      if (questionId === 'q2') {
+        if (answer === 'yes') patterns.emotional += 20;
+        if (answer === 'sometimes') patterns.emotional += 10;
       }
-    }
+
+      if (questionId === 'q3') {
+        const score = parseInt(answer) || 50;
+        if (score > 70) patterns.abandonment += 25;
+        else if (score > 40) patterns.abandonment += 15;
+      }
+
+      if (questionId === 'q4') {
+        if (answer === 'running-away') patterns.abandonment += 20;
+        if (answer === 'crying-alone') patterns.emotional += 20;
+        if (answer === 'hiding') patterns.trust += 15;
+      }
+
+      // Analyze current patterns (q6-q9) - q6 is multi-select
+      if (questionId === 'q6') {
+        if (answer?.includes('overwhelmed')) patterns.emotional += 15;
+        if (answer?.includes('stuck')) patterns.control += 15;
+        if (answer?.includes('disconnected')) patterns.abandonment += 15;
+        if (answer?.includes('numb')) patterns.trust += 12;
+      }
+
+      if (questionId === 'q7') {
+        const score = parseInt(answer) || 50;
+        if (score > 70) patterns.control += 20;
+        else if (score > 40) patterns.control += 10;
+      }
+
+      if (questionId === 'q8') {
+        if (answer === 'scared') patterns.trust += 20;
+        if (answer === 'relieved') patterns.abandonment += 15;
+        if (answer === 'anxious') patterns.emotional += 20;
+      }
+
+      if (questionId === 'q9') {
+        if (answer === 'waves') patterns.emotional += 15;
+        if (answer === 'chaos') patterns.control += 15;
+        if (answer === 'tree') patterns.trust += 10;
+      }
+
+      // Healing readiness (q11-q13)
+      if (questionId === 'q11') {
+        if (answer === 'very-much') patterns.emotional += 10;
+        if (answer === 'somewhat') patterns.emotional += 5;
+      }
+
+      if (questionId === 'q13') {
+        if (answer === 'ready-now') {
+          patterns.emotional += 10;
+          patterns.control += 10;
+        }
+      }
+    });
   });
 
   // Calculate total trauma awareness score

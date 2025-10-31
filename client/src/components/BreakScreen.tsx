@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
 import type { BreakScreen } from '@shared/quiz-data';
-import { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import jamesProfileImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761863003013.jpg';
 
@@ -11,15 +10,6 @@ interface BreakScreenProps {
 }
 
 export default function BreakScreenComponent({ breakScreen, onContinue }: BreakScreenProps) {
-  const [showContinue, setShowContinue] = useState(false);
-
-  useEffect(() => {
-    // Show continue button after 2 seconds delay for breathing room
-    const timer = setTimeout(() => {
-      setShowContinue(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [breakScreen.id]);
 
   // Data Break
   if (breakScreen.type === 'data-break') {
@@ -37,18 +27,16 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
             </p>
           </div>
           
-          {showContinue && (
-            <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <Button
-                onClick={onContinue}
-                size="lg"
-                className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
-                data-testid="button-continue"
-              >
-                Continue
-              </Button>
-            </div>
-          )}
+          <div className="text-center">
+            <Button
+              onClick={onContinue}
+              size="lg"
+              className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
+              data-testid="button-continue"
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -70,18 +58,16 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
             </p>
           </div>
           
-          {showContinue && (
-            <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <Button
-                onClick={onContinue}
-                size="lg"
-                className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
-                data-testid="button-continue"
-              >
-                Continue
-              </Button>
-            </div>
-          )}
+          <div className="text-center">
+            <Button
+              onClick={onContinue}
+              size="lg"
+              className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
+              data-testid="button-continue"
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -114,18 +100,16 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
             <p className="text-base text-muted-foreground">— {breakScreen.author}</p>
           </div>
           
-          {showContinue && (
-            <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <Button
-                onClick={onContinue}
-                size="lg"
-                className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
-                data-testid="button-continue"
-              >
-                Continue
-              </Button>
-            </div>
-          )}
+          <div className="text-center">
+            <Button
+              onClick={onContinue}
+              size="lg"
+              className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
+              data-testid="button-continue"
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -145,18 +129,16 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
           </div>
         </div>
         
-        {showContinue && (
-          <div className="text-center mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <Button
-              onClick={onContinue}
-              size="lg"
-              className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
-              data-testid="button-continue"
-            >
-              Continue
-            </Button>
-          </div>
-        )}
+        <div className="text-center mt-8">
+          <Button
+            onClick={onContinue}
+            size="lg"
+            className="h-14 px-12 text-lg rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold"
+            data-testid="button-continue"
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     );
   }

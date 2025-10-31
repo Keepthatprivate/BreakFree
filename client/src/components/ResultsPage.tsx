@@ -31,24 +31,31 @@ export default function ResultsPage({ userName, answers, onContinue }: ResultsPa
     };
 
     Object.entries(answers).forEach(([questionId, values]) => {
-      const answer = values[0];
-
-      if (questionId === 'q2' && answer === 'yes') patterns.emotional += 1;
-      if (questionId === 'q4') {
-        if (answer === 'running-away') patterns.abandonment += 1;
-        if (answer === 'crying-alone') patterns.emotional += 1;
-        if (answer === 'hiding') patterns.trust += 1;
-      }
-      if (questionId === 'q6') {
-        if (answer?.includes('overwhelmed')) patterns.emotional += 1;
-        if (answer?.includes('stuck')) patterns.control += 1;
-        if (answer?.includes('disconnected')) patterns.abandonment += 1;
-      }
-      if (questionId === 'q8') {
-        if (answer === 'scared') patterns.trust += 1;
-        if (answer === 'relieved') patterns.abandonment += 1;
-        if (answer === 'anxious') patterns.emotional += 1;
-      }
+      // Iterate through all selected values (handles multi-select questions)
+      values.forEach(answer => {
+        if (questionId === 'q2' && answer === 'yes') patterns.emotional += 1;
+        if (questionId === 'q4') {
+          if (answer === 'running-away') patterns.abandonment += 1;
+          if (answer === 'crying-alone') patterns.emotional += 1;
+          if (answer === 'hiding') patterns.trust += 1;
+        }
+        if (questionId === 'q6') {
+          if (answer?.includes('overwhelmed')) patterns.emotional += 1;
+          if (answer?.includes('stuck')) patterns.control += 1;
+          if (answer?.includes('disconnected')) patterns.abandonment += 1;
+          if (answer?.includes('numb')) patterns.trust += 1;
+        }
+        if (questionId === 'q8') {
+          if (answer === 'scared') patterns.trust += 1;
+          if (answer === 'relieved') patterns.abandonment += 1;
+          if (answer === 'anxious') patterns.emotional += 1;
+        }
+        if (questionId === 'q9') {
+          if (answer === 'waves') patterns.emotional += 1;
+          if (answer === 'chaos') patterns.control += 1;
+          if (answer === 'tree') patterns.trust += 1;
+        }
+      });
     });
 
     const primary = Object.entries(patterns).reduce((a, b) => 

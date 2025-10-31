@@ -95,12 +95,42 @@ Preferred communication style: Simple, everyday language.
 - TypeScript with strict mode enabled
 - Path aliases configured (@/, @shared/, @assets/)
 
+## Recent Changes (October 31, 2025)
+
+1. **Chapter Indicators**: Removed dedicated chapter transition pages while maintaining chapter indicators visible on all quiz screens (shows current chapter: Your Past, Your Patterns, Your Healing, Your Future)
+
+2. **Visual Pattern Component**: Created `VisualPattern.tsx` with animated SVG patterns (waves, tree) using floating CSS animations for visual-test questions
+
+3. **Email Results Integration**: 
+   - Set up Resend connector for sending personalized quiz results via email
+   - Created `resend-client.ts` with Replit connector authentication
+   - Built `email-templates.ts` with HTML email templates
+   - Added `/api/send-results-email` endpoint for post-purchase result delivery
+
+4. **Dynamic Results Generation**:
+   - Created `quiz-analyzer.ts` to analyze quiz answers and detect trauma patterns
+   - Results page now displays personalized content based on user's primary pattern (abandonment, control, emotional, trust)
+   - Added `/api/analyze-quiz` endpoint for real-time result calculation
+   - "Before" and "After" states adapt to detected pattern
+
+5. **Mobile Optimization**:
+   - Reduced padding/spacing on mobile viewports (py-4 sm:py-6 instead of py-8 sm:py-12)
+   - Smaller font sizes on mobile (text-xl sm:text-2xl instead of text-3xl sm:text-4xl)
+   - Compact card layouts (p-5 sm:p-8)
+   - Adjusted minimum heights for mobile screens
+
+6. **Instant Button Display**:
+   - Removed all button animation delays across the application
+   - Eliminated 2-second setTimeout delay in BreakScreen component
+   - Buttons now appear instantly on all pages (welcome, quiz, break screens, results, etc.)
+
 ## Key Design Decisions
 
-**Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, chapter-transition, empathy, break, contact, donation, results). This was chosen to:
+**Question Flow Architecture**: The quiz uses a linear state machine with multiple states (quiz, empathy, break, contact, results, checkout). This was chosen to:
 - Create natural breathing room between sections
 - Build psychological safety through predictable patterns
 - Allow for dynamic content injection (empathy messages, data breaks) at specific trigger points
+- Chapter transition pages removed but chapter indicators remain visible
 
 **Client-Side Persistence**: Answers stored in localStorage rather than server-side to:
 - Allow instant resume functionality without authentication
