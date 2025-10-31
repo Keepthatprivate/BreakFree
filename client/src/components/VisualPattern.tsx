@@ -4,6 +4,73 @@ interface VisualPatternProps {
 }
 
 export default function VisualPattern({ pattern, className = "" }: VisualPatternProps) {
+  if (pattern === 'lines') {
+    return (
+      <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 ${className}`}>
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+            </linearGradient>
+          </defs>
+          
+          {/* Multiple diagonal and horizontal lines with varied angles */}
+          {[...Array(12)].map((_, i) => {
+            const yPos = 40 + i * 30;
+            const angle = (i % 3) * 15 - 15; // Varies between -15, 0, 15 degrees
+            return (
+              <g key={i}>
+                <line
+                  x1="0"
+                  y1={yPos}
+                  x2="1200"
+                  y2={yPos + (angle * 10)}
+                  stroke="url(#line-gradient)"
+                  strokeWidth={2 + (i % 4)}
+                  opacity={0.4 + (i % 3) * 0.1}
+                >
+                  <animate
+                    attributeName="opacity"
+                    values={`${0.3 + (i % 3) * 0.1};${0.6 + (i % 3) * 0.1};${0.3 + (i % 3) * 0.1}`}
+                    dur={`${4 + (i % 3) * 2}s`}
+                    repeatCount="indefinite"
+                  />
+                </line>
+              </g>
+            );
+          })}
+          
+          {/* Floating particles along the lines */}
+          {[...Array(8)].map((_, i) => (
+            <circle
+              key={i}
+              cx={100 + i * 130}
+              cy={100 + (i % 4) * 60}
+              r="4"
+              fill="hsl(var(--primary))"
+              opacity="0.6"
+            >
+              <animate
+                attributeName="cx"
+                values={`${100 + i * 130};${150 + i * 130};${100 + i * 130}`}
+                dur={`${5 + i * 0.5}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0.6;0.2;0.6"
+                dur={`${5 + i * 0.5}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          ))}
+        </svg>
+      </div>
+    );
+  }
+
   if (pattern === 'waves') {
     return (
       <div className={`relative w-full h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-teal-500/20 ${className}`}>

@@ -227,9 +227,9 @@ export const questions: Question[] = [
     type: 'visual-test',
     text: 'Look at this pattern. What do you see first?',
     imageDescription: '👁️ Abstract flowing pattern',
-    visualPattern: 'waves',
+    visualPattern: 'lines',
     options: [
-      { value: 'waves', label: 'Gentle waves flowing', interpretation: 'You seek peace and natural rhythm in healing' },
+      { value: 'parallel', label: 'Parallel lines moving together', interpretation: 'You seek harmony and alignment in healing' },
       { value: 'barriers', label: 'Walls or barriers', interpretation: 'You may still feel protected or guarded' },
       { value: 'paths', label: 'Paths leading forward', interpretation: 'You\'re ready to move toward growth' },
       { value: 'chaos', label: 'Unclear, chaotic shapes', interpretation: 'You may feel overwhelmed by the journey ahead' },
@@ -249,15 +249,13 @@ export const questions: Question[] = [
   {
     id: 'q12',
     chapter: 'future',
-    type: 'visual-test',
+    type: 'radio',
     text: 'Imagine a tree. What does it look like?',
-    imageDescription: '🌳 A tree in your mind',
-    visualPattern: 'tree',
     options: [
-      { value: 'full-bloom', label: 'Full of leaves, blooming', interpretation: 'You envision abundant growth and vitality' },
-      { value: 'growing', label: 'Young, still growing', interpretation: 'You see yourself in the early stages of transformation' },
-      { value: 'weathered', label: 'Strong but weathered', interpretation: 'You value resilience through hardship' },
-      { value: 'bare', label: 'Bare branches, resting', interpretation: 'You may be in a season of reflection and recovery' },
+      { value: 'full-bloom', label: 'Full of leaves, blooming' },
+      { value: 'growing', label: 'Young, still growing' },
+      { value: 'weathered', label: 'Strong but weathered' },
+      { value: 'bare', label: 'Bare branches, resting' },
     ],
   },
   {

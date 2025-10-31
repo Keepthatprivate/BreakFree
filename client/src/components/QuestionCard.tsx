@@ -5,7 +5,7 @@ import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
 import VisualPattern from './VisualPattern';
-import footstepsAudio from '@assets/footsteps_1761858527619.mp3';
+import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
 interface QuestionCardProps {
