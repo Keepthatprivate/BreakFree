@@ -9,54 +9,55 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      {/* Header with Logo */}
-      <header className="p-6">
-        <div className="flex items-center gap-3">
-          <img 
-            src={logoImage} 
-            alt="BreakFree Logo" 
-            className="w-9 h-9 rounded-lg"
-          />
-          <span className="text-lg font-medium text-white">
-            BreakFree
-          </span>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#0d0d16] flex flex-col items-center justify-center text-center p-8">
+      {/* Logo - absolute positioned top-left */}
+      <div className="absolute top-6 left-6 flex items-center gap-2 font-medium text-base text-white opacity-90">
+        <img 
+          src={logoImage} 
+          alt="BreakFree Logo" 
+          className="w-[26px] h-[26px]"
+        />
+        <span>BreakFree</span>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 -mt-12">
-        <div className="max-w-[460px] w-full text-center">
-          {/* Illustration */}
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
-            alt="Illustration"
-            className="w-[200px] h-[200px] mx-auto mb-8"
-          />
+      {/* Main Content Container */}
+      <div className="max-w-[600px] flex flex-col items-center gap-5">
+        {/* Illustration */}
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
+          alt="Illustration"
+          className="w-40 h-auto mb-4"
+          style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.05))' }}
+        />
 
-          {/* Headline */}
-          <h1 className="text-[44px] leading-[52px] font-bold text-white mb-4">
-            Break free from childhood trauma
-          </h1>
-          
-          {/* Subheadline */}
-          <p className="text-[17px] leading-[24px] text-white/80 mb-10">
-            Uncover your trauma score and learn how to move forward with confidence
-          </p>
+        {/* Headline */}
+        <h1 className="text-[1.9rem] leading-[1.3] font-semibold text-white">
+          Break free from childhood trauma
+        </h1>
+        
+        {/* Subheadline */}
+        <p className="text-base text-[#b5b5b5] font-normal leading-[1.6] max-w-[420px]">
+          Uncover your trauma score and learn how to move forward with confidence
+        </p>
 
-          {/* CTA Button */}
-          <button 
-            onClick={handleStartQuiz}
-            className="w-full max-w-[460px] h-[52px] bg-[#4ade80] hover:bg-[#3dcc72] text-white text-[17px] font-semibold rounded-full transition-colors"
-            data-testid="button-start"
-          >
-            Take test
-          </button>
-        </div>
-      </main>
-
-      {/* Footer spacing */}
-      <div className="h-16"></div>
+        {/* CTA Button */}
+        <button 
+          onClick={handleStartQuiz}
+          className="bg-[#54d3bb] text-white border-none rounded-full px-[42px] py-[14px] text-[1.05rem] font-semibold cursor-pointer mt-4 transition-all duration-[250ms] ease-in-out hover:translate-y-[-2px] hover:scale-[1.03] hover:bg-[#6ee7b7]"
+          style={{ 
+            boxShadow: '0 4px 16px rgba(84, 211, 187, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(110, 231, 183, 0.35)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(84, 211, 187, 0.3)';
+          }}
+          data-testid="button-start"
+        >
+          Take test
+        </button>
+      </div>
     </div>
   );
 }
