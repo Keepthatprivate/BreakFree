@@ -7,7 +7,6 @@ import ContactForm from '@/components/ContactForm';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import BreakScreenComponent from '@/components/BreakScreen';
-import ChapterTransition from '@/components/ChapterTransition';
 import TraumaPatterns from '@/components/TraumaPatterns';
 import BenefitsPage from '@/components/BenefitsPage';
 import TestimonialsPage from '@/components/TestimonialsPage';
@@ -16,7 +15,7 @@ import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'chapter-transition' | 'empathy' | 'break' | 'contact' | 'donation' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'results' | 'patterns' | 'benefits' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -31,10 +30,10 @@ export default function Quiz() {
   });
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [state, setState] = useState<QuizState>('chapter-transition');
+  const [state, setState] = useState<QuizState>('quiz');
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
-  const [previousChapter, setPreviousChapter] = useState<string>('');
+  const [hasPaid, setHasPaid] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -71,18 +70,9 @@ export default function Quiz() {
     return breakMap[currentQuestionIndex];
   };
 
-  const isChapterTransition = () => {
-    // Check if we're moving to a new chapter
-    const nextQuestion = questions[currentQuestionIndex];
-    if (!nextQuestion) return false;
-    
-    const isNewChapter = previousChapter && previousChapter !== nextQuestion.chapter;
-    return isNewChapter;
-  };
-
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      // Priority order: break screens -> empathy messages -> chapter transitions -> regular advance
+      // Priority order: break screens -> empathy messages -> regular advance
       
       // 1. Check for break screens first (highest priority)
       if (showBreakScreen()) {
@@ -95,19 +85,11 @@ export default function Quiz() {
         setState('empathy');
         setEmpathyMessageIndex(Math.floor(Math.random() * empathyMessages.length));
       }
-      // 3. Check for chapter transitions
+      // 3. Regular advance
       else {
-        const nextIndex = currentQuestionIndex + 1;
-        const nextQuestion = questions[nextIndex];
-        
-        if (previousChapter && previousChapter !== nextQuestion.chapter) {
-          setCurrentQuestionIndex(nextIndex);
-          setState('chapter-transition');
-        } else {
-          setTimeout(() => {
-            setCurrentQuestionIndex(nextIndex);
-          }, 300);
-        }
+        setTimeout(() => {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        }, 300);
       }
     } else {
       setState('contact');
@@ -123,63 +105,52 @@ export default function Quiz() {
   };
 
   const handleEmpathyContinue = () => {
-    // After empathy message, check if we need to show a chapter transition before the next question
-    const nextIndex = currentQuestionIndex + 1;
-    const nextQuestion = questions[nextIndex];
-    
-    if (nextQuestion && previousChapter && previousChapter !== nextQuestion.chapter) {
-      // Moving to a new chapter - show transition first
-      setCurrentQuestionIndex(nextIndex);
-      setState('chapter-transition');
-    } else {
-      // Same chapter - continue to next question
-      setState('quiz');
-      setTimeout(() => {
-        setCurrentQuestionIndex(nextIndex);
-      }, 300);
-    }
+    setState('quiz');
+    setTimeout(() => {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }, 300);
   };
 
   const handleBreakContinue = () => {
-    // After a break, check if we need to show a chapter transition before the next question
-    const nextIndex = currentQuestionIndex + 1;
-    const nextQuestion = questions[nextIndex];
-    
-    if (nextQuestion && previousChapter && previousChapter !== nextQuestion.chapter) {
-      // Moving to a new chapter - show transition first
-      setCurrentQuestionIndex(nextIndex);
-      setState('chapter-transition');
-    } else {
-      // Same chapter - continue to next question
-      setState('quiz');
-      setTimeout(() => {
-        setCurrentQuestionIndex(nextIndex);
-      }, 300);
-    }
-  };
-
-  const handleChapterTransitionContinue = () => {
-    setPreviousChapter(currentQuestion.chapter);
     setState('quiz');
+    setTimeout(() => {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }, 300);
   };
-
-  // Track chapter changes
-  useEffect(() => {
-    if (currentQuestion && !previousChapter && state === 'chapter-transition') {
-      // First chapter - just set it and move to quiz
-      setPreviousChapter(currentQuestion.chapter);
-    }
-  }, [currentQuestion, previousChapter, state]);
 
   const handleContactSubmit = (data: { name: string; email: string }) => {
     setUserName(data.name);
     setUserEmail(data.email);
     localStorage.setItem('userName', data.name);
     localStorage.setItem('userEmail', data.email);
+    // Go directly to payment/checkout before showing results
+    setState('payment');
+  };
+
+  const handlePaymentComplete = () => {
+    setHasPaid(true);
+    localStorage.setItem('hasPaid', 'true');
+    // After payment, show contribution page
     setState('donation');
   };
 
+  const handlePaymentSkip = () => {
+    // If user skips payment, redirect to signup
+    setLocation('/signup');
+  };
+
   const handleDonationContinue = () => {
+    // After contribution, show trial timeline
+    setState('timeline');
+  };
+
+  const handleTimelineContinue = () => {
+    // After timeline, show guides/benefits
+    setState('benefits');
+  };
+
+  const handleBenefitsContinue = () => {
+    // After benefits, show actual results
     setState('results');
   };
 
@@ -188,66 +159,83 @@ export default function Quiz() {
   };
 
   const handlePatternsContinue = () => {
-    setState('benefits');
-  };
-
-  const handleBenefitsContinue = () => {
     setState('testimonials');
   };
 
   const handleTestimonialsContinue = () => {
-    setState('timeline');
-  };
-
-  const handleTimelineContinue = () => {
     setState('faq');
   };
 
   const handleFAQContinue = () => {
-    setState('upsell');
+    // Redirect to signup after FAQ
+    setLocation('/signup');
   };
 
-  const handleUpsellAccept = () => {
-    console.log('User accepted upsell offer!');
-    // Could redirect to payment page for the guides
-    console.log('Quiz funnel completed with upsell!');
-  };
-
-  const handleUpsellSkip = () => {
-    console.log('User skipped upsell offer');
-    console.log('Quiz funnel completed!');
-  };
+  if (state === 'payment') {
+    return <UpsellPage onAccept={handlePaymentComplete} onSkip={handlePaymentSkip} />;
+  }
 
   if (state === 'donation') {
-    return <DonationPage userName={userName} onContinue={handleDonationContinue} />;
-  }
-
-  if (state === 'results') {
-    return <ResultsPage userName={userName} onContinue={handleResultsContinue} />;
-  }
-
-  if (state === 'patterns') {
-    return <TraumaPatterns onContinue={handlePatternsContinue} />;
-  }
-
-  if (state === 'benefits') {
-    return <BenefitsPage onContinue={handleBenefitsContinue} />;
-  }
-
-  if (state === 'testimonials') {
-    return <TestimonialsPage onContinue={handleTestimonialsContinue} />;
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <DonationPage userName={userName} onContinue={handleDonationContinue} />
+      </>
+    );
   }
 
   if (state === 'timeline') {
-    return <TrialTimeline onContinue={handleTimelineContinue} />;
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <TrialTimeline onContinue={handleTimelineContinue} />
+      </>
+    );
+  }
+
+  if (state === 'benefits') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <BenefitsPage onContinue={handleBenefitsContinue} />
+      </>
+    );
+  }
+
+  if (state === 'results') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <ResultsPage userName={userName} onContinue={handleResultsContinue} answers={answers} />
+      </>
+    );
+  }
+
+  if (state === 'patterns') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <TraumaPatterns onContinue={handlePatternsContinue} />
+      </>
+    );
+  }
+
+  if (state === 'testimonials') {
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <TestimonialsPage onContinue={handleTestimonialsContinue} />
+      </>
+    );
   }
 
   if (state === 'faq') {
-    return <FAQPage onContinue={handleFAQContinue} />;
-  }
-
-  if (state === 'upsell') {
-    return <UpsellPage onAccept={handleUpsellAccept} onSkip={handleUpsellSkip} />;
+    return (
+      <>
+        <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
+        <FAQPage onContinue={handleFAQContinue} />
+      </>
+    );
   }
 
   return (
@@ -298,13 +286,6 @@ export default function Quiz() {
             onContinue={handleBreakContinue}
           />
         </>
-      )}
-
-      {state === 'chapter-transition' && currentChapter && (
-        <ChapterTransition
-          chapter={currentChapter}
-          onContinue={handleChapterTransitionContinue}
-        />
       )}
 
       {state === 'contact' && (
