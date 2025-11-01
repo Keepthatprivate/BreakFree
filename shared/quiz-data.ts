@@ -139,6 +139,7 @@ export const questions: Question[] = [
       { value: 'peaceful', emoji: '😌', label: 'Peaceful' },
       { value: 'anxious', emoji: '😰', label: 'Anxious' },
       { value: 'sad', emoji: '😢', label: 'Sad' },
+      { value: 'confused', emoji: '😕', label: 'Confused' },
     ],
   },
   {
