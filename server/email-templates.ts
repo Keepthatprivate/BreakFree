@@ -5,6 +5,13 @@ interface QuizResults {
   recommendations: string[];
 }
 
+interface PurchaseConfirmation {
+  userName: string;
+  productName: string;
+  productLink: string;
+  amount: string;
+}
+
 export function generateResultsEmail(results: QuizResults): string {
   return `
 <!DOCTYPE html>
@@ -193,6 +200,163 @@ export function generateResultsEmail(results: QuizResults): string {
       <p>Helping you understand, heal, and grow</p>
       <p style="margin-top: 15px; font-size: 12px;">
         This email contains your personal quiz results. If you have any questions, please reply to this email.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+export function generatePurchaseConfirmationEmail(purchase: PurchaseConfirmation): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You for Your Purchase</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #54d3bb 0%, #3da899 100%);
+      padding: 40px 30px;
+      text-align: center;
+      color: white;
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 16px;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+    .product-box {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 30px 0;
+      border-left: 4px solid #54d3bb;
+    }
+    .product-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+    .product-amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: #54d3bb;
+      margin-bottom: 16px;
+    }
+    .cta {
+      text-align: center;
+      margin: 40px 0 20px 0;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #54d3bb 0%, #3da899 100%);
+      color: white;
+      padding: 16px 40px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 30px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .checkmark {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #54d3bb 0%, #3da899 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      font-size: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="checkmark">✓</div>
+      <h1>Thank You for Your Purchase!</h1>
+      <p>Your payment has been successfully processed</p>
+    </div>
+    
+    <div class="content">
+      <p class="greeting">Hello ${purchase.userName},</p>
+      
+      <p>Thank you for investing in your healing journey. We're honored to support you every step of the way.</p>
+      
+      <div class="product-box">
+        <div class="product-name">${purchase.productName}</div>
+        <div class="product-amount">${purchase.amount}</div>
+        <p style="margin: 0; font-size: 14px; color: #666;">
+          Your purchase is confirmed and ready to access.
+        </p>
+      </div>
+      
+      <p style="margin-top: 30px; font-size: 15px; line-height: 1.7;">
+        You can now access your purchase using the button below. We've prepared everything you need to continue your transformation journey.
+      </p>
+      
+      <div class="cta">
+        <a href="${purchase.productLink}" class="cta-button">
+          Access Your Purchase
+        </a>
+      </div>
+      
+      <p style="margin-top: 40px; font-size: 14px; color: #666; line-height: 1.7;">
+        <strong>What's next?</strong><br>
+        Your healing journey continues. Remember that transformation takes time, patience, and consistent practice. We're here to support you every step of the way.
+      </p>
+    </div>
+    
+    <div class="footer">
+      <p><strong>BreakFree App</strong></p>
+      <p>Helping you understand, heal, and grow</p>
+      <p style="margin-top: 15px; font-size: 12px;">
+        If you have any questions about your purchase, please reply to this email.
       </p>
     </div>
   </div>
