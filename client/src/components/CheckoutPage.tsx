@@ -91,10 +91,11 @@ interface CheckoutPageProps {
   productType: 'upsell' | 'donation' | 'trial';
   productName: string;
   email: string;
+  name?: string;
   onComplete: () => void;
 }
 
-export default function CheckoutPage({ amount, productType, productName, email, onComplete }: CheckoutPageProps) {
+export default function CheckoutPage({ amount, productType, productName, email, name, onComplete }: CheckoutPageProps) {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,8 +130,10 @@ export default function CheckoutPage({ amount, productType, productName, email, 
       : '/api/create-payment-intent';
 
     const payload = productType === 'donation' 
-      ? { amount: amount / 100, email }
-      : { email };
+      ? { amount: amount / 100, email, name }
+      : productType === 'trial'
+      ? { email, name }
+      : { email, name };
 
     apiRequest("POST", endpoint, payload)
       .then((res) => res.json())

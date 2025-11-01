@@ -156,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe webhook endpoint for payment events
-  app.post("/api/webhook/stripe", async (req: Request & { rawBody?: Buffer }, res) => {
+  app.post("/api/webhook/stripe", async (req: any, res) => {
     const sig = req.headers['stripe-signature'];
 
     if (!sig) {

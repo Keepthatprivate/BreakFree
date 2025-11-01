@@ -235,6 +235,7 @@ export default function Quiz() {
         productType={checkoutType}
         productName={checkoutProductName}
         email={userEmail}
+        name={userName}
         onComplete={handleCheckoutComplete}
       />
     );
