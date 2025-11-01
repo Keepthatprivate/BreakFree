@@ -143,12 +143,12 @@ export default function Quiz() {
   };
 
   const handlePaymentSkip = () => {
-    // If user skips upsell guides, go to trial
-    handleStartTrial();
+    // If user skips upsell guides, go to results
+    setState('results');
   };
 
   const handleTimelineContinue = () => {
-    // After timeline (membership), show upsell page for guides
+    // User skipped trial/membership, go to guide upsell page
     setState('payment');
   };
 
@@ -170,15 +170,15 @@ export default function Quiz() {
     setHasPaid(true);
     localStorage.setItem('hasPaid', 'true');
     
-    // Determine next step based on checkout type
-    if (checkoutType === 'upsell') {
-      // After buying guides, go to trial timeline
-      setState('timeline');
-    } else if (checkoutType === 'donation') {
-      // After donation, go to timeline (membership page)
+    // Determine next step based on checkout type (Donation → Membership → Guide → Results)
+    if (checkoutType === 'donation') {
+      // After donation checkout, go to membership/timeline page
       setState('timeline');
     } else if (checkoutType === 'trial') {
-      // After trial payment, show results
+      // After trial/membership checkout, go to guide upsell page
+      setState('payment');
+    } else if (checkoutType === 'upsell') {
+      // After buying guides, go to results
       setState('results');
     }
   };
