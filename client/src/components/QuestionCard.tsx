@@ -564,43 +564,49 @@ export default function QuestionCard({
   // Visual Test Question
   if (question.type === 'visual-test') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4">
+          <div className="mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight mb-3">
               {question.text}
             </h2>
 
-            {/* Render the actual visual pattern */}
-            <VisualPattern pattern={question.visualPattern} className="mb-4" />
+            {/* Display the geometric pattern image */}
+            <div className="w-full max-w-md mx-auto mb-3">
+              <img 
+                src="/attached_assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955132756.jpg"
+                alt="Geometric pattern"
+                className="w-full h-32 sm:h-40 object-cover rounded-xl"
+              />
+            </div>
             
-            <p className="text-center text-muted-foreground text-sm">
+            <p className="text-center text-muted-foreground text-xs sm:text-sm">
               What do you see first?
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
                 <button
                   key={option.value}
                   onClick={() => handleOptionClick(option.value)}
-                  className={`flex flex-col gap-2 p-4 rounded-2xl transition-all duration-200 border-2 ${
+                  className={`flex flex-col gap-1.5 p-3 rounded-2xl transition-all duration-200 border-2 ${
                     isSelected
                       ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
                       : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                   }`}
                   data-testid={`option-${option.value}`}
                 >
-                  <span className={`text-sm sm:text-base font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
+                  <span className={`text-xs sm:text-sm font-semibold ${isSelected ? 'text-foreground' : 'text-foreground/90'}`}>
                     {option.label}
                   </span>
                   {isSelected && option.interpretation && (
-                    <p className="text-xs text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-[10px] sm:text-xs text-primary/80 italic leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
                       {option.interpretation}
                     </p>
                   )}
@@ -609,11 +615,11 @@ export default function QuestionCard({
             })}
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <Button
               onClick={handleNext}
               disabled={selectedValues.length === 0}
-              className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+              className="w-full h-10 sm:h-11 text-sm sm:text-base rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
               data-testid="button-next"
             >
               {isLastQuestion ? 'Complete Quiz' : 'Continue'}
