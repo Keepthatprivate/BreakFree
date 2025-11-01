@@ -173,11 +173,11 @@ export default function QuestionCard({
     return (
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
@@ -229,31 +229,31 @@ export default function QuestionCard({
     return (
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
 
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
             {question.emojis.map((emoji) => {
               const isSelected = selectedValues.includes(emoji.value);
               return (
                 <button
                   key={emoji.value}
                   onClick={() => handleOptionClick(emoji.value)}
-                  className={`flex flex-col items-center gap-3 p-6 rounded-2xl transition-all duration-200 border-2 ${
+                  className={`flex flex-col items-center gap-2 sm:gap-3 p-4 sm:p-6 rounded-2xl transition-all duration-200 border-2 ${
                     isSelected
                       ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
                       : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                   }`}
                   data-testid={`option-${emoji.value}`}
                 >
-                  <span className="text-5xl">{emoji.emoji}</span>
-                  <span className={`text-sm font-medium ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                  <span className="text-4xl sm:text-5xl">{emoji.emoji}</span>
+                  <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
                     {emoji.label}
                   </span>
                 </button>
@@ -290,11 +290,11 @@ export default function QuestionCard({
     return (
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
@@ -354,15 +354,15 @@ export default function QuestionCard({
     return (
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="flex-1 flex flex-col justify-center mb-8">
-            <div className="text-center mb-12">
-              <h2 className="text-xl sm:text-2xl font-normal text-foreground mb-6">
+          <div className="flex-1 flex flex-col justify-center mb-6 sm:mb-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-normal text-foreground mb-4 sm:mb-6">
                 Do you relate to this quote?
               </h2>
-              <p className="text-2xl sm:text-3xl font-medium text-primary leading-relaxed italic">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-medium text-primary leading-relaxed italic px-2">
                 "{question.quote}"
               </p>
             </div>
@@ -495,11 +495,11 @@ export default function QuestionCard({
     return (
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-6">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-4 sm:mb-6">
               {question.text}
             </h2>
             
@@ -644,44 +644,44 @@ export default function QuestionCard({
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div
-        className="bg-card rounded-3xl p-6 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+        className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
         data-testid="question-card"
       >
-        <div className="mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
             {'text' in question ? question.text : ''}
           </h2>
         </div>
 
-        <div className="flex-1 flex flex-col gap-3 mb-8">
+        <div className="flex-1 flex flex-col gap-2.5 sm:gap-3 mb-6 sm:mb-8">
           {'options' in question && question.options.map((option: { value: string; label: string }) => {
             const isSelected = selectedValues.includes(option.value);
             return (
               <button
                 key={option.value}
                 onClick={() => handleOptionClick(option.value)}
-                className={`w-full p-5 rounded-2xl text-left transition-all duration-200 border-2 ${
+                className={`w-full p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 border-2 ${
                   isSelected
                     ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
                     : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                 }`}
                 data-testid={`option-${option.value}`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                       isSelected
                         ? 'border-accent bg-accent'
                         : 'border-muted-foreground/40'
                     }`}
                   >
                     {isSelected && (
-                      <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
-                  <span className={`text-base sm:text-lg ${isSelected ? 'font-semibold text-foreground' : 'font-normal text-foreground/90'}`}>
+                  <span className={`text-sm sm:text-base lg:text-lg ${isSelected ? 'font-semibold text-foreground' : 'font-normal text-foreground/90'}`}>
                     {option.label}
                   </span>
                 </div>
@@ -690,11 +690,11 @@ export default function QuestionCard({
           })}
         </div>
 
-        <div className="flex flex-col gap-3 mt-auto">
+        <div className="flex flex-col gap-2.5 sm:gap-3 mt-auto">
           <Button
             onClick={handleNext}
             disabled={selectedValues.length === 0}
-            className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
             data-testid="button-next"
           >
             {isLastQuestion ? 'Complete Quiz' : 'Continue'}
@@ -702,7 +702,7 @@ export default function QuestionCard({
           {canGoBack && (
             <button
               onClick={onPrevious}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
               data-testid="button-previous"
             >
               ← Back

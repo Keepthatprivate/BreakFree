@@ -40,16 +40,16 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto px-4 sm:px-6 py-8">
+    <div className="w-full max-w-lg mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div
-        className="bg-card rounded-3xl p-8 sm:p-10 border border-card-border/50"
+        className="bg-card rounded-3xl p-6 sm:p-10 border border-card-border/50"
         data-testid="contact-form"
       >
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 sm:mb-3">
             Get your personalized results
           </h2>
-          <p className="text-base text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Enter your details to see your healing journey plan
           </p>
         </div>
