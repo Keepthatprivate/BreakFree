@@ -8,18 +8,21 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
       emoji: '🧠',
       title: 'Improved Emotional Well-being:',
       description: 'Experience significant improvements in your emotional well-being. Gain tools and strategies to manage triggers, regulate emotions, and foster resilience, leading to greater peace and happiness.',
+      mobileDescription: 'Manage triggers, regulate emotions, and build resilience for lasting peace.',
       iconBg: 'bg-gradient-to-br from-pink-400 to-purple-400'
     },
     {
       emoji: '💑',
       title: 'Enhanced Relationships:',
       description: 'Heal childhood trauma to deepen understanding of your emotions and behaviors. Improve communication and empathy, fostering healthier connections with loved ones and greater intimacy.',
+      mobileDescription: 'Deepen emotional understanding. Improve communication and build healthier connections.',
       iconBg: 'bg-gradient-to-br from-pink-400 to-fuchsia-500'
     },
     {
       emoji: '🌸',
       title: 'Increased Self-Empowerment:',
       description: 'Reclaim your life and foster personal growth. Gain control over experiences, break free from limiting beliefs, and cultivate self-worth and empowerment for a more fulfilling, trauma-free life.',
+      mobileDescription: 'Break free from limiting beliefs and cultivate self-worth for a fulfilling life.',
       iconBg: 'bg-gradient-to-br from-blue-400 to-purple-400'
     }
   ];
@@ -49,7 +52,12 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
                   <h2 className="text-lg font-bold text-foreground mb-2">
                     {benefit.title}
                   </h2>
-                  <p className="text-foreground/70 text-sm leading-snug">
+                  {/* Mobile version - shorter text */}
+                  <p className="text-foreground/70 text-sm leading-snug sm:hidden">
+                    {benefit.mobileDescription}
+                  </p>
+                  {/* Desktop version - full text */}
+                  <p className="text-foreground/70 text-sm leading-snug hidden sm:block">
                     {benefit.description}
                   </p>
                 </div>
