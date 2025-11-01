@@ -2,17 +2,9 @@ import { Check, Lock, Bell, Shield } from 'lucide-react';
 
 interface TrialTimelineProps {
   onStartTrial: () => void;
-  onContinue?: () => void;
 }
 
-export default function TrialTimeline({ onStartTrial, onContinue }: TrialTimelineProps) {
-  const handleContinue = () => {
-    if (onContinue) {
-      onContinue();
-    } else {
-      onStartTrial();
-    }
-  };
+export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
   const steps = [
     {
       icon: Check,
@@ -133,7 +125,7 @@ export default function TrialTimeline({ onStartTrial, onContinue }: TrialTimelin
 
         <div className="text-center">
           <button
-            onClick={handleContinue}
+            onClick={onStartTrial}
             className="w-full sm:w-auto min-w-[320px] bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
             data-testid="button-start-trial"
           >

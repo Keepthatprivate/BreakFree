@@ -147,10 +147,6 @@ export default function Quiz() {
     setState('results');
   };
 
-  const handleTimelineContinue = () => {
-    // User skipped trial/membership, go to guide upsell page
-    setState('payment');
-  };
 
   const handleDonationContinue = (donationAmount?: number) => {
     // If donation amount is provided, go to checkout
@@ -293,7 +289,7 @@ export default function Quiz() {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <TrialTimeline onStartTrial={handleStartTrial} onContinue={handleTimelineContinue} />
+        <TrialTimeline onStartTrial={handleStartTrial} />
       </>
     );
   }
