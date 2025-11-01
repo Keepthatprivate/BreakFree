@@ -224,6 +224,11 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               <span className="text-foreground">{productName}</span>
               <span className="text-primary">€{(amount / 100).toFixed(2)}</span>
             </div>
+            {productType === 'trial' && (
+              <p className="text-xs text-muted-foreground mt-2">
+                €29.99 after trial
+              </p>
+            )}
           </div>
 
           {/* Stripe integration: Wrap form in Elements provider */}
