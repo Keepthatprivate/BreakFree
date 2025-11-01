@@ -577,7 +577,7 @@ export default function QuestionCard({
             {/* Display the geometric pattern image */}
             <div className="w-full max-w-md mx-auto mb-3">
               <img 
-                src="/attached_assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955132756.jpg"
+                src="/attached_assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg"
                 alt="Geometric pattern"
                 className="w-full h-32 sm:h-40 object-cover rounded-xl"
               />
