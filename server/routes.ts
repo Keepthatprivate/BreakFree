@@ -190,8 +190,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const { email, name, type } = paymentIntent.metadata;
 
-      if (email && name) {
+      // Log metadata for debugging
+      console.log('Payment intent succeeded:', {
+        paymentId: paymentIntent.id,
+        email,
+        name,
+        type,
+        amount: paymentIntent.amount
+      });
+
+      if (email) {
         try {
+          // Use provided name or fallback to "Valued Customer"
+          const customerName = name || 'Valued Customer';
+          
           // Get product details based on payment type
           const productDetails = getProductDetails(type, paymentIntent.amount);
 
@@ -204,18 +216,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             to: [email],
             subject: '✓ Thank You for Your Purchase',
             html: generatePurchaseConfirmationEmail({
-              userName: name,
+              userName: customerName,
               productName: productDetails.productName,
               productLink: productDetails.productLink,
               amount: productDetails.amount,
             }),
           });
 
-          console.log(`Purchase confirmation email sent to ${email} for ${type}`);
+          console.log(`Purchase confirmation email sent to ${email} for ${type} (name: ${customerName})`);
         } catch (error: any) {
           console.error('Error sending purchase confirmation email:', error);
           // Don't fail the webhook - payment already succeeded
         }
+      } else {
+        console.warn('Payment succeeded but no email in metadata - skipping confirmation email', {
+          paymentId: paymentIntent.id,
+          metadata: paymentIntent.metadata
+        });
       }
     }
 

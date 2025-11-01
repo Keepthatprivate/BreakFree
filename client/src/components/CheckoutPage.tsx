@@ -127,7 +127,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
       ? '/api/create-upsell-payment'
       : productType === 'trial'
       ? '/api/create-trial-payment'
-      : '/api/create-payment-intent';
+      : '/api/create-donation-payment';
 
     const payload = productType === 'donation' 
       ? { amount: amount / 100, email, name }
