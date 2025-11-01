@@ -299,26 +299,26 @@ export default function QuestionCard({
             </h2>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="flex-1 grid grid-cols-2 gap-3 sm:gap-4 mb-8">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
                 <button
                   key={option.value}
                   onClick={() => handleOptionClick(option.value)}
-                  className={`flex flex-col items-center gap-4 p-6 rounded-2xl transition-all duration-200 border-2 ${
+                  className={`flex flex-col items-center gap-2 sm:gap-4 p-4 sm:p-6 rounded-2xl transition-all duration-200 border-2 ${
                     isSelected
                       ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
                       : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                   }`}
                   data-testid={`option-${option.value}`}
                 >
-                  <span className="text-6xl">{option.emoji}</span>
+                  <span className="text-4xl sm:text-6xl">{option.emoji}</span>
                   <div className="text-center">
-                    <p className={`text-lg font-bold mb-1 ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                    <p className={`text-base sm:text-lg font-bold mb-1 ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
                       {option.label}
                     </p>
-                    <p className="text-sm text-muted-foreground">{option.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{option.description}</p>
                   </div>
                 </button>
               );
