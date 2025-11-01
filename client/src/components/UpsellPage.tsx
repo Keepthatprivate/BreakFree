@@ -21,57 +21,57 @@ export default function UpsellPage({ onAccept, onSkip }: UpsellPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-6 sm:py-8">
-      <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
+    <div className="min-h-screen bg-background flex items-center justify-center py-4 sm:py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 w-full">
         {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <Check className="w-4 h-4 text-background" />
+        <div className="flex items-center justify-center gap-1.5 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-background" />
             </div>
             <span className="text-xs sm:text-sm text-foreground font-medium hidden sm:block">Buy Plan</span>
           </div>
           
-          <div className="w-8 sm:w-12 h-0.5 bg-primary"></div>
+          <div className="w-6 sm:w-12 h-0.5 bg-primary"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-background font-bold text-sm">2</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-background font-bold text-xs sm:text-sm">2</span>
             </div>
             <span className="text-xs sm:text-sm text-foreground font-medium hidden sm:block">Add Offer</span>
           </div>
           
-          <div className="w-8 sm:w-12 h-0.5 bg-foreground/30"></div>
+          <div className="w-6 sm:w-12 h-0.5 bg-foreground/30"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
-              <span className="text-foreground/50 font-bold text-sm">3</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
+              <span className="text-foreground/50 font-bold text-xs sm:text-sm">3</span>
             </div>
             <span className="text-xs sm:text-sm text-foreground/50 font-medium hidden sm:block">Sign Up</span>
           </div>
           
-          <div className="w-8 sm:w-12 h-0.5 bg-foreground/30"></div>
+          <div className="w-6 sm:w-12 h-0.5 bg-foreground/30"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
-              <span className="text-foreground/50 font-bold text-sm">4</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
+              <span className="text-foreground/50 font-bold text-xs sm:text-sm">4</span>
             </div>
             <span className="text-xs sm:text-sm text-foreground/50 font-medium hidden sm:block">Enjoy Breeze</span>
           </div>
         </div>
 
         {/* One-time offer badge */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-primary/20 border border-primary/50 rounded-full px-4 py-1.5">
-            <span className="text-primary font-semibold text-sm" data-testid="badge-one-time-offer">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <div className="bg-primary/20 border border-primary/50 rounded-full px-3 sm:px-4 py-1 sm:py-1.5">
+            <span className="text-primary font-semibold text-xs sm:text-sm" data-testid="badge-one-time-offer">
               ONE-TIME OFFER
             </span>
           </div>
         </div>
 
         {/* Heading */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
             Get Your Personal Mental Well-Being Guides
           </h1>
         </div>
@@ -149,16 +149,16 @@ export default function UpsellPage({ onAccept, onSkip }: UpsellPageProps) {
         </div>
 
         {/* Social Proof */}
-        <div className="bg-card/60 backdrop-blur-sm rounded-2xl p-5 border border-card-border/30 mb-6">
-          <div className="flex items-center justify-center gap-4">
-            <div className="text-4xl">🌿</div>
+        <div className="bg-card/60 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-card-border/30 mb-6">
+          <div className="flex items-center justify-center gap-2 sm:gap-4">
+            <div className="text-2xl sm:text-4xl">🌿</div>
             <div className="text-center flex-1">
-              <p className="text-primary font-bold text-2xl mb-1">92% users</p>
-              <p className="text-foreground/70 text-sm">
+              <p className="text-primary font-bold text-lg sm:text-2xl mb-1">92% users</p>
+              <p className="text-foreground/70 text-xs sm:text-sm">
                 report improved emotional well-being after reading the guide
               </p>
             </div>
-            <div className="text-4xl">🌿</div>
+            <div className="text-2xl sm:text-4xl">🌿</div>
           </div>
         </div>
 

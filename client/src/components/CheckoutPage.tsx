@@ -70,12 +70,12 @@ function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full h-12 text-base rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
+        className="w-full h-11 sm:h-12 text-sm sm:text-base rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 font-bold"
         data-testid="button-complete-payment"
       >
         {isProcessing ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 animate-spin" />
             Processing...
           </>
         ) : (
@@ -178,54 +178,54 @@ export default function CheckoutPage({ amount, productType, productName, email, 
   }
 
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-10 flex items-center justify-center">
-      <div className="max-w-lg mx-auto px-5 sm:px-6 w-full">
+    <div className="min-h-screen bg-background py-4 sm:py-10 flex items-center justify-center">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 w-full">
         {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <Check className="w-4 h-4 text-background" />
+        <div className="flex items-center justify-center gap-1.5 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-background" />
             </div>
             <span className="text-xs sm:text-sm text-foreground font-medium hidden sm:block">Select Plan</span>
           </div>
           
-          <div className="w-8 sm:w-12 h-0.5 bg-primary"></div>
+          <div className="w-6 sm:w-12 h-0.5 bg-primary"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-background font-bold text-sm">2</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-background font-bold text-xs sm:text-sm">2</span>
             </div>
             <span className="text-xs sm:text-sm text-foreground font-medium hidden sm:block">Checkout</span>
           </div>
           
-          <div className="w-8 sm:w-12 h-0.5 bg-foreground/30"></div>
+          <div className="w-6 sm:w-12 h-0.5 bg-foreground/30"></div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
-              <span className="text-foreground/50 font-bold text-sm">3</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-card border border-card-border flex items-center justify-center">
+              <span className="text-foreground/50 font-bold text-xs sm:text-sm">3</span>
             </div>
             <span className="text-xs sm:text-sm text-foreground/50 font-medium hidden sm:block">Access Results</span>
           </div>
         </div>
 
-        <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-xl border border-card-border/50">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+        <div className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl border border-card-border/50">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-2">
             Secure Checkout
           </h1>
-          <p className="text-muted-foreground text-sm mb-6">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-5 sm:mb-6">
             Complete your purchase to unlock {productName}
           </p>
 
-          <div className="bg-background/50 rounded-2xl p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-foreground font-medium">Order Summary</span>
+          <div className="bg-background/50 rounded-2xl p-3.5 sm:p-4 mb-5 sm:mb-6">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-foreground font-medium text-sm sm:text-base">Order Summary</span>
             </div>
-            <div className="flex items-center justify-between text-lg font-bold">
+            <div className="flex items-center justify-between text-base sm:text-lg font-bold">
               <span className="text-foreground">{productName}</span>
               <span className="text-primary">€{(amount / 100).toFixed(2)}</span>
             </div>
             {productType === 'trial' && (
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">
                 €29.99 after trial
               </p>
             )}
