@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
@@ -97,10 +98,22 @@ export default function QuestionCard({
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
             What is your gender identity?
           </h2>
-          <button className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium">
-            <span>Why we ask</span>
-            <Info className="w-4 h-4" />
-          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                <span>Why we ask</span>
+                <Info className="w-4 h-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 bg-card border-card-border">
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground">Why we ask about gender</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Understanding your gender identity helps us personalize your healing journey. Research shows that trauma patterns and coping mechanisms can differ based on gender experiences and socialization.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
