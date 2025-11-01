@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
 import type { BreakScreen } from '@shared/quiz-data';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import jamesProfileImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761863003013.jpg';
+import jamesProfileImage from '@assets/pexels-stefanstefancik-91227_1761959722987.jpg';
 
 interface BreakScreenProps {
   breakScreen: BreakScreen;
