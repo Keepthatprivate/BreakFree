@@ -111,11 +111,20 @@ Preferred communication style: Simple, everyday language.
      - Dark slate background for clarity
      - Visual metaphor for navigating life's complexity with obstacles
 
-3. **Email Results Integration**: 
-   - Set up Resend connector for sending personalized quiz results via email
-   - Created `resend-client.ts` with Replit connector authentication
-   - Built `email-templates.ts` with HTML email templates
-   - Added `/api/send-results-email` endpoint for post-purchase result delivery
+3. **Email Integration System**: 
+   - Set up Resend connector for transactional emails with Replit connector authentication
+   - Created `resend-client.ts` with automatic API key management via Replit connectors
+   - Built `email-templates.ts` with two HTML email templates:
+     - `generateResultsEmail()`: Personalized quiz results with trauma score and recommendations
+     - `generatePurchaseConfirmationEmail()`: Post-purchase confirmation with product links
+   - **API Endpoints**:
+     - `/api/send-results-email`: Send quiz results after contact form submission
+     - `/api/webhook/stripe`: Stripe webhook handler for payment success events
+   - **Automated Purchase Emails**: When payment succeeds, webhook automatically sends confirmation email with:
+     - Thank you message personalized with customer name
+     - Product name and amount paid
+     - Direct link to access purchased content (guides, app trial, or home)
+     - Product-specific links based on payment type (upsell-guides → /guides, trial → /app, donation → /)
 
 4. **Dynamic Results Generation**:
    - Created `quiz-analyzer.ts` to analyze quiz answers and detect trauma patterns
