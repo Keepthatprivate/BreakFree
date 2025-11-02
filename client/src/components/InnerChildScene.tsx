@@ -7,32 +7,43 @@ interface InnerChildSceneProps {
 
 export default function InnerChildScene({ onStartTrial }: InnerChildSceneProps) {
   const [fadeIn, setFadeIn] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Fade in after component mounts
-    const timer = setTimeout(() => setFadeIn(true), 100);
-    return () => clearTimeout(timer);
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
   }, []);
+
+  useEffect(() => {
+    // Fade in after component mounts (instant if reduced motion)
+    const timer = setTimeout(() => setFadeIn(true), prefersReducedMotion ? 0 : 100);
+    return () => clearTimeout(timer);
+  }, [prefersReducedMotion]);
 
   return (
     <div 
-      className={`fixed inset-0 z-50 bg-gradient-to-b from-[#0a0a12] via-[#0d0d16] to-[#12121c] flex items-center justify-center transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 z-50 bg-gradient-to-b from-[#0a0a12] via-[#0d0d16] to-[#12121c] flex items-center justify-center ${!prefersReducedMotion ? 'transition-opacity duration-1000' : ''} ${fadeIn ? 'opacity-100' : 'opacity-0'}`}
       data-testid="inner-child-scene"
     >
-      <div className="w-full max-w-3xl px-6 text-center space-y-8 animate-in fade-in duration-1000 delay-500">
+      <div className={`w-full max-w-3xl px-6 text-center space-y-8 ${!prefersReducedMotion ? 'animate-in fade-in duration-1000 delay-500' : ''}`}>
         {/* Glowing center element */}
         <div className="flex justify-center mb-12">
           <div 
             className="relative w-32 h-32 rounded-full"
             style={{
               background: 'radial-gradient(circle, rgba(84, 211, 187, 0.3) 0%, rgba(84, 211, 187, 0.1) 50%, transparent 100%)',
-              animation: 'pulse 3s ease-in-out infinite',
+              animation: prefersReducedMotion ? 'none' : 'pulse 3s ease-in-out infinite',
             }}
           >
             <div 
               className="absolute inset-0 rounded-full border-2 border-primary/40"
               style={{
-                animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                animation: prefersReducedMotion ? 'none' : 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
               }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
