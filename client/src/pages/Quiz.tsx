@@ -17,12 +17,9 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
-import ChapterBackground from '@/components/ChapterBackground';
-import AgeIndicator from '@/components/AgeIndicator';
-import InnerChildScene from '@/components/InnerChildScene';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'innerchild';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -41,35 +38,12 @@ export default function Quiz() {
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
-  const [hasTrialAccess, setHasTrialAccess] = useState(() => {
-    return localStorage.getItem('trialPaid') === 'true';
-  });
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
-
-  const getChapterNumber = (chapterId: string): number => {
-    const chapterMap: { [key: string]: number } = {
-      'past': 1,
-      'patterns': 2,
-      'healing': 3,
-      'future': 4,
-    };
-    return chapterMap[chapterId] || 1;
-  };
-
-  const getAgeForChapter = (chapterNumber: number): number => {
-    const ageMap: { [key: number]: number } = {
-      1: 25,
-      2: 18,
-      3: 10,
-      4: 6,
-    };
-    return ageMap[chapterNumber] || 25;
-  };
 
   useEffect(() => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
@@ -125,8 +99,7 @@ export default function Quiz() {
         }, 300);
       }
     } else {
-      // After last question, show Inner Child scene first
-      setState('innerchild');
+      setState('contact');
     }
   };
 
@@ -193,21 +166,15 @@ export default function Quiz() {
     setHasPaid(true);
     localStorage.setItem('hasPaid', 'true');
     
-    // Track trial payment specifically
-    if (checkoutType === 'trial') {
-      localStorage.setItem('trialPaid', 'true');
-      setHasTrialAccess(true);
-    }
-    
     // Determine next step based on checkout type (Donation → Membership → Guide → Results)
     if (checkoutType === 'donation') {
       // After donation checkout, go to membership/timeline page
       setState('timeline');
     } else if (checkoutType === 'trial') {
-      // After trial/membership checkout, go to results with access
-      setState('results');
+      // After trial/membership checkout, go to guide upsell page
+      setState('payment');
     } else if (checkoutType === 'upsell') {
-      // After buying guides, stay on results
+      // After buying guides, go to results
       setState('results');
     }
   };
@@ -241,8 +208,7 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    // After viewing results, redirect to signup to create account
-    setLocation('/signup');
+    setState('patterns');
   };
 
   const handlePatternsContinue = () => {
@@ -333,13 +299,7 @@ export default function Quiz() {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <ResultsPage 
-          userName={userName} 
-          onContinue={handleResultsContinue} 
-          answers={answers}
-          onStartTrial={handleStartTrial}
-          hasTrialAccess={hasTrialAccess}
-        />
+        <ResultsPage userName={userName} onContinue={handleResultsContinue} answers={answers} />
       </>
     );
   }
@@ -371,78 +331,66 @@ export default function Quiz() {
     );
   }
 
-  const chapterNum = getChapterNumber(currentQuestion?.chapter || 'past');
-  const currentAge = getAgeForChapter(chapterNum);
-
   return (
-    <div className="min-h-screen bg-background relative">
-      <ChapterBackground chapter={chapterNum} />
-      {state === 'quiz' && <AgeIndicator age={currentAge} />}
-      
-      <div className="relative z-10">
-        {state === 'quiz' && (
-          <>
-            <ProgressBar
-              currentChapter={currentQuestion.chapter}
-              currentQuestionIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-            />
-            <QuestionCard
-              question={currentQuestion}
-              chapterTitle={currentChapter?.title || ''}
-              onAnswer={handleAnswer}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              savedAnswer={answers[currentQuestion.id] || []}
-              canGoBack={currentQuestionIndex > 0}
-              isLastQuestion={currentQuestionIndex === questions.length - 1}
-            />
-          </>
-        )}
+    <div className="min-h-screen bg-background">
+      {state === 'quiz' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <QuestionCard
+            question={currentQuestion}
+            chapterTitle={currentChapter?.title || ''}
+            onAnswer={handleAnswer}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            savedAnswer={answers[currentQuestion.id] || []}
+            canGoBack={currentQuestionIndex > 0}
+            isLastQuestion={currentQuestionIndex === questions.length - 1}
+          />
+        </>
+      )}
 
-        {state === 'empathy' && (
-          <>
-            <ProgressBar
-              currentChapter={currentQuestion.chapter}
-              currentQuestionIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-            />
-            <EmpathyMessage
-              message={empathyMessages[empathyMessageIndex]}
-              onContinue={handleEmpathyContinue}
-            />
-          </>
-        )}
+      {state === 'empathy' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <EmpathyMessage
+            message={empathyMessages[empathyMessageIndex]}
+            onContinue={handleEmpathyContinue}
+          />
+        </>
+      )}
 
-        {state === 'break' && (
-          <>
-            <ProgressBar
-              currentChapter={currentQuestion.chapter}
-              currentQuestionIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-            />
-            <BreakScreenComponent
-              breakScreen={breakScreens[currentBreakIndex]}
-              onContinue={handleBreakContinue}
-            />
-          </>
-        )}
+      {state === 'break' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <BreakScreenComponent
+            breakScreen={breakScreens[currentBreakIndex]}
+            onContinue={handleBreakContinue}
+          />
+        </>
+      )}
 
-        {state === 'innerchild' && (
-          <InnerChildScene onStartTrial={handleStartTrial} />
-        )}
-
-        {state === 'contact' && (
-          <>
-            <ProgressBar
-              currentChapter="future"
-              currentQuestionIndex={questions.length - 1}
-              totalQuestions={questions.length}
-            />
-            <ContactForm onSubmit={handleContactSubmit} />
-          </>
-        )}
-      </div>
+      {state === 'contact' && (
+        <>
+          <ProgressBar
+            currentChapter="future"
+            currentQuestionIndex={questions.length - 1}
+            totalQuestions={questions.length}
+          />
+          <ContactForm onSubmit={handleContactSubmit} />
+        </>
+      )}
     </div>
   );
 }

@@ -90,13 +90,13 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
             <span className="text-xs sm:text-sm text-primary">Cost to cover our team's effort</span>
           </div>
 
-          <div className="bg-gradient-to-br from-primary/20 to-accent/20 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border-2 border-primary/30 mb-6">
+          <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border-2 border-blue-500/30 mb-6">
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-primary/30 flex items-center justify-center">
-                <Heart className="w-3.5 h-3.5 text-primary fill-primary" />
+              <div className="w-7 h-7 rounded-full bg-red-500/30 flex items-center justify-center">
+                <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
               </div>
-              <p className="text-foreground text-xs sm:text-sm leading-relaxed" style={{ fontFamily: 'Lora, serif' }}>
-                Add ripples of change for others—your contribution funds free healing access for those who need it most.
+              <p className="text-foreground text-xs sm:text-sm leading-relaxed">
+                We work to ensure our mental health resources are accessible for everyone. It costs us €17.34 to provide this trial offer, but we want you to choose what feels right for you.
               </p>
             </div>
           </div>

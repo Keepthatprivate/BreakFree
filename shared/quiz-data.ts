@@ -300,10 +300,10 @@ export const breakScreens: BreakScreen[] = [
 ];
 
 export const empathyMessages = [
-  "The surface shimmers… memories begin to stir.",
-  "You're descending into quieter waters.",
-  "Light filters through; the child waits below.",
-  "Almost there. One more breath.",
-  "Still waters remember. Awareness is the first ripple.",
-  "Like water finding its level, healing flows naturally.",
+  "You're doing great. Taking this step shows real courage.",
+  "This awareness is the first step toward healing.",
+  "Your feelings are valid, and you're not alone in this.",
+  "Recognizing these patterns is a powerful act of self-care.",
+  "Every answer brings you closer to understanding yourself.",
+  "You deserve peace, and healing is possible.",
 ];
