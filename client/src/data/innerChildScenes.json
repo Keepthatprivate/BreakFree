@@ -1,0 +1,46 @@
+[
+  {
+    "chapter": 1,
+    "chapterId": "past",
+    "background": "bg-dark-cave.json",
+    "audio": "heartbeat.mp3",
+    "quote": "You first see your inner child — quiet, waiting.",
+    "colors": {
+      "primary": "rgba(30, 30, 50, 0.95)",
+      "accent": "rgba(84, 211, 187, 0.15)"
+    }
+  },
+  {
+    "chapter": 2,
+    "chapterId": "patterns",
+    "background": "bg-ripples.json",
+    "audio": "softwind.mp3",
+    "quote": "They react to your choices — learning who you are now.",
+    "colors": {
+      "primary": "rgba(20, 35, 60, 0.95)",
+      "accent": "rgba(84, 211, 187, 0.2)"
+    }
+  },
+  {
+    "chapter": 3,
+    "chapterId": "healing",
+    "background": "bg-light-rays.json",
+    "audio": "calmstream.mp3",
+    "quote": "Light returns as you listen and soften.",
+    "colors": {
+      "primary": "rgba(25, 40, 50, 0.9)",
+      "accent": "rgba(84, 211, 187, 0.3)"
+    }
+  },
+  {
+    "chapter": 4,
+    "chapterId": "future",
+    "background": "bg-sunrise.json",
+    "audio": "warmchime.mp3",
+    "quote": "They reach for you — ready to heal.",
+    "colors": {
+      "primary": "rgba(30, 45, 55, 0.85)",
+      "accent": "rgba(84, 211, 187, 0.4)"
+    }
+  }
+]
