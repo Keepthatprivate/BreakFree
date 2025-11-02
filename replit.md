@@ -72,3 +72,54 @@ Preferred communication style: Simple, everyday language.
 - Animation performance: CSS `will-change`, `pointer-events-none` on decorative elements
 - Mobile optimization: Reduced animation complexity, simplified gradients for 4G performance
 - Accessibility: Full support for reduced-motion preferences, WCAG AA contrast compliance
+
+### Break Free Quiz 3.0 - Time-Descent Journey Integration (November 02, 2025)
+
+**Age Regression System**:
+- **AgeIndicator Component**: Top-left display showing current age that maps to chapters
+  - Chapter 1 (Past) → Age 25
+  - Chapter 2 (Patterns) → Age 18
+  - Chapter 3 (Healing) → Age 10
+  - Chapter 4 (Future) → Age 6
+  - Fades in with 700ms transition on chapter changes
+  - Subtle styling (40% opacity white)
+
+**Enhanced Background System**:
+- **ChapterBackground Component**: Replaces WaterBackground with Lottie animation support
+  - Attempts to load chapter-specific Lottie JSON files (chapter-bg-1-surface.json through chapter-bg-4-innerchild.json)
+  - Falls back to enhanced static gradients if Lottie files unavailable
+  - 4 distinct gradient themes representing descent journey:
+    - Chapter 1: "Surface" - still, reflective water
+    - Chapter 2: "Descending" - rippling, movement
+    - Chapter 3: "Depth" - darker, mysterious
+    - Chapter 4: "Inner Child" - softer, glowing
+  - Parallax zoom animation (30s cycle, scale 1 → 1.05) for depth illusion
+  - Crossfade transitions (400ms) between chapters
+  - Full reduced-motion support (disables Lottie, parallax, pulse overlays)
+
+**Inner Child Climax Scene**:
+- **InnerChildScene Component**: Full-screen emotional encounter after final quiz question
+  - Appears instead of going directly to contact form
+  - Emotional messaging: "You've reached the depths" / "Your younger self has been waiting"
+  - Glowing center element with pulse (3s) and ping (2s) animations
+  - CTA: "Begin Your Healing Journey — €1 Trial"
+  - Integrates with existing Stripe checkout flow via handleStartTrial()
+  - Lora serif font for emotional warmth
+  - 1s fade-in transition
+  - Full reduced-motion support (disables animations, instant transitions)
+
+**Updated Empathy Messages**:
+- Descent-themed copy aligned with time-travel narrative:
+  - "The surface shimmers… memories begin to stir."
+  - "You're descending into quieter waters."
+  - "Light filters through; the child waits below."
+  - "Almost there. One more breath."
+
+**Technical Implementation**:
+- Quiz state: Added 'innerchild' state for climactic scene
+- Age mapping: getAgeForChapter() function maps chapters to ages
+- Flow: quiz → innerchild scene → checkout → results (preserves all 2.0 features)
+- CSS animations: parallaxZoom, pulse, ping keyframes
+- Package: lottie-react for animation playback
+- Accessibility: Comprehensive reduced-motion support across all new components
+- Preserves: All 2.0 ripple features, blur-reveal, trauma patterns, scanning stage
