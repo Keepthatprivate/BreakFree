@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface EmpathyMessageProps {
   message: string;
@@ -6,11 +7,21 @@ interface EmpathyMessageProps {
 }
 
 export default function EmpathyMessage({ message, onContinue }: EmpathyMessageProps) {
+  useEffect(() => {
+    // Auto-continue after 2.5 seconds
+    const timer = setTimeout(() => {
+      onContinue();
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [onContinue]);
+
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div
-        className="bg-card rounded-3xl p-10 sm:p-14 text-center animate-in fade-in duration-500 border border-card-border/50"
+        className="bg-card rounded-3xl p-10 sm:p-14 text-center animate-in fade-in duration-400 border border-card-border/50"
         data-testid="empathy-message"
+        style={{ fontFamily: 'Lora, serif' }}
       >
         <div className="flex justify-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full flex items-center justify-center">
