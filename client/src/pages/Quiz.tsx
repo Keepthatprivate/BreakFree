@@ -228,7 +228,8 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    setState('patterns');
+    // After viewing results, redirect to signup to create account
+    setLocation('/signup');
   };
 
   const handlePatternsContinue = () => {
