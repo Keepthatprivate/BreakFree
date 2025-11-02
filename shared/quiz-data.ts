@@ -300,10 +300,10 @@ export const breakScreens: BreakScreen[] = [
 ];
 
 export const empathyMessages = [
+  "The surface shimmers… memories begin to stir.",
+  "You're descending into quieter waters.",
+  "Light filters through; the child waits below.",
+  "Almost there. One more breath.",
   "Still waters remember. Awareness is the first ripple.",
-  "Patterns appear on the surface when emotions meet choices.",
-  "Every ripple you notice becomes calmer. Keep watching.",
-  "The surface grows still. Your reflection is forming…",
-  "Each choice creates a ripple. You're doing beautifully.",
   "Like water finding its level, healing flows naturally.",
 ];

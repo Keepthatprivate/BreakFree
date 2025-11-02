@@ -17,10 +17,12 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
-import WaterBackground from '@/components/WaterBackground';
+import ChapterBackground from '@/components/ChapterBackground';
+import AgeIndicator from '@/components/AgeIndicator';
+import InnerChildScene from '@/components/InnerChildScene';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'innerchild';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -57,6 +59,16 @@ export default function Quiz() {
       'future': 4,
     };
     return chapterMap[chapterId] || 1;
+  };
+
+  const getAgeForChapter = (chapterNumber: number): number => {
+    const ageMap: { [key: number]: number } = {
+      1: 25,
+      2: 18,
+      3: 10,
+      4: 6,
+    };
+    return ageMap[chapterNumber] || 25;
   };
 
   useEffect(() => {
@@ -113,7 +125,8 @@ export default function Quiz() {
         }, 300);
       }
     } else {
-      setState('contact');
+      // After last question, show Inner Child scene first
+      setState('innerchild');
     }
   };
 
@@ -358,9 +371,13 @@ export default function Quiz() {
     );
   }
 
+  const chapterNum = getChapterNumber(currentQuestion?.chapter || 'past');
+  const currentAge = getAgeForChapter(chapterNum);
+
   return (
     <div className="min-h-screen bg-background relative">
-      <WaterBackground chapter={getChapterNumber(currentQuestion?.chapter || 'past')} />
+      <ChapterBackground chapter={chapterNum} />
+      {state === 'quiz' && <AgeIndicator age={currentAge} />}
       
       <div className="relative z-10">
         {state === 'quiz' && (
@@ -409,6 +426,10 @@ export default function Quiz() {
               onContinue={handleBreakContinue}
             />
           </>
+        )}
+
+        {state === 'innerchild' && (
+          <InnerChildScene onStartTrial={handleStartTrial} />
         )}
 
         {state === 'contact' && (
