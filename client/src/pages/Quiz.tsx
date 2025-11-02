@@ -17,9 +17,13 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
+import InnerChildScene from '@/components/InnerChildScene';
+import SceneTransition from '@/components/SceneTransition';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
+import { getChildEmotion, type ChildEmotion } from '@/logic/ChildEmotionEngine';
+import innerChildScenes from '@/data/innerChildScenes.json';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'break' | 'transition' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -41,6 +45,9 @@ export default function Quiz() {
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
+  const [childEmotion, setChildEmotion] = useState<ChildEmotion>('neutral');
+  const [previousChapterId, setPreviousChapterId] = useState<string>('');
+  const [showChapterQuote, setShowChapterQuote] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -54,6 +61,10 @@ export default function Quiz() {
       ...prev,
       [currentQuestion.id]: answer,
     }));
+    
+    // Update inner child emotion based on answer
+    const emotion = getChildEmotion(currentQuestion.id, answer);
+    setChildEmotion(emotion);
   };
 
   const showEmpathyMessage = () => {
@@ -79,23 +90,36 @@ export default function Quiz() {
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      // Priority order: break screens -> empathy messages -> regular advance
+      const nextQuestion = questions[currentQuestionIndex + 1];
+      const currentChapterId = currentQuestion.chapter;
+      const nextChapterId = nextQuestion.chapter;
       
-      // 1. Check for break screens first (highest priority)
-      if (showBreakScreen()) {
+      // Check if we're transitioning to a new chapter
+      const isChapterTransition = currentChapterId !== nextChapterId;
+      
+      // Priority order: chapter transitions -> break screens -> empathy messages -> regular advance
+      
+      // 1. Check for chapter transitions first (highest priority)
+      if (isChapterTransition) {
+        setPreviousChapterId(currentChapterId);
+        setState('transition');
+      }
+      // 2. Check for break screens
+      else if (showBreakScreen()) {
         const breakIndex = getBreakScreenForCurrentQuestion();
         setCurrentBreakIndex(breakIndex);
         setState('break');
       }
-      // 2. Check for empathy messages
+      // 3. Check for empathy messages
       else if (showEmpathyMessage()) {
         setState('empathy');
         setEmpathyMessageIndex(Math.floor(Math.random() * empathyMessages.length));
       }
-      // 3. Regular advance
+      // 4. Regular advance
       else {
         setTimeout(() => {
           setCurrentQuestionIndex((prev) => prev + 1);
+          setShowChapterQuote(false);
         }, 300);
       }
     } else {
@@ -122,6 +146,15 @@ export default function Quiz() {
     setState('quiz');
     setTimeout(() => {
       setCurrentQuestionIndex((prev) => prev + 1);
+      setShowChapterQuote(false);
+    }, 300);
+  };
+
+  const handleTransitionComplete = () => {
+    setState('quiz');
+    setTimeout(() => {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setShowChapterQuote(true); // Show empathy quote when entering new chapter
     }, 300);
   };
 
@@ -334,7 +367,11 @@ export default function Quiz() {
   return (
     <div className="min-h-screen bg-background">
       {state === 'quiz' && (
-        <>
+        <InnerChildScene
+          chapterId={currentQuestion.chapter}
+          emotion={childEmotion}
+          showEmpathyQuote={showChapterQuote}
+        >
           <ProgressBar
             currentChapter={currentQuestion.chapter}
             currentQuestionIndex={currentQuestionIndex}
@@ -350,11 +387,32 @@ export default function Quiz() {
             canGoBack={currentQuestionIndex > 0}
             isLastQuestion={currentQuestionIndex === questions.length - 1}
           />
+        </InnerChildScene>
+      )}
+
+      {state === 'transition' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <SceneTransition
+            empathyMessage={
+              innerChildScenes.find((scene) => scene.chapterId === questions[currentQuestionIndex + 1].chapter)?.quote ||
+              empathyMessages[Math.floor(Math.random() * empathyMessages.length)]
+            }
+            onComplete={handleTransitionComplete}
+          />
         </>
       )}
 
       {state === 'empathy' && (
-        <>
+        <InnerChildScene
+          chapterId={currentQuestion.chapter}
+          emotion={childEmotion}
+          showEmpathyQuote={false}
+        >
           <ProgressBar
             currentChapter={currentQuestion.chapter}
             currentQuestionIndex={currentQuestionIndex}
@@ -364,11 +422,15 @@ export default function Quiz() {
             message={empathyMessages[empathyMessageIndex]}
             onContinue={handleEmpathyContinue}
           />
-        </>
+        </InnerChildScene>
       )}
 
       {state === 'break' && (
-        <>
+        <InnerChildScene
+          chapterId={currentQuestion.chapter}
+          emotion={childEmotion}
+          showEmpathyQuote={false}
+        >
           <ProgressBar
             currentChapter={currentQuestion.chapter}
             currentQuestionIndex={currentQuestionIndex}
@@ -378,7 +440,7 @@ export default function Quiz() {
             breakScreen={breakScreens[currentBreakIndex]}
             onContinue={handleBreakContinue}
           />
-        </>
+        </InnerChildScene>
       )}
 
       {state === 'contact' && (
