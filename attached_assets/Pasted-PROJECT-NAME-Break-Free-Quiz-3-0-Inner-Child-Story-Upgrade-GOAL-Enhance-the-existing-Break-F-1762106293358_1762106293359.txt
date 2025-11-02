@@ -1,0 +1,87 @@
+PROJECT NAME: Break Free Quiz 3.0 — Inner Child Story Upgrade
+
+GOAL:
+Enhance the existing Break Free Quiz by layering a cinematic, story-driven visual system called
+"The Inner Child Journey" on top of the current question logic. Preserve all quiz data, scoring,
+and payment funnel functionality while adding interactive storytelling to increase engagement
+and conversion.
+
+INSTRUCTIONS FOR CODING AGENT:
+
+1. DO NOT MODIFY:
+   - Quiz logic (13 questions, 4 chapters)
+   - Trauma detection algorithm (quiz-analyzer.ts)
+   - Stripe payments or webhook
+   - Resend email automations
+   - Database schema
+
+2. ADD NEW COMPONENTS:
+   - /src/components/InnerChildScene.tsx
+   - /src/components/SceneTransition.tsx
+   - /src/logic/ChildEmotionEngine.ts
+   - /src/data/innerChildScenes.json
+
+3. FUNCTIONALITY DETAILS:
+
+   a. InnerChildScene.tsx
+      • Renders behind each question component.
+      • Loads chapter-specific Lottie background + audio from innerChildScenes.json.
+      • Reacts visually to answer input via emotion state ('neutral' | 'sad' | 'hopeful').
+      • Use Framer Motion for fade transitions, opacity 0→1 (400ms).
+      • Overlay empathy quote at start of each chapter for 2s.
+
+   b. ChildEmotionEngine.ts
+      • Map answer content to emotional response using keywords and question IDs.
+      • Export getChildEmotion(questionId, answer) used in quiz component.
+
+   c. SceneTransition.tsx
+      • Triggers between chapters:
+          1. Fade out background
+          2. Display empathy message
+          3. Load new background & sound
+      • Duration: 2s crossfade.
+
+   d. innerChildScenes.json
+      • Define assets and empathy quotes for each chapter:
+        [
+          {"chapter":1,"background":"bg-dark-cave.json","audio":"heartbeat.mp3","quote":"You first see your inner child — quiet, waiting."},
+          {"chapter":2,"background":"bg-ripples.json","audio":"softwind.mp3","quote":"They react to your choices — learning who you are now."},
+          {"chapter":3,"background":"bg-light-rays.json","audio":"calmstream.mp3","quote":"Light returns as you listen and soften."},
+          {"chapter":4,"background":"bg-sunrise.json","audio":"warmchime.mp3","quote":"They reach for you — ready to heal."}
+        ]
+
+4. MODIFY QUIZ PAGE (/quiz):
+   • Wrap existing QuestionCard or QuestionContainer with <InnerChildScene>.
+   • Call getChildEmotion(questionId, selectedAnswer) to update childEmotion.
+   • Pass emotion + chapter props into <InnerChildScene>.
+
+5. MODIFY BREAK SCREENS:
+   • Replace static quote/testimonial display with <SceneTransition> using empathy quotes.
+
+6. RESULTS PAGE UPGRADE (/results):
+   • Before showing trauma result, play short animation:
+       - Background: glowing child silhouette facing user.
+       - Text sequence:
+         “You finally came back for me.” (delay 1s)
+         “Let’s start healing your inner child.” (delay 2s)
+   • CTA button [Unlock My Healing Plan – €1 Trial]
+   • After successful payment, blur fade-out → reveal trauma result as before.
+
+7. MOBILE OPTIMIZATION:
+   • Disable motion on prefers-reduced-motion.
+   • Replace Lottie background with static PNG fallback on screens <480px.
+   • Keep total asset load ≤ 2.5 MB.
+
+8. DEPLOYMENT REQUIREMENTS:
+   ✓ All existing backend functionality intact.
+   ✓ Quiz progress persistence (LocalStorage) unaffected.
+   ✓ Scene transitions functional across devices.
+   ✓ Load time ≤ 2s mobile.
+   ✓ Stripe test checkout works.
+
+9. OUTPUT FILES:
+   - Updated /quiz.tsx and /results.tsx with new imports.
+   - 4 new files listed in #2.
+   - Sample Lottie placeholders for backgrounds.
+
+END OF SPECIFICATION
