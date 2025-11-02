@@ -40,3 +40,35 @@ Preferred communication style: Simple, everyday language.
 - **Email Service**: Resend connector for transactional emails (results, purchase confirmations).
 - **Payment Gateway**: Stripe for secure payment processing.
 - **Development Tools**: Replit-specific plugins, TypeScript (strict mode), Path aliases.
+
+## Recent Enhancements (November 02, 2025)
+
+### Break Free Quiz 2.0 - Ripple Evolution Upgrade
+
+**Water/Ripple Theme (Version 1.0)**:
+- **WaterBackground Component**: Animated CSS gradient system evolving across 4 chapters (Still Water → Gentle Ripples → Calmer Glow → Dawn Light)
+- **RippleEffect Component**: SVG-based teal ripple animations triggered on answer selection (1-second duration)
+- **Landing Page**: Updated with water metaphor - "Each choice creates a ripple. See what your reflection reveals."
+- **Empathy Messages**: Water-themed copy ("Still waters remember...", "Every ripple you notice becomes calmer...")
+- **Blur-Reveal Mechanism**: Results locked behind €1 trial payment with dramatic 1-second unblur animation
+
+**2.0 Enhancements**:
+- **Scanning Reflection Stage** (ResultsPage): Added 2.5-second pre-blur "scanning" state showing "The surface is calming... Your reflection is forming" before blur tease overlay
+- **Trauma-Specific Ripple Patterns** (TraumaRipplePattern component): Animated SVG backgrounds for each trauma type:
+  - Abandonment: Fast expanding circles (1.5s) representing push/pull dynamics
+  - Control: Tight concentric rotating rings (6s) representing rigidity
+  - Emotional: Irregular dissolving ellipses (3-3.5s) representing turbulence
+  - Trust: Intersecting ripples from two sources (2.5s) representing connection
+  - Patterns display at 15% opacity as subtle backgrounds on results page
+- **Auto-Continue Empathy Messages**: Added 2.5-second auto-advance timer while preserving manual continue button, applied Lora font for emotional warmth
+- **CRO Copy Updates**: 
+  - Donation page: "Add ripples of change for others—your contribution funds free healing access"
+  - Results CTA: "Unlock My Reflection - €1 Trial"
+- **Timing Optimizations**: All transitions use 300-400ms for snappy feel, animations respect `prefers-reduced-motion`
+
+**Technical Implementation**:
+- Water background transitions: 400ms crossfade between chapters
+- State management: `isScanning` state for pre-blur gate, `hasTrialAccess` for unlock logic
+- Animation performance: CSS `will-change`, `pointer-events-none` on decorative elements
+- Mobile optimization: Reduced animation complexity, simplified gradients for 4G performance
+- Accessibility: Full support for reduced-motion preferences, WCAG AA contrast compliance
