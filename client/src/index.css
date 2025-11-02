@@ -276,4 +276,255 @@
       transform: translateY(-15px) translateX(5px);
     }
   }
+
+  /* Water Background Animations */
+  @keyframes waterFlow1 {
+    0%, 100% {
+      transform: translate(0%, 0%) scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: translate(3%, -2%) scale(1.05);
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes waterFlow2 {
+    0%, 100% {
+      transform: translate(0%, 0%) scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: translate(-2%, 3%) scale(1.03);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes waterFlow3 {
+    0%, 100% {
+      transform: translate(0%, 0%) scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translate(2%, -3%) scale(1.04);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes rippleExpand {
+    0% {
+      r: 10;
+      opacity: 0.8;
+    }
+    100% {
+      r: 80;
+      opacity: 0;
+    }
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .water-background,
+    .water-layer,
+    .ripple-circle {
+      animation: none !important;
+    }
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    @keyframes waterFlow1 {
+      0%, 100% {
+        transform: translate(0%, 0%) scale(1);
+      }
+      50% {
+        transform: translate(2%, -1%) scale(1.02);
+      }
+    }
+
+    @keyframes waterFlow2 {
+      0%, 100% {
+        transform: translate(0%, 0%) scale(1);
+      }
+      50% {
+        transform: translate(-1%, 2%) scale(1.01);
+      }
+    }
+
+    @keyframes waterFlow3 {
+      0%, 100% {
+        transform: translate(0%, 0%) scale(1);
+      }
+      50% {
+        transform: translate(1%, -2%) scale(1.015);
+      }
+    }
+  }
+}
+
+/* Water Background Base Styles */
+.water-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  transition: opacity 400ms ease-out;
+}
+
+.water-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(13, 13, 22, 0.3) 100%);
+  will-change: transform, opacity;
+}
+
+.water-layer-1 {
+  animation: waterFlow1 20s ease-in-out infinite;
+}
+
+.water-layer-2 {
+  animation: waterFlow2 25s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.water-layer-3 {
+  animation: waterFlow3 30s ease-in-out infinite;
+  animation-delay: -10s;
+}
+
+/* Chapter 1: Still Water - Deep, calm, barely moving */
+.water-chapter-1 {
+  background: linear-gradient(
+    135deg,
+    #0a0a12 0%,
+    #0d0d16 25%,
+    #101018 50%,
+    #0d0d16 75%,
+    #0a0a12 100%
+  );
+  background-size: 200% 200%;
+  animation: waterShimmer 40s ease-in-out infinite;
+}
+
+.water-chapter-1 .water-layer-1 {
+  background: radial-gradient(ellipse at 30% 40%, rgba(20, 30, 50, 0.15) 0%, transparent 50%);
+}
+
+.water-chapter-1 .water-layer-2 {
+  background: radial-gradient(ellipse at 70% 60%, rgba(15, 25, 45, 0.1) 0%, transparent 50%);
+}
+
+.water-chapter-1 .water-layer-3 {
+  background: radial-gradient(ellipse at 50% 50%, rgba(25, 35, 55, 0.08) 0%, transparent 60%);
+}
+
+/* Chapter 2: Gentle Ripples - Subtle wave movement */
+.water-chapter-2 {
+  background: linear-gradient(
+    135deg,
+    #0a0e15 0%,
+    #0d1218 25%,
+    #10141c 50%,
+    #0d1218 75%,
+    #0a0e15 100%
+  );
+  background-size: 200% 200%;
+  animation: waterShimmer 35s ease-in-out infinite;
+}
+
+.water-chapter-2 .water-layer-1 {
+  background: radial-gradient(ellipse at 40% 30%, rgba(30, 50, 70, 0.2) 0%, transparent 55%);
+}
+
+.water-chapter-2 .water-layer-2 {
+  background: radial-gradient(ellipse at 60% 70%, rgba(25, 45, 65, 0.15) 0%, transparent 50%);
+}
+
+.water-chapter-2 .water-layer-3 {
+  background: radial-gradient(ellipse at 50% 50%, rgba(35, 55, 75, 0.12) 0%, transparent 60%);
+}
+
+/* Chapter 3: Calmer Glow - Warmer teal undertones emerge */
+.water-chapter-3 {
+  background: linear-gradient(
+    135deg,
+    #0a1115 0%,
+    #0d1419 25%,
+    #10171d 50%,
+    #0d1419 75%,
+    #0a1115 100%
+  );
+  background-size: 200% 200%;
+  animation: waterShimmer 30s ease-in-out infinite;
+}
+
+.water-chapter-3 .water-layer-1 {
+  background: radial-gradient(ellipse at 35% 45%, rgba(40, 80, 85, 0.18) 0%, transparent 60%);
+}
+
+.water-chapter-3 .water-layer-2 {
+  background: radial-gradient(ellipse at 65% 55%, rgba(35, 75, 80, 0.14) 0%, transparent 55%);
+}
+
+.water-chapter-3 .water-layer-3 {
+  background: radial-gradient(ellipse at 50% 50%, rgba(45, 85, 90, 0.11) 0%, transparent 65%);
+}
+
+/* Chapter 4: Dawn Light - Lighter, radiant teal */
+.water-chapter-4 {
+  background: linear-gradient(
+    135deg,
+    #0c1418 0%,
+    #0e171c 25%,
+    #111a20 50%,
+    #0e171c 75%,
+    #0c1418 100%
+  );
+  background-size: 200% 200%;
+  animation: waterShimmer 25s ease-in-out infinite;
+}
+
+.water-chapter-4 .water-layer-1 {
+  background: radial-gradient(ellipse at 45% 40%, rgba(60, 120, 110, 0.22) 0%, transparent 65%);
+}
+
+.water-chapter-4 .water-layer-2 {
+  background: radial-gradient(ellipse at 55% 60%, rgba(55, 115, 105, 0.17) 0%, transparent 60%);
+}
+
+.water-chapter-4 .water-layer-3 {
+  background: radial-gradient(ellipse at 50% 50%, rgba(65, 125, 115, 0.14) 0%, transparent 70%);
+}
+
+@keyframes waterShimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Ripple Effect Animations */
+.ripple-circle {
+  transform-origin: center;
+  animation: rippleExpand 1s ease-out forwards;
+}
+
+.ripple-1 {
+  animation-delay: 0s;
+}
+
+.ripple-2 {
+  animation-delay: 0.15s;
+}
+
+.ripple-3 {
+  animation-delay: 0.3s;
 }

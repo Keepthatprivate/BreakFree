@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -10,11 +10,32 @@ interface ResultsPageProps {
   userName: string;
   answers: QuizAnswers;
   onContinue: () => void;
+  onStartTrial?: () => void;
+  hasTrialAccess?: boolean;
 }
 
-export default function ResultsPage({ userName, answers, onContinue }: ResultsPageProps) {
+export default function ResultsPage({ userName, answers, onContinue, onStartTrial, hasTrialAccess = false }: ResultsPageProps) {
+  const [hasTrialPaid, setHasTrialPaid] = useState(false);
+  const [isUnblurring, setIsUnblurring] = useState(false);
+
+  useEffect(() => {
+    // Check both prop and localStorage
+    const trialPaid = hasTrialAccess || localStorage.getItem('trialPaid') === 'true';
+    setHasTrialPaid(trialPaid);
+    
+    if (trialPaid && !isUnblurring) {
+      setIsUnblurring(true);
+    }
+  }, [hasTrialAccess, isUnblurring]);
+
   const handleGetNow = () => {
     onContinue();
+  };
+
+  const handleUnlockResults = () => {
+    if (onStartTrial) {
+      onStartTrial();
+    }
   };
 
   const handleSkip = () => {
@@ -123,8 +144,37 @@ export default function ResultsPage({ userName, answers, onContinue }: ResultsPa
   };
 
   return (
-    <div className="min-h-screen bg-background py-4 sm:py-10">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-background py-4 sm:py-10 relative">
+      {/* Blur overlay for unpaid trial */}
+      {!hasTrialPaid && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="max-w-md mx-auto px-6 text-center">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">💧</div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Lora, serif' }}>
+                Your reflection is forming beneath the surface...
+              </h2>
+              <p className="text-base text-muted-foreground mb-6">
+                Start your 7-day trial to see your complete trauma pattern analysis
+              </p>
+            </div>
+            <Button
+              onClick={handleUnlockResults}
+              size="lg"
+              className="w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40"
+              data-testid="button-unlock-results"
+            >
+              Clear the water - Start €1 Trial
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`max-w-4xl mx-auto px-4 sm:px-6 transition-all duration-1000 ${
+          !hasTrialPaid ? 'blur-[12px]' : isUnblurring ? 'blur-0' : ''
+        }`}
+      >
         <div className="text-center mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
             Feel the difference

@@ -6,6 +6,7 @@ import { Info } from 'lucide-react';
 import type { Question } from '@shared/quiz-data';
 import AudioPlayer from './AudioPlayer';
 import VisualPattern from './VisualPattern';
+import RippleEffect from './RippleEffect';
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
@@ -35,6 +36,8 @@ export default function QuestionCard({
   const [sliderValue, setSliderValue] = useState<number>(
     question.type === 'slider' ? (savedAnswer[0] ? Number(savedAnswer[0]) : question.defaultValue || 50) : 50
   );
+  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const rippleIdRef = useRef(0);
   const isGenderQuestion = question.id === 'q1';
   const previousAudioUrlRef = useRef<string>('');
 
@@ -59,6 +62,12 @@ export default function QuestionCard({
   }, [question.id, savedAnswer, question.type]);
 
   const handleOptionClick = (value: string) => {
+    // Create ripple effect at screen center
+    const id = rippleIdRef.current++;
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    setRipples(prev => [...prev, { id, x, y }]);
+    
     if (question.type === 'radio' || question.type === 'popup' || question.type === 'quote-reflection' || question.type === 'audio-test' || question.type === 'visual-test') {
       setSelectedValues([value]);
       onAnswer([value]);
@@ -72,6 +81,10 @@ export default function QuestionCard({
       setSelectedValues([value]);
       onAnswer([value]);
     }
+  };
+
+  const removeRipple = (id: number) => {
+    setRipples(prev => prev.filter(r => r.id !== id));
   };
 
   const handleSliderChange = (value: number[]) => {
@@ -723,6 +736,16 @@ export default function QuestionCard({
           )}
         </div>
       </div>
+      
+      {/* Render ripple effects */}
+      {ripples.map((ripple) => (
+        <RippleEffect
+          key={ripple.id}
+          x={ripple.x}
+          y={ripple.y}
+          onComplete={() => removeRipple(ripple.id)}
+        />
+      ))}
     </div>
   );
 }

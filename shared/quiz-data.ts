@@ -300,10 +300,10 @@ export const breakScreens: BreakScreen[] = [
 ];
 
 export const empathyMessages = [
-  "You're doing great. Taking this step shows real courage.",
-  "This awareness is the first step toward healing.",
-  "Your feelings are valid, and you're not alone in this.",
-  "Recognizing these patterns is a powerful act of self-care.",
-  "Every answer brings you closer to understanding yourself.",
-  "You deserve peace, and healing is possible.",
+  "Still waters remember. Awareness is the first ripple.",
+  "Patterns appear on the surface when emotions meet choices.",
+  "Every ripple you notice becomes calmer. Keep watching.",
+  "The surface grows still. Your reflection is forming…",
+  "Each choice creates a ripple. You're doing beautifully.",
+  "Like water finding its level, healing flows naturally.",
 ];

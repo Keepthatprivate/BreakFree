@@ -17,6 +17,7 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
+import WaterBackground from '@/components/WaterBackground';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
 type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
@@ -38,12 +39,25 @@ export default function Quiz() {
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
+  const [hasTrialAccess, setHasTrialAccess] = useState(() => {
+    return localStorage.getItem('trialPaid') === 'true';
+  });
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
+
+  const getChapterNumber = (chapterId: string): number => {
+    const chapterMap: { [key: string]: number } = {
+      'past': 1,
+      'patterns': 2,
+      'healing': 3,
+      'future': 4,
+    };
+    return chapterMap[chapterId] || 1;
+  };
 
   useEffect(() => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
@@ -166,15 +180,21 @@ export default function Quiz() {
     setHasPaid(true);
     localStorage.setItem('hasPaid', 'true');
     
+    // Track trial payment specifically
+    if (checkoutType === 'trial') {
+      localStorage.setItem('trialPaid', 'true');
+      setHasTrialAccess(true);
+    }
+    
     // Determine next step based on checkout type (Donation → Membership → Guide → Results)
     if (checkoutType === 'donation') {
       // After donation checkout, go to membership/timeline page
       setState('timeline');
     } else if (checkoutType === 'trial') {
-      // After trial/membership checkout, go to guide upsell page
-      setState('payment');
+      // After trial/membership checkout, go to results with access
+      setState('results');
     } else if (checkoutType === 'upsell') {
-      // After buying guides, go to results
+      // After buying guides, stay on results
       setState('results');
     }
   };
@@ -299,7 +319,13 @@ export default function Quiz() {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <ResultsPage userName={userName} onContinue={handleResultsContinue} answers={answers} />
+        <ResultsPage 
+          userName={userName} 
+          onContinue={handleResultsContinue} 
+          answers={answers}
+          onStartTrial={handleStartTrial}
+          hasTrialAccess={hasTrialAccess}
+        />
       </>
     );
   }
@@ -332,65 +358,69 @@ export default function Quiz() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {state === 'quiz' && (
-        <>
-          <ProgressBar
-            currentChapter={currentQuestion.chapter}
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-          />
-          <QuestionCard
-            question={currentQuestion}
-            chapterTitle={currentChapter?.title || ''}
-            onAnswer={handleAnswer}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            savedAnswer={answers[currentQuestion.id] || []}
-            canGoBack={currentQuestionIndex > 0}
-            isLastQuestion={currentQuestionIndex === questions.length - 1}
-          />
-        </>
-      )}
+    <div className="min-h-screen bg-background relative">
+      <WaterBackground chapter={getChapterNumber(currentQuestion?.chapter || 'past')} />
+      
+      <div className="relative z-10">
+        {state === 'quiz' && (
+          <>
+            <ProgressBar
+              currentChapter={currentQuestion.chapter}
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+            />
+            <QuestionCard
+              question={currentQuestion}
+              chapterTitle={currentChapter?.title || ''}
+              onAnswer={handleAnswer}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              savedAnswer={answers[currentQuestion.id] || []}
+              canGoBack={currentQuestionIndex > 0}
+              isLastQuestion={currentQuestionIndex === questions.length - 1}
+            />
+          </>
+        )}
 
-      {state === 'empathy' && (
-        <>
-          <ProgressBar
-            currentChapter={currentQuestion.chapter}
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-          />
-          <EmpathyMessage
-            message={empathyMessages[empathyMessageIndex]}
-            onContinue={handleEmpathyContinue}
-          />
-        </>
-      )}
+        {state === 'empathy' && (
+          <>
+            <ProgressBar
+              currentChapter={currentQuestion.chapter}
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+            />
+            <EmpathyMessage
+              message={empathyMessages[empathyMessageIndex]}
+              onContinue={handleEmpathyContinue}
+            />
+          </>
+        )}
 
-      {state === 'break' && (
-        <>
-          <ProgressBar
-            currentChapter={currentQuestion.chapter}
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-          />
-          <BreakScreenComponent
-            breakScreen={breakScreens[currentBreakIndex]}
-            onContinue={handleBreakContinue}
-          />
-        </>
-      )}
+        {state === 'break' && (
+          <>
+            <ProgressBar
+              currentChapter={currentQuestion.chapter}
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+            />
+            <BreakScreenComponent
+              breakScreen={breakScreens[currentBreakIndex]}
+              onContinue={handleBreakContinue}
+            />
+          </>
+        )}
 
-      {state === 'contact' && (
-        <>
-          <ProgressBar
-            currentChapter="future"
-            currentQuestionIndex={questions.length - 1}
-            totalQuestions={questions.length}
-          />
-          <ContactForm onSubmit={handleContactSubmit} />
-        </>
-      )}
+        {state === 'contact' && (
+          <>
+            <ProgressBar
+              currentChapter="future"
+              currentQuestionIndex={questions.length - 1}
+              totalQuestions={questions.length}
+            />
+            <ContactForm onSubmit={handleContactSubmit} />
+          </>
+        )}
+      </div>
     </div>
   );
 }
