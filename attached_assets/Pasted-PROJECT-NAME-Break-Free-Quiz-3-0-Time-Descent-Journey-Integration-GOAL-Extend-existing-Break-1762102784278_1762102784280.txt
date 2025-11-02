@@ -1,0 +1,57 @@
+PROJECT NAME: Break Free Quiz 3.0 — Time-Descent Journey Integration
+
+GOAL:
+Extend existing Break Free Quiz (React + TS + Tailwind + Stripe) with a “Journey Back in Time”
+experience that visually rewinds the user’s age through four chapters and ends with an Inner-Child
+encounter, while preserving all ripple, payment, and results features.
+
+INSTRUCTIONS FOR CODING AGENT:
+
+1. Keep all existing components, state logic, scoring, Stripe checkout, webhook, and blur-reveal.
+2. Add a new property `ageStage` (25→18→10→6) mapped to chapters 1-4.
+   • Display fading top-left text "Age {ageStage}".
+3. Replace background Lotties with:
+   - chapter-bg-1-surface.json
+   - chapter-bg-2-descend.json
+   - chapter-bg-3-depth.json
+   - chapter-bg-4-innerchild.json
+   Each loop ≤ 600 KB; preload on quiz start.
+4. Modify rippleBackground.tsx:
+   • Cross-fade (400 ms) when chapter changes.
+   • Support parallax slow zoom (scale 1 → 1.05) for depth illusion.
+5. Insert empathy transition message after each chapter change using updated copy:
+   1. “The surface shimmers… memories begin to stir.”  
+   2. “You’re descending into quieter waters.”  
+   3. “Light filters through; the child waits below.”  
+   4. “Almost there. One more breath.”  
+6. After final question of Chapter 4:
+   • Pause 1 s, fade out background.
+   • Render <InnerChildScene /> full-screen (see component code above).
+   • When CTA clicked → call existing startTrial() → Stripe checkout.
+7. Maintain the ripple-on-answer animation (teal SVG pulse).
+8. After payment success:
+   • Redirect to results page (existing logic).
+   • Keep blur-reveal mechanic unchanged.
+9. Accessibility:
+   • prefers-reduced-motion → disable parallax and Lottie; show static gradient per chapter.
+10. Performance:
+   • Bundle < 3 MB, maintain 60 FPS, prefetch all JSONs.
+
+DELIVERABLE FILES:
+- /src/components/InnerChildScene.tsx
+- /src/components/AgeIndicator.tsx
+- /src/components/rippleBackground.tsx (updated)
+- /src/state/quizState.ts (added ageStage)
+- /src/data/empathyMessages.ts (updated text above)
+- Updated routes in App.tsx for smooth chapter transitions.
+
+DEPLOYMENT CHECKLIST:
+✓ Quiz flow intact (20+ questions)
+✓ Age label fades correctly each chapter
+✓ Ripple animations trigger on answer
+✓ Inner-Child scene loads after last question
+✓ Stripe €1 trial starts from CTA
+✓ Results blur/reveal preserved
+✓ Load < 2 s mobile 4G
+
+END OF SPECIFICATION
