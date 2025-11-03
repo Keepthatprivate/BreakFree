@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
+import introVideo from '@assets/videos/intro-kids.mp4';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
@@ -81,7 +82,7 @@ export default function IntroScene() {
       {hasVideo && !prefersReducedMotion && (
         <motion.video
           ref={videoRef}
-          src={introConfig.videoSrc}
+          src={introVideo}
           autoPlay
           muted
           playsInline

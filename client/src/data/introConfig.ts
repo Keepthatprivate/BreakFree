@@ -1,6 +1,7 @@
 export const introConfig = {
   // Video source - kindergarten children playing
-  videoSrc: "/attached_assets/videos/intro-kids.mp4",
+  // The actual video is imported in IntroScene.tsx using: import introVideo from '@assets/videos/intro-kids.mp4'
+  videoSrc: "intro-kids.mp4", // Just used as a flag to check if video exists
   
   // Initial zoom during video playback (2-3s before question)
   initialZoom: {
