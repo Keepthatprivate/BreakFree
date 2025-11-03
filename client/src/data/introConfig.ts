@@ -1,25 +1,28 @@
 export const introConfig = {
-  // Video source - Add your own video file here
-  // Place video in attached_assets/videos/ and update this path
-  // Example: "/attached_assets/videos/intro-kids.mp4"
-  videoSrc: "", // Leave empty to use static scene
+  // Video source - kindergarten children playing
+  videoSrc: "/attached_assets/videos/intro-kids.mp4",
   
-  // Focal points for zoom animation when gender is selected
-  // These coordinates determine where the camera zooms to
+  // Initial zoom during video playback (2-3s before question)
+  initialZoom: {
+    scale: 1.3,
+    duration: 2.5
+  },
+  
+  // Focal points for deep zoom into child's head (mind plunge)
   boy: {
-    zoom: 2.8,
-    x: -120,
-    y: 60
+    zoom: 3.5,      // Deeper zoom into the mind
+    x: -150,        // Adjust based on boy's position in video
+    y: -80
   },
   girl: {
-    zoom: 2.8,
-    x: 140,
-    y: 40
+    zoom: 3.5,      // Deeper zoom into the mind
+    x: 150,         // Adjust based on girl's position in video
+    y: -80
   },
   
   // Timing configuration (in seconds)
-  questionDelay: 2.5,      // How long to wait before showing question
-  transitionDuration: 1.2, // How long the zoom animation takes
+  questionDelay: 2.5,         // Initial zoom duration before question appears
+  mindPlungeDuration: 2.0,    // Deep zoom into selected child's mind
   
   // Performance settings
   preloadDelay: 0,         // Video preload delay

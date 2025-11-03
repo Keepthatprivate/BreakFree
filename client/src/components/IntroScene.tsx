@@ -45,10 +45,10 @@ export default function IntroScene() {
     // Store gender in localStorage
     localStorage.setItem('gender', gender);
 
-    // Wait for zoom animation to complete, then navigate to quiz
+    // Wait for mind plunge animation to complete, then navigate to quiz
     setTimeout(() => {
       setLocation('/quiz');
-    }, introConfig.transitionDuration * 1000);
+    }, introConfig.mindPlungeDuration * 1000);
   };
 
   // Skip intro and go directly to quiz
@@ -56,8 +56,8 @@ export default function IntroScene() {
     setLocation('/quiz');
   };
 
-  // Get zoom animation values based on selected gender
-  const getZoomAnimation = () => {
+  // Get zoom animation values based on selected gender (mind plunge)
+  const getMindPlungeAnimation = () => {
     if (!selectedGender) return {};
     
     const config = selectedGender === 'boy' ? introConfig.boy : introConfig.girl;
@@ -85,15 +85,31 @@ export default function IntroScene() {
           autoPlay
           muted
           playsInline
+          loop={false}
           className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={isZooming ? getZoomAnimation() : { opacity: 1 }}
-          transition={{ 
-            opacity: { duration: 1 },
-            scale: { duration: introConfig.transitionDuration, ease: "easeInOut" },
-            x: { duration: introConfig.transitionDuration, ease: "easeInOut" },
-            y: { duration: introConfig.transitionDuration, ease: "easeInOut" }
-          }}
+          initial={{ opacity: 0, scale: 1 }}
+          animate={
+            isZooming 
+              ? getMindPlungeAnimation() // Deep zoom into child's mind after selection
+              : { 
+                  opacity: 1, 
+                  scale: introConfig.initialZoom.scale // Initial gentle zoom during playback
+                }
+          }
+          transition={
+            isZooming
+              ? { 
+                  // Mind plunge animation - dramatic zoom into selected child
+                  scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                  x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                  y: { duration: introConfig.mindPlungeDuration, ease: "easeIn" }
+                }
+              : {
+                  // Initial zoom during video playback
+                  opacity: { duration: 1 },
+                  scale: { duration: introConfig.initialZoom.duration, ease: "easeInOut" }
+                }
+          }
           data-testid="intro-video"
         />
       )}
