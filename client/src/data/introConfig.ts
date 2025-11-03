@@ -10,17 +10,28 @@ export const introConfig = {
   },
   
   // Focal points for deep zoom into child's head (mind plunge)
-  // Boy is on the left side of the cartoon image
+  // Desktop (horizontal image) - Boy on left, Girl on right
   boy: {
     zoom: 3.0,      // Deeper zoom into the mind
     x: -200,        // Boy on left side
     y: -40
   },
-  // Girl is on the right side of the cartoon image
   girl: {
     zoom: 3.0,      // Deeper zoom into the mind
     x: 200,         // Girl on right side
     y: -40
+  },
+  
+  // Mobile (vertical image) - Boy on left, Girl on right (closer together)
+  boyMobile: {
+    zoom: 2.8,      // Slightly less zoom for mobile
+    x: -100,        // Boy on left (less offset in vertical layout)
+    y: 0
+  },
+  girlMobile: {
+    zoom: 2.8,      // Slightly less zoom for mobile
+    x: 100,         // Girl on right (less offset in vertical layout)
+    y: 0
   },
   
   // Timing configuration (in seconds)

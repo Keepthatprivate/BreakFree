@@ -3,7 +3,8 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
-import kidsImage from '@assets/ChatGPT Image 3 nov. 2025, 15_52_05_1762181570565.png';
+import kidsImageDesktop from '@assets/ChatGPT Image 3 nov. 2025, 15_52_05_1762181570565.png';
+import kidsImageMobile from '@assets/ChatGPT Image 3 nov. 2025, 15_56_30_1762181821528.png';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
@@ -12,6 +13,15 @@ export default function IntroScene() {
   const [isZooming, setIsZooming] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Check for prefers-reduced-motion
   useEffect(() => {
@@ -61,7 +71,11 @@ export default function IntroScene() {
   const getMindPlungeAnimation = () => {
     if (!selectedGender) return {};
     
-    const config = selectedGender === 'boy' ? introConfig.boy : introConfig.girl;
+    // Use different focal points for mobile (vertical image) vs desktop (horizontal image)
+    const config = isMobile 
+      ? (selectedGender === 'boy' ? introConfig.boyMobile : introConfig.girlMobile)
+      : (selectedGender === 'boy' ? introConfig.boy : introConfig.girl);
+    
     return {
       scale: config.zoom,
       x: config.x,
@@ -87,7 +101,7 @@ export default function IntroScene() {
           transition={{ duration: 1 }}
         >
           <motion.img
-            src={kidsImage}
+            src={isMobile ? kidsImageMobile : kidsImageDesktop}
             alt="Children playing"
             className="absolute inset-0 w-full h-full object-cover brightness-90"
             initial={{ scale: 1 }}
