@@ -10,15 +10,17 @@ export const introConfig = {
   },
   
   // Focal points for deep zoom into child's head (mind plunge)
+  // Boy is on the left side of the cartoon image
   boy: {
-    zoom: 2.5,      // Deeper zoom into the mind
-    x: -100,        // Adjust based on boy's position in image
-    y: -50
+    zoom: 3.0,      // Deeper zoom into the mind
+    x: -200,        // Boy on left side
+    y: -40
   },
+  // Girl is on the right side of the cartoon image
   girl: {
-    zoom: 2.5,      // Deeper zoom into the mind
-    x: 100,         // Adjust based on girl's position in image
-    y: -50
+    zoom: 3.0,      // Deeper zoom into the mind
+    x: 200,         // Girl on right side
+    y: -40
   },
   
   // Timing configuration (in seconds)

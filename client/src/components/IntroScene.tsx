@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
-import kidsImage from '@assets/stock_images/two_children_playing_ea94ddb0.jpg';
+import kidsImage from '@assets/ChatGPT Image 3 nov. 2025, 15_52_05_1762181570565.png';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
