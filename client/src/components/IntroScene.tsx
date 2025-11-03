@@ -68,6 +68,8 @@ export default function IntroScene() {
     };
   };
 
+  const hasVideo = introConfig.videoSrc && introConfig.videoSrc.length > 0;
+
   return (
     <motion.div 
       className="relative w-full h-screen overflow-hidden bg-[#0d0d16]"
@@ -75,8 +77,8 @@ export default function IntroScene() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Video Background */}
-      {!prefersReducedMotion && (
+      {/* Video Background - Only if video source is provided */}
+      {hasVideo && !prefersReducedMotion && (
         <motion.video
           ref={videoRef}
           src={introConfig.videoSrc}
@@ -96,12 +98,60 @@ export default function IntroScene() {
         />
       )}
 
-      {/* Fallback for reduced motion preference */}
-      {prefersReducedMotion && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#0d0d16]">
-          <div className="text-center text-white max-w-md mx-4">
-            <h2 className="text-2xl font-lora mb-4">Welcome to Break Free Quiz</h2>
-            <p className="text-white/70 mb-6">An interactive journey through your childhood patterns</p>
+      {/* Static Background Scene - Shown when no video or reduced motion */}
+      {(!hasVideo || prefersReducedMotion) && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d16] via-[#1a1a2e] to-[#0d0d16]">
+          {/* Ambient animated particles */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-[#54d3bb]/10"
+                style={{
+                  width: `${Math.random() * 300 + 100}px`,
+                  height: `${Math.random() * 300 + 100}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  x: [0, Math.random() * 100 - 50],
+                  y: [0, Math.random() * 100 - 50],
+                  scale: [1, 1.2, 1],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: Math.random() * 10 + 10,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+          
+          {/* Center content */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div 
+              className="text-center text-white max-w-md mx-4 z-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1 }}
+            >
+              <motion.div
+                className="text-6xl mb-6"
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                🌟
+              </motion.div>
+              <h2 className="text-3xl font-lora mb-4">Welcome to Break Free Quiz</h2>
+              <p className="text-white/70 text-lg">An interactive journey through your childhood patterns</p>
+            </motion.div>
           </div>
         </div>
       )}

@@ -1,7 +1,8 @@
 export const introConfig = {
-  // Video source - can be replaced with your own video file
+  // Video source - Add your own video file here
   // Place video in attached_assets/videos/ and update this path
-  videoSrc: "https://cdn.pixabay.com/video/2024/01/03/195431-899934854_large.mp4",
+  // Example: "/attached_assets/videos/intro-kids.mp4"
+  videoSrc: "", // Leave empty to use static scene
   
   // Focal points for zoom animation when gender is selected
   // These coordinates determine where the camera zooms to
