@@ -1,0 +1,177 @@
+PROJECT NAME: Break Free Quiz 3.1 — Cinematic Intro Sequence (Boy/Girl Video Scene)
+
+GOAL:
+Add an interactive video-based opening scene to the existing Break Free Quiz.
+At launch, the app plays a short cinematic clip of two kids (a boy and a girl)
+playing together in a kindergarten setting. After a few seconds, a gender
+question pops up. Once the user selects a gender, the camera zooms into
+the corresponding child’s head — symbolizing entering their inner world —
+then transitions smoothly to the first quiz question.
+
+Preserve all existing quiz logic, routing, payments, scoring, and backend.
+
+====================================================================
+GENERAL GUIDELINES
+====================================================================
+
+1. Framework: React + TypeScript + Vite (current setup)
+2. UI: Tailwind + shadcn/ui + Framer Motion
+3. Backend: unchanged (Express, Stripe, Resend)
+4. Maintain all question data, quiz-analyzer.ts logic, and state persistence
+5. Mobile-first design — full responsiveness required
+
+====================================================================
+NEW COMPONENTS TO CREATE
+====================================================================
+
+Create three new files:
+
+- /src/components/IntroScene.tsx
+- /src/components/VideoOverlayQuestion.tsx
+- /src/data/introConfig.json
+
+--------------------------------------------------------------------
+IntroScene.tsx
+--------------------------------------------------------------------
+
+Purpose:
+Displays the video intro and handles transition logic.
+
+Requirements:
+• Fullscreen video background (autoplay, muted, loop=false)
+• Dark overlay gradient at bottom for readability
+• Play 2–3s of the video before showing the question popup
+• Fade in the gender question (using Framer Motion)
+• On user selection (“Boy” or “Girl”), trigger zoom-in animation on the chosen child
+• After zoom animation completes → navigate to /quiz (first question)
+• Store selected gender in LocalStorage (key: "gender")
+
+Implementation Details:
+• Use <motion.video> and <motion.div> for opacity and scale transitions
+• Use useNavigate() from Wouter to route to /quiz
+• Add subtle ambient background sound (children laughing, optional)
+• Include “Skip Intro” button bottom-right (for returning users)
+
+Pseudocode:
+
+<motion.div className="relative w-full h-screen overflow-hidden bg-black">
+  <motion.video
+    src="/assets/intro-kids.mp4"
+    autoPlay
+    muted
+    playsInline
+    className="object-cover w-full h-full"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 1 }}
+  />
+  <VideoOverlayQuestion onSelect={handleGenderChoice} />
+  <motion.button className="absolute bottom-6 right-6 text-white/60 text-sm" onClick={skipIntro}>
+    Skip Intro
+  </motion.button>
+</motion.div>
+
+Handle gender selection:
+- If “Boy”: scale + translate to boy’s head region (predefined focal coords)
+- If “Girl”: scale + translate to girl’s head region
+→ Use Framer Motion animate={{ scale: 3, x: -120, y: 60 }} for zoom simulation
+→ On complete: navigate("/quiz")
+
+--------------------------------------------------------------------
+VideoOverlayQuestion.tsx
+--------------------------------------------------------------------
+
+Purpose:
+Displays the gender identity question overlay.
+
+Requirements:
+• Appear ~2s after video start
+• Centered card overlay with soft glow
+• Text: “Which child feels more like you?”
+• Two glowing buttons: “Boy” / “Girl”
+• Fade in/out smoothly
+
+Layout (Tailwind):
+
+<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 2, duration: 0.8 }}
+    className="bg-white/10 border border-white/20 p-6 rounded-2xl text-center text-white max-w-sm"
+  >
+    <p className="text-lg font-lora mb-4">Which child feels more like you?</p>
+    <div className="flex gap-4 justify-center">
+      <button onClick={() => onSelect('Boy')} className="bg-[#54d3bb] px-4 py-2 rounded-lg font-inter">Boy</button>
+      <button onClick={() => onSelect('Girl')} className="bg-[#54d3bb] px-4 py-2 rounded-lg font-inter">Girl</button>
+    </div>
+  </motion.div>
+</div>
+
+--------------------------------------------------------------------
+introConfig.json
+--------------------------------------------------------------------
+
+Purpose:
+Holds configuration for video and zoom focal points.
+
+Example:
+{
+  "videoSrc": "/assets/intro-kids.mp4",
+  "boy": { "zoom": 2.8, "x": -120, "y": 60 },
+  "girl": { "zoom": 2.8, "x": 140, "y": 40 },
+  "questionDelay": 2.0,
+  "transitionDelay": 1.0
+}
+
+--------------------------------------------------------------------
+ROUTING UPDATE (main.tsx or App.tsx)
+--------------------------------------------------------------------
+
+• Add new route:
+  <Route path="/" component={IntroScene} />
+  (Replaces direct navigation to /quiz)
+• Quiz route remains unchanged.
+
+--------------------------------------------------------------------
+BEHAVIOR FLOW
+--------------------------------------------------------------------
+
+1. User lands on /
+2. Video plays automatically
+3. After 2 seconds → question overlay fades in
+4. User taps “Boy” or “Girl”
+5. Video zooms into corresponding focal point
+6. Screen fades to black
+7. Navigate to /quiz (start at Q1)
+8. Store “gender” in LocalStorage and use in quiz-analyzer.ts if needed
+
+--------------------------------------------------------------------
+MOBILE OPTIMIZATION
+--------------------------------------------------------------------
+
+• Use short MP4 or WebM (~2–4 MB max, 720p or lower)
+• On mobile data connections, show static thumbnail fallback
+• Use prefers-reduced-motion to skip video and show question immediately
+• Touch-safe buttons (min 44x44px)
+
+--------------------------------------------------------------------
+PERFORMANCE REQUIREMENTS
+--------------------------------------------------------------------
+
+✓ Video preload but not auto-buffer beyond 5s
+✓ Lazy-load quiz bundle while intro plays
+✓ Transition to quiz <200ms after zoom ends
+✓ Total intro time <10s (2s play + 2s question + 3s zoom)
+
+--------------------------------------------------------------------
+TESTING REQUIREMENTS
+--------------------------------------------------------------------
+
+✓ Works on iOS Safari, Android Chrome
+✓ Skip Intro correctly bypasses to /quiz
+✓ Gender stored and accessible in LocalStorage
+✓ Transition smooth on 60fps
+✓ Backend unaffected
+
+END OF SPECIFICATION
