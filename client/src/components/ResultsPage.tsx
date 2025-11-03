@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Check, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -14,27 +13,12 @@ interface ResultsPageProps {
 }
 
 export default function ResultsPage({ userName, answers, onContinue }: ResultsPageProps) {
-  const [showIntro, setShowIntro] = useState(true);
-  const [firstText, setFirstText] = useState(false);
-  const [secondText, setSecondText] = useState(false);
-
-  useEffect(() => {
-    // Text animation sequence
-    const firstTimer = setTimeout(() => setFirstText(true), 1000);
-    const secondTimer = setTimeout(() => setSecondText(true), 3000);
-
-    return () => {
-      clearTimeout(firstTimer);
-      clearTimeout(secondTimer);
-    };
-  }, []);
-
-  const handleRevealResults = () => {
-    setShowIntro(false);
-  };
-
   const handleGetNow = () => {
     onContinue();
+  };
+
+  const handleSkip = () => {
+    console.log('Skip clicked');
   };
 
   // Calculate dynamic results based on answers
@@ -138,106 +122,8 @@ export default function ResultsPage({ userName, answers, onContinue }: ResultsPa
     ],
   };
 
-  // Inner Child Introduction Animation
-  if (showIntro) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0, filter: 'blur(10px)' }}
-        transition={{ duration: 0.8 }}
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/10 px-4"
-      >
-        <div className="max-w-2xl mx-auto text-center">
-          {/* Glowing Child Silhouette */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="mb-12 flex justify-center"
-          >
-            <div className="relative">
-              {/* Glow effect */}
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                  opacity: [0.3, 0.5, 0.3],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className="absolute inset-0 blur-3xl bg-gradient-to-br from-primary/40 to-accent/40 rounded-full"
-              />
-              {/* Child silhouette */}
-              <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center border-2 border-primary/20">
-                <span className="text-6xl sm:text-7xl">🧒</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Text Sequence */}
-          <div className="min-h-[120px] mb-12">
-            <AnimatePresence mode="wait">
-              {firstText && !secondText && (
-                <motion.p
-                  key="first-text"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.6 }}
-                  className="text-2xl sm:text-3xl font-medium text-foreground leading-relaxed italic"
-                >
-                  "You finally came back for me."
-                </motion.p>
-              )}
-              {secondText && (
-                <motion.p
-                  key="second-text"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="text-2xl sm:text-3xl font-medium text-primary leading-relaxed"
-                >
-                  Let's start healing your inner child.
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* CTA Button */}
-          <AnimatePresence>
-            {secondText && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-              >
-                <Button
-                  onClick={handleRevealResults}
-                  size="lg"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-lg sm:text-xl font-bold rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40"
-                  data-testid="button-reveal-results"
-                >
-                  See my healing plan
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // Main Results Content (shown after intro animation)
   return (
-    <motion.div
-      initial={{ opacity: 0, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
-      transition={{ duration: 0.8 }}
-      className="min-h-screen bg-background py-4 sm:py-10"
-    >
+    <div className="min-h-screen bg-background py-4 sm:py-10">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
@@ -388,6 +274,6 @@ export default function ResultsPage({ userName, answers, onContinue }: ResultsPa
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
