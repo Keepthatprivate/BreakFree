@@ -6,7 +6,7 @@ import EmpathyMessage from '@/components/EmpathyMessage';
 import ContactForm from '@/components/ContactForm';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
-import BreakScreenComponent from '@/components/BreakScreen';
+import AnimatedBreakScreen from '@/components/AnimatedBreakScreen';
 import TraumaPatterns from '@/components/TraumaPatterns';
 import BenefitsPage from '@/components/BenefitsPage';
 import SevenDaysPage from '@/components/SevenDaysPage';
@@ -17,7 +17,7 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
-import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
+import { questions, empathyMessages, chapters } from '@shared/quiz-data';
 
 type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
@@ -374,8 +374,8 @@ export default function Quiz() {
             currentQuestionIndex={currentQuestionIndex}
             totalQuestions={questions.length}
           />
-          <BreakScreenComponent
-            breakScreen={breakScreens[currentBreakIndex]}
+          <AnimatedBreakScreen
+            animationIndex={currentBreakIndex}
             onContinue={handleBreakContinue}
           />
         </>
