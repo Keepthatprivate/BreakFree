@@ -110,16 +110,6 @@ export const chapters: Chapter[] = [
 
 export const questions: Question[] = [
   {
-    id: 'q1',
-    chapter: 'past',
-    text: 'How would you describe yourself?',
-    type: 'radio',
-    options: [
-      { value: 'male', label: 'Male' },
-      { value: 'female', label: 'Female' },
-    ],
-  },
-  {
     id: 'q2',
     chapter: 'past',
     text: 'Did you feel truly heard by your parents as a child?',
