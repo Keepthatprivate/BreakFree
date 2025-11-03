@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
-import introVideo from '@assets/videos/intro-kids.mp4';
+import kidsImage from '@assets/stock_images/two_children_playing_ea94ddb0.jpg';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
@@ -78,41 +78,54 @@ export default function IntroScene() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Video Background - Only if video source is provided */}
-      {hasVideo && !prefersReducedMotion && (
-        <motion.video
-          ref={videoRef}
-          src={introVideo}
-          autoPlay
-          muted
-          playsInline
-          loop={false}
-          className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0, scale: 1 }}
-          animate={
-            isZooming 
-              ? getMindPlungeAnimation() // Deep zoom into child's mind after selection
-              : { 
-                  opacity: 1, 
-                  scale: introConfig.initialZoom.scale // Initial gentle zoom during playback
-                }
-          }
-          transition={
-            isZooming
-              ? { 
-                  // Mind plunge animation - dramatic zoom into selected child
-                  scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
-                  x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
-                  y: { duration: introConfig.mindPlungeDuration, ease: "easeIn" }
-                }
-              : {
-                  // Initial zoom during video playback
-                  opacity: { duration: 1 },
-                  scale: { duration: introConfig.initialZoom.duration, ease: "easeInOut" }
-                }
-          }
-          data-testid="intro-video"
-        />
+      {/* Animated Image Background - Cinematic effect */}
+      {!prefersReducedMotion && (
+        <motion.div
+          className="absolute inset-0 w-full h-full overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <motion.img
+            src={kidsImage}
+            alt="Children playing"
+            className="absolute inset-0 w-full h-full object-cover brightness-90"
+            initial={{ scale: 1 }}
+            animate={
+              isZooming 
+                ? getMindPlungeAnimation() // Deep zoom into child's mind after selection
+                : { 
+                    scale: introConfig.initialZoom.scale // Initial gentle zoom during playback
+                  }
+            }
+            transition={
+              isZooming
+                ? { 
+                    // Mind plunge animation - dramatic zoom into selected child
+                    scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                    x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                    y: { duration: introConfig.mindPlungeDuration, ease: "easeIn" }
+                  }
+                : {
+                    // Initial zoom during playback
+                    scale: { duration: introConfig.initialZoom.duration, ease: "easeInOut" }
+                  }
+            }
+            data-testid="intro-image"
+          />
+          {/* Animated overlay for depth */}
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-br from-[#54d3bb]/10 via-transparent to-[#0d0d16]/30"
+            animate={{
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </motion.div>
       )}
 
       {/* Static Background Scene - Shown when no video or reduced motion */}
