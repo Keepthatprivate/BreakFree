@@ -13,24 +13,24 @@ export const introConfig = {
   // Desktop (horizontal image) - Boy on left, Girl on right
   boy: {
     zoom: 3.0,      // Deeper zoom into the boy's mind
-    x: -220,        // Boy on left side (his head position)
+    x: 220,         // Boy on left side (move image right to see left)
     y: -100         // Focus on upper part (head/face area)
   },
   girl: {
     zoom: 3.0,      // Deeper zoom into the girl's mind
-    x: 220,         // Girl on right side (her head position)
+    x: -220,        // Girl on right side (move image left to see right)
     y: -100         // Focus on upper part (head/face area)
   },
   
   // Mobile (vertical image) - Boy on left, Girl on right (closer together in portrait)
   boyMobile: {
     zoom: 2.8,      // Slightly less zoom for mobile
-    x: -120,        // Boy on left (his head position in vertical layout)
+    x: 120,         // Boy on left (move image right to see left)
     y: -80          // Focus on upper part (head/face area)
   },
   girlMobile: {
     zoom: 2.8,      // Slightly less zoom for mobile
-    x: 120,         // Girl on right (her head position in vertical layout)
+    x: -120,        // Girl on right (move image left to see right)
     y: -80          // Focus on upper part (head/face area)
   },
   
