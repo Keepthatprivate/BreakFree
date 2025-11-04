@@ -594,6 +594,7 @@ export default function QuestionCard({
                 src={geometricPattern}
                 alt="Geometric pattern"
                 className="w-full h-32 sm:h-40 object-cover rounded-xl"
+                loading="eager"
               />
             </div>
             

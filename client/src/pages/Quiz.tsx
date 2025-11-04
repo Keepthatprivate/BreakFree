@@ -19,6 +19,10 @@ import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
+import { animations } from '@/lib/animationAssets';
+import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
+import footstepsAudio from '@assets/footsteps_short.mp3';
+import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
 type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
@@ -43,9 +47,48 @@ export default function Quiz() {
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
+
+  // Preload all images and audio assets
+  useEffect(() => {
+    const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
+    const allAssets: string[] = [];
+
+    // Collect all animation images for the selected gender
+    animations[gender].forEach((animation) => {
+      allAssets.push(...animation.images);
+    });
+
+    // Add other static assets
+    allAssets.push(geometricPattern);
+
+    // Preload images
+    const imagePromises = allAssets.map((src) => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = src;
+      });
+    });
+
+    // Preload audio files
+    const audioPromises = [footstepsAudio, doorClosingAudio].map((src) => {
+      return new Promise<void>((resolve) => {
+        const audio = new Audio();
+        audio.oncanplaythrough = () => resolve();
+        audio.onerror = () => resolve();
+        audio.src = src;
+      });
+    });
+
+    Promise.all([...imagePromises, ...audioPromises]).then(() => {
+      setAssetsLoaded(true);
+    });
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
@@ -359,6 +402,24 @@ export default function Quiz() {
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
         <FAQPage onContinue={handleFAQContinue} />
       </>
+    );
+  }
+
+  // Show loading screen while assets are being preloaded
+  if (!assetsLoaded) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-pulse text-2xl font-bold text-foreground mb-4">
+            Preparing your experience...
+          </div>
+          <div className="flex gap-2 justify-center">
+            <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
     );
   }
 
