@@ -110,10 +110,11 @@ export default function Quiz() {
         }, 300);
       }
     } else {
-      // After last question, show final quote break (no animation) before contact
+      // After last question, show animation 4 + final quote break before contact
       const transitionIndex = getChapterTransitionIndex();
+      setCurrentAnimationIndex(transitionIndex);
       setCurrentQuoteBreakIndex(transitionIndex);
-      setState('quote-break');
+      setState('animation');
     }
   };
 
