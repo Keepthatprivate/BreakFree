@@ -16,33 +16,33 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
   useEffect(() => {
     setIsVisible(true);
 
-    const timings = [
-      700,  // Image 1: 0.7s
-      700,  // Image 2: 0.7s
-      1000, // Image 3: 1.0s
+    const transitionDuration = 200; // Quick transition time
+    const displayTimings = [
+      1500,  // Image 1: 1.5s display
+      1500,  // Image 2: 1.5s display
+      2000,  // Image 3: 2.0s display
     ];
 
     const imageTimers: NodeJS.Timeout[] = [];
-    let accumulatedTime = 300; // Initial fade-in time
+    let accumulatedTime = 0;
 
-    timings.forEach((duration, index) => {
-      const timer = setTimeout(() => {
-        if (index < timings.length - 1) {
-          setCurrentImageIndex(index + 1);
-        }
-      }, accumulatedTime);
-      
-      imageTimers.push(timer);
-      accumulatedTime += duration;
+    displayTimings.forEach((displayTime, index) => {
+      if (index > 0) {
+        const timer = setTimeout(() => {
+          setCurrentImageIndex(index);
+        }, accumulatedTime);
+        imageTimers.push(timer);
+      }
+      accumulatedTime += displayTime + transitionDuration;
     });
 
     const fadeOutTimer = setTimeout(() => {
       setIsVisible(false);
-    }, accumulatedTime);
+    }, accumulatedTime - transitionDuration);
 
     const completeTimer = setTimeout(() => {
       onContinue();
-    }, accumulatedTime + 300); // Wait for fade-out
+    }, accumulatedTime);
 
     return () => {
       imageTimers.forEach(clearTimeout);
@@ -64,7 +64,7 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
             key={index}
             src={imageSrc}
             alt={`Animation frame ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${
+            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-200 ${
               currentImageIndex === index ? 'opacity-100' : 'opacity-0'
             }`}
             data-testid={`animation-image-${index}`}
