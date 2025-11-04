@@ -66,9 +66,9 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-background overflow-hidden">
       <div
-        className={`relative w-full max-w-2xl aspect-square transition-opacity duration-300 ${
+        className={`relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] max-w-xl max-h-xl transition-opacity duration-300 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         data-testid="animated-break-screen"
