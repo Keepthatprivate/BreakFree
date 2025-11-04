@@ -63,31 +63,32 @@ export default function Quiz() {
     return empathyTriggers.includes(currentQuestionIndex);
   };
 
-  const showQuoteBreak = () => {
-    // Show quote breaks after questions 3, 7, 10, 12 (end of each chapter section)
-    const quoteTriggers = [3, 7, 10, 12];
-    return quoteTriggers.includes(currentQuestionIndex);
+  const showChapterTransition = () => {
+    // Show chapter transitions (animation + quote) after questions 3, 7, 10, 12
+    const transitionTriggers = [3, 7, 10, 12];
+    return transitionTriggers.includes(currentQuestionIndex);
   };
 
-  const getQuoteBreakForCurrentQuestion = () => {
-    const quoteMap: { [key: number]: number } = {
-      3: 0,  // After q4 (end of past) -> break 1
-      7: 1,  // After q8 (end of patterns) -> break 2
-      10: 2, // After q11 (end of healing) -> break 3
-      12: 3, // After q13 (end of future) -> break 4
+  const getChapterTransitionIndex = () => {
+    const transitionMap: { [key: number]: number } = {
+      3: 0,  // After q4 -> Animation 0 + Quote 0 -> q5 (patterns)
+      7: 1,  // After q8 -> Animation 1 + Quote 1 -> q9 (healing)
+      10: 2, // After q11 -> Animation 2 + Quote 2 -> q12 (future)
+      12: 3, // After q13 -> Animation 3 + Quote 3 -> Contact
     };
-    return quoteMap[currentQuestionIndex];
+    return transitionMap[currentQuestionIndex];
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      // Priority order: quote breaks -> empathy messages -> regular advance
+      // Priority order: chapter transitions -> empathy messages -> regular advance
       
-      // 1. Check for quote breaks first (end of chapter sections)
-      if (showQuoteBreak()) {
-        const quoteIndex = getQuoteBreakForCurrentQuestion();
-        setCurrentQuoteBreakIndex(quoteIndex);
-        setState('quote-break');
+      // 1. Check for chapter transitions (animation + quote at start of new chapter)
+      if (showChapterTransition()) {
+        const transitionIndex = getChapterTransitionIndex();
+        setCurrentAnimationIndex(transitionIndex);
+        setCurrentQuoteBreakIndex(transitionIndex);
+        setState('animation');
       }
       // 2. Check for empathy messages
       else if (showEmpathyMessage()) {
@@ -101,7 +102,11 @@ export default function Quiz() {
         }, 300);
       }
     } else {
-      setState('contact');
+      // After last question, show final animation + quote before contact
+      const transitionIndex = getChapterTransitionIndex();
+      setCurrentAnimationIndex(transitionIndex);
+      setCurrentQuoteBreakIndex(transitionIndex);
+      setState('animation');
     }
   };
 
@@ -121,40 +126,20 @@ export default function Quiz() {
   };
 
   const handleAnimationContinue = () => {
-    setState('quiz');
-    setTimeout(() => {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }, 300);
+    // After animation, show the quote break
+    setState('quote-break');
   };
 
   const handleQuoteBreakContinue = () => {
-    // After quote break, check if we're entering a new chapter
-    const nextIndex = currentQuestionIndex + 1;
-    if (nextIndex < questions.length) {
-      const currentChapterId = questions[currentQuestionIndex]?.chapter;
-      const nextChapterId = questions[nextIndex]?.chapter;
-      
-      // If entering a new chapter, show animation
-      if (currentChapterId !== nextChapterId) {
-        const animationMap: { [key: string]: number } = {
-          'patterns': 0,
-          'healing': 1,
-          'future': 2,
-        };
-        setCurrentAnimationIndex(animationMap[nextChapterId] || 0);
-        setState('animation');
-      } else {
-        // Same chapter, just advance to next question
-        setState('quiz');
-        setTimeout(() => {
-          setCurrentQuestionIndex((prev) => prev + 1);
-        }, 300);
-      }
-    } else {
+    // After quote break, advance to next question or contact form
+    if (currentQuestionIndex < questions.length - 1) {
       setState('quiz');
       setTimeout(() => {
         setCurrentQuestionIndex((prev) => prev + 1);
       }, 300);
+    } else {
+      // After last question's animation + quote, go to contact
+      setState('contact');
     }
   };
 
