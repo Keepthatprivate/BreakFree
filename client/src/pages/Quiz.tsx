@@ -63,38 +63,68 @@ export default function Quiz() {
     return empathyTriggers.includes(currentQuestionIndex);
   };
 
-  const showBreakScreen = () => {
-    // Show break screens after questions 3, 7, 10, 12
-    const breakTriggers = [3, 7, 10, 12];
-    return breakTriggers.includes(currentQuestionIndex);
+  const showChapterAnimation = () => {
+    // Show animations at the start of new chapters
+    // Before q5 (patterns), q9 (healing), q12 (future)
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex >= questions.length) return false;
+    
+    const currentChapterId = questions[currentQuestionIndex]?.chapter;
+    const nextChapterId = questions[nextIndex]?.chapter;
+    
+    return currentChapterId !== nextChapterId;
   };
 
-  const getBreakScreenForCurrentQuestion = () => {
-    const breakMap: { [key: number]: number } = {
-      3: 0,  // After q4 (past chapter) -> data-break
-      7: 1,  // After q8 (patterns chapter) -> quote-break
-      10: 2, // After q11 (healing chapter) -> testimonial-break
-      12: 3, // After q13 (future chapter) -> visual-pause
+  const getAnimationIndexForChapter = () => {
+    const nextIndex = currentQuestionIndex + 1;
+    const nextChapterId = questions[nextIndex]?.chapter;
+    
+    const animationMap: { [key: string]: number } = {
+      'patterns': 0,  // Start of patterns chapter -> animation 1
+      'healing': 1,   // Start of healing chapter -> animation 2
+      'future': 2,    // Start of future chapter -> animation 3
     };
-    return breakMap[currentQuestionIndex];
+    return animationMap[nextChapterId] || 0;
+  };
+
+  const showQuoteBreak = () => {
+    // Show quote breaks after questions 3, 7, 10, 12 (end of each chapter section)
+    const quoteTriggers = [3, 7, 10, 12];
+    return quoteTriggers.includes(currentQuestionIndex);
+  };
+
+  const getQuoteBreakForCurrentQuestion = () => {
+    const quoteMap: { [key: number]: number } = {
+      3: 0,  // After q4 (end of past) -> break 1
+      7: 1,  // After q8 (end of patterns) -> break 2
+      10: 2, // After q11 (end of healing) -> break 3
+      12: 3, // After q13 (end of future) -> break 4
+    };
+    return quoteMap[currentQuestionIndex];
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      // Priority order: break screens -> empathy messages -> regular advance
+      // Priority order: quote breaks -> empathy messages -> chapter animations -> regular advance
       
-      // 1. Check for break screens first (highest priority)
-      if (showBreakScreen()) {
-        const breakIndex = getBreakScreenForCurrentQuestion();
-        setCurrentBreakIndex(breakIndex);
-        setState('break');
+      // 1. Check for quote breaks first (end of chapter sections)
+      if (showQuoteBreak()) {
+        const quoteIndex = getQuoteBreakForCurrentQuestion();
+        setCurrentQuoteBreakIndex(quoteIndex);
+        setState('quote-break');
       }
       // 2. Check for empathy messages
       else if (showEmpathyMessage()) {
         setState('empathy');
         setEmpathyMessageIndex(Math.floor(Math.random() * empathyMessages.length));
       }
-      // 3. Regular advance
+      // 3. Check for chapter animations (start of new chapters)
+      else if (showChapterAnimation()) {
+        const animationIndex = getAnimationIndexForChapter();
+        setCurrentAnimationIndex(animationIndex);
+        setState('animation');
+      }
+      // 4. Regular advance
       else {
         setTimeout(() => {
           setCurrentQuestionIndex((prev) => prev + 1);
@@ -120,7 +150,14 @@ export default function Quiz() {
     }, 300);
   };
 
-  const handleBreakContinue = () => {
+  const handleAnimationContinue = () => {
+    setState('quiz');
+    setTimeout(() => {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    }, 300);
+  };
+
+  const handleQuoteBreakContinue = () => {
     setState('quiz');
     setTimeout(() => {
       setCurrentQuestionIndex((prev) => prev + 1);
