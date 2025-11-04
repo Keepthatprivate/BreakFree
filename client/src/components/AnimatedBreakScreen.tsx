@@ -9,14 +9,35 @@ interface AnimatedBreakScreenProps {
 export default function AnimatedBreakScreen({ animationIndex, onContinue }: AnimatedBreakScreenProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
   const animationSequence = animations[gender][animationIndex];
 
-  // Safety check: if animation doesn't exist, skip it
+  // Preload all images before starting animation
   useEffect(() => {
     if (!animationSequence) {
       onContinue();
+      return;
+    }
+
+    const imagePromises = animationSequence.images.map((imageSrc) => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Still resolve on error to prevent blocking
+        img.src = imageSrc;
+      });
+    });
+
+    Promise.all(imagePromises).then(() => {
+      setImagesLoaded(true);
+    });
+  }, [animationSequence, onContinue]);
+
+  // Start animation sequence after images are loaded
+  useEffect(() => {
+    if (!animationSequence || !imagesLoaded) {
       return;
     }
 
@@ -25,7 +46,6 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
       navigator.vibrate([100, 50, 100]);
     }
 
-    const transitionDuration = 200; // Quick transition time
     const displayTimings = [
       1500,  // Image 1: 1.5s display
       1500,  // Image 2: 1.5s display
@@ -42,23 +62,23 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
         }, accumulatedTime);
         imageTimers.push(timer);
       }
-      accumulatedTime += displayTime + transitionDuration;
+      accumulatedTime += displayTime;
     });
 
     const fadeOutTimer = setTimeout(() => {
       setIsVisible(false);
-    }, accumulatedTime - transitionDuration);
+    }, accumulatedTime);
 
     const completeTimer = setTimeout(() => {
       onContinue();
-    }, accumulatedTime);
+    }, accumulatedTime + 300);
 
     return () => {
       imageTimers.forEach(clearTimeout);
       clearTimeout(fadeOutTimer);
       clearTimeout(completeTimer);
     };
-  }, [animationIndex, gender, onContinue]);
+  }, [animationSequence, imagesLoaded, onContinue]);
 
   // Don't render if animation sequence doesn't exist
   if (!animationSequence) {
@@ -67,24 +87,28 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background overflow-hidden">
-      <div
-        className={`relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] max-w-xl max-h-xl transition-opacity duration-300 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-        data-testid="animated-break-screen"
-      >
-        {animationSequence.images.map((imageSrc, index) => (
-          <img
-            key={index}
-            src={imageSrc}
-            alt={`Animation frame ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-200 ${
-              currentImageIndex === index ? 'opacity-100' : 'opacity-0'
-            }`}
-            data-testid={`animation-image-${index}`}
-          />
-        ))}
-      </div>
+      {!imagesLoaded ? (
+        <div className="text-muted-foreground animate-pulse">Loading...</div>
+      ) : (
+        <div
+          className={`relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] max-w-xl max-h-xl transition-opacity duration-300 ${
+            isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+          data-testid="animated-break-screen"
+        >
+          {animationSequence.images.map((imageSrc, index) => (
+            <img
+              key={index}
+              src={imageSrc}
+              alt={`Animation frame ${index + 1}`}
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-100 ${
+                currentImageIndex === index ? 'opacity-100' : 'opacity-0'
+              }`}
+              data-testid={`animation-image-${index}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
