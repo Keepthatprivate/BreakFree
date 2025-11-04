@@ -51,6 +51,11 @@ export default function Quiz() {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
   }, [answers]);
 
+  // Scroll to top whenever state or question changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [state, currentQuestionIndex]);
+
   // Auto-advance if we're in quote-break state but break screen doesn't exist
   useEffect(() => {
     if (state === 'quote-break' && !breakScreens[currentQuoteBreakIndex]) {

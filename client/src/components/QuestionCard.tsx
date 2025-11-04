@@ -93,8 +93,8 @@ export default function QuestionCard({
     ];
 
     return (
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="text-center mb-4 sm:mb-6">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
             What is your gender identity?
           </h2>
@@ -116,7 +116,7 @@ export default function QuestionCard({
           </Popover>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
           {genderOptions.map((option) => {
             const isSelected = selectedValues.includes(option.value);
             return (
@@ -184,19 +184,19 @@ export default function QuestionCard({
   // Slider Question
   if (question.type === 'slider') {
     return (
-      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center mb-8 px-2">
-            <div className="mb-8">
+          <div className="flex-1 flex flex-col justify-center mb-4 px-2">
+            <div className="mb-4">
               <Slider
                 value={[sliderValue]}
                 onValueChange={handleSliderChange}
@@ -240,18 +240,18 @@ export default function QuestionCard({
   // Emoji Grid Question
   if (question.type === 'emoji-grid') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-3 sm:mb-4">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
 
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             {question.emojis.map((emoji) => {
               const isSelected = selectedValues.includes(emoji.value);
               return (
@@ -301,18 +301,18 @@ export default function QuestionCard({
   // Image Choice Question
   if (question.type === 'image-choice') {
     return (
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-3 sm:mb-4">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
               {question.text}
             </h2>
           </div>
 
-          <div className="flex-1 grid grid-cols-2 gap-3 sm:gap-4 mb-8">
+          <div className="flex-1 grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
@@ -365,14 +365,14 @@ export default function QuestionCard({
   // Quote Reflection Question
   if (question.type === 'quote-reflection') {
     return (
-      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="flex-1 flex flex-col justify-center mb-6 sm:mb-8">
-            <div className="text-center mb-8 sm:mb-12">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-normal text-foreground mb-4 sm:mb-6">
+          <div className="flex-1 flex flex-col justify-center mb-4 sm:mb-6">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-normal text-foreground mb-3 sm:mb-4">
                 Do you relate to this quote?
               </h2>
               <p className="text-xl sm:text-2xl lg:text-3xl font-medium text-primary leading-relaxed italic px-2">
@@ -430,19 +430,19 @@ export default function QuestionCard({
   // Popup Question
   if (question.type === 'popup') {
     return (
-      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in zoom-in-95 duration-500">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in zoom-in-95 duration-500">
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40" />
         <div
-          className="relative z-50 bg-card rounded-3xl p-6 sm:p-10 shadow-2xl min-h-[400px] flex flex-col border-2 border-primary/30"
+          className="relative z-50 bg-card rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col border-2 border-primary/30"
           data-testid="question-card"
         >
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2 text-center">
               {question.text}
             </h2>
           </div>
 
-          <div className="flex-1 flex flex-col gap-3 mb-8">
+          <div className="flex-1 flex flex-col gap-3 mb-4 sm:mb-6">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
@@ -506,13 +506,13 @@ export default function QuestionCard({
   // Audio Test Question
   if (question.type === 'audio-test') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div
-          className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[500px] flex flex-col border border-card-border/50"
+          className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"
         >
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-4 sm:mb-6">
+          <div className="mb-3 sm:mb-4">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-3 sm:mb-4">
               {question.text}
             </h2>
             
@@ -524,7 +524,7 @@ export default function QuestionCard({
             </p>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 sm:mb-6">
             {question.options.map((option) => {
               const isSelected = selectedValues.includes(option.value);
               return (
@@ -655,18 +655,18 @@ export default function QuestionCard({
 
   // Standard Radio/Multi Question
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div
-        className="bg-card rounded-3xl p-5 sm:p-10 shadow-xl min-h-[400px] flex flex-col border border-card-border/50"
+        className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
         data-testid="question-card"
       >
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight mb-2">
             {'text' in question ? question.text : ''}
           </h2>
         </div>
 
-        <div className="flex-1 flex flex-col gap-2.5 sm:gap-3 mb-6 sm:mb-8">
+        <div className="flex-1 flex flex-col gap-2.5 sm:gap-3 mb-4 sm:mb-6">
           {'options' in question && question.options.map((option: { value: string; label: string }) => {
             const isSelected = selectedValues.includes(option.value);
             return (
