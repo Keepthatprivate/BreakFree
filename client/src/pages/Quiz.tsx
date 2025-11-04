@@ -406,7 +406,7 @@ export default function Quiz() {
         </>
       )}
 
-      {state === 'break' && (
+      {state === 'animation' && (
         <>
           <ProgressBar
             currentChapter={currentQuestion.chapter}
@@ -414,8 +414,22 @@ export default function Quiz() {
             totalQuestions={questions.length}
           />
           <AnimatedBreakScreen
-            animationIndex={currentBreakIndex}
-            onContinue={handleBreakContinue}
+            animationIndex={currentAnimationIndex}
+            onContinue={handleAnimationContinue}
+          />
+        </>
+      )}
+
+      {state === 'quote-break' && (
+        <>
+          <ProgressBar
+            currentChapter={currentQuestion.chapter}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+          />
+          <BreakScreenComponent
+            breakScreen={breakScreens[currentQuoteBreakIndex]}
+            onContinue={handleQuoteBreakContinue}
           />
         </>
       )}
