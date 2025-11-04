@@ -7,6 +7,7 @@ import ContactForm from '@/components/ContactForm';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import AnimatedBreakScreen from '@/components/AnimatedBreakScreen';
+import BreakScreenComponent from '@/components/BreakScreen';
 import TraumaPatterns from '@/components/TraumaPatterns';
 import BenefitsPage from '@/components/BenefitsPage';
 import SevenDaysPage from '@/components/SevenDaysPage';
@@ -17,9 +18,9 @@ import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
-import { questions, empathyMessages, chapters } from '@shared/quiz-data';
+import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 
-type QuizState = 'quiz' | 'empathy' | 'break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -36,7 +37,8 @@ export default function Quiz() {
   const [userEmail, setUserEmail] = useState('');
   const [state, setState] = useState<QuizState>('quiz');
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
-  const [currentBreakIndex, setCurrentBreakIndex] = useState(0);
+  const [currentAnimationIndex, setCurrentAnimationIndex] = useState(0);
+  const [currentQuoteBreakIndex, setCurrentQuoteBreakIndex] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
