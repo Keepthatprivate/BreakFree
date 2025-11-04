@@ -10,7 +10,7 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
-  const gender = (localStorage.getItem('selectedGender') || 'boy') as 'boy' | 'girl';
+  const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
   const animationSequence = animations[gender][animationIndex];
 
   // Safety check: if animation doesn't exist, skip it
