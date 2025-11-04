@@ -28,7 +28,11 @@ Preferred communication style: Simple, everyday language.
 
 ### System Design Choices
 
-**Question Flow Architecture**: Linear state machine with states for quiz, empathy, break, contact, checkout, and results to create natural breaks, build psychological safety, and allow dynamic content injection.
+**Question Flow Architecture**: Linear state machine with states for quiz, empathy, animation, quote-break, contact, checkout, and results to create natural breaks, build psychological safety, and allow dynamic content injection.
+**Break Screen Flow**: Two types of breaks work together to structure the experience:
+- **Quote Breaks** (data-break, quote-break, testimonial-break, visual-pause) appear at the END of each chapter section to provide reflection moments
+- **Animations** (gender-specific 3-image sequences) appear at the START of new chapters to mark chapter transitions and create emotional continuity
+- Flow: Answer questions → Quote break → Animation → First question of new chapter
 **Client-Side Persistence**: Answers stored in LocalStorage for instant resume functionality and reduced server load.
 **Component Modularity**: Each question and screen type is a separate component for diverse interaction patterns, A/B testing, and easier maintenance.
 **Styling Approach**: Tailwind CSS with custom design tokens for faster development, smaller bundle size, and easy theme customization.
