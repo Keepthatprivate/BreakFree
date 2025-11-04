@@ -8,7 +8,7 @@ interface AnimatedBreakScreenProps {
 
 export default function AnimatedBreakScreen({ animationIndex, onContinue }: AnimatedBreakScreenProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
   const animationSequence = animations[gender][animationIndex];
@@ -19,7 +19,6 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
       onContinue();
       return;
     }
-    setIsVisible(true);
 
     // Trigger haptic feedback on mobile devices
     if (navigator.vibrate) {
