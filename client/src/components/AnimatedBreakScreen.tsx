@@ -21,6 +21,11 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
     }
     setIsVisible(true);
 
+    // Trigger haptic feedback on mobile devices
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]);
+    }
+
     const transitionDuration = 200; // Quick transition time
     const displayTimings = [
       1500,  // Image 1: 1.5s display
