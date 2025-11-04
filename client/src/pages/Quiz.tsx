@@ -51,6 +51,13 @@ export default function Quiz() {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
   }, [answers]);
 
+  // Auto-advance if we're in quote-break state but break screen doesn't exist
+  useEffect(() => {
+    if (state === 'quote-break' && !breakScreens[currentQuoteBreakIndex]) {
+      handleQuoteBreakContinue();
+    }
+  }, [state, currentQuoteBreakIndex]);
+
   const handleAnswer = (answer: string[]) => {
     setAnswers((prev) => ({
       ...prev,
@@ -64,19 +71,20 @@ export default function Quiz() {
   };
 
   const showChapterTransition = () => {
-    // Show chapter transitions (animation + quote) after questions 3, 7, 10, 12
-    const transitionTriggers = [3, 7, 10, 12];
+    // Show chapter transitions (animation + quote) after questions at indices 2, 6, 9
+    // (which are q4, q8, q11 - the last question of each chapter)
+    const transitionTriggers = [2, 6, 9];
     return transitionTriggers.includes(currentQuestionIndex);
   };
 
   const getChapterTransitionIndex = () => {
     const transitionMap: { [key: number]: number } = {
-      3: 0,  // After q4 -> Animation 0 + Quote 0 -> q5 (patterns)
-      7: 1,  // After q8 -> Animation 1 + Quote 1 -> q9 (healing)
-      10: 2, // After q11 -> Animation 2 + Quote 2 -> q12 (future)
-      12: 3, // After q13 -> Animation 3 + Quote 3 -> Contact
+      2: 0,  // After q4 (index 2) -> Animation 0 + Quote 0 -> q5 (patterns)
+      6: 1,  // After q8 (index 6) -> Animation 1 + Quote 1 -> q9 (healing)
+      9: 2,  // After q11 (index 9) -> Animation 2 + Quote 2 -> q12 (future)
+      11: 3, // After q13 (index 11, last question) -> Quote 3 -> Contact
     };
-    return transitionMap[currentQuestionIndex];
+    return transitionMap[currentQuestionIndex] || 0;
   };
 
   const handleNext = () => {
@@ -102,11 +110,10 @@ export default function Quiz() {
         }, 300);
       }
     } else {
-      // After last question, show final animation + quote before contact
+      // After last question, show final quote break (no animation) before contact
       const transitionIndex = getChapterTransitionIndex();
-      setCurrentAnimationIndex(transitionIndex);
       setCurrentQuoteBreakIndex(transitionIndex);
-      setState('animation');
+      setState('quote-break');
     }
   };
 
@@ -399,7 +406,7 @@ export default function Quiz() {
         </>
       )}
 
-      {state === 'quote-break' && (
+      {state === 'quote-break' && breakScreens[currentQuoteBreakIndex] && (
         <>
           <ProgressBar
             currentChapter={currentQuestion.chapter}

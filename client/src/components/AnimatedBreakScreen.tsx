@@ -13,7 +13,12 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
   const gender = (localStorage.getItem('selectedGender') || 'boy') as 'boy' | 'girl';
   const animationSequence = animations[gender][animationIndex];
 
+  // Safety check: if animation doesn't exist, skip it
   useEffect(() => {
+    if (!animationSequence) {
+      onContinue();
+      return;
+    }
     setIsVisible(true);
 
     const transitionDuration = 200; // Quick transition time
@@ -50,6 +55,11 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
       clearTimeout(completeTimer);
     };
   }, [animationIndex, gender, onContinue]);
+
+  // Don't render if animation sequence doesn't exist
+  if (!animationSequence) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
