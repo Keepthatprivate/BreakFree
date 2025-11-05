@@ -292,8 +292,11 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
               data-testid="progress-bar-container"
             >
               <motion.div
-                className="h-full bg-primary rounded-full relative"
-                style={{ width: `${progress}%` }}
+                className="h-full rounded-full relative"
+                style={{ 
+                  width: `${progress}%`,
+                  backgroundColor: 'hsl(var(--primary))'
+                }}
                 initial={{ width: '0%' }}
                 animate={{ 
                   boxShadow: [
