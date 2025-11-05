@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
+// Import profile images
+import profile1 from '@assets/stock_images/professional_headsho_9f3936ae.jpg';
+import profile2 from '@assets/stock_images/professional_headsho_34fce9db.jpg';
+import profile3 from '@assets/stock_images/professional_headsho_d53920cc.jpg';
+import profile4 from '@assets/stock_images/professional_headsho_dd8bf494.jpg';
+import profile5 from '@assets/stock_images/professional_headsho_9ebfa56d.jpg';
+import profile6 from '@assets/stock_images/professional_headsho_05ec7d78.jpg';
+import profile7 from '@assets/stock_images/professional_headsho_5d9d8553.jpg';
+import profile8 from '@assets/stock_images/professional_headsho_1406407a.jpg';
 
 interface LoadingPageProps {
   onComplete: () => void;
@@ -10,50 +20,42 @@ const testimonials = [
   { 
     quote: "It helped me save 10 years of therapy", 
     name: "Sarah M.",
-    initials: "SM",
-    color: "bg-primary/20"
+    image: profile1
   },
   { 
     quote: "My mental fog finally disappeared, such a relief", 
     name: "James R.",
-    initials: "JR",
-    color: "bg-accent/20"
+    image: profile5
   },
   { 
     quote: "I finally understand why I react the way I do", 
     name: "Emily K.",
-    initials: "EK",
-    color: "bg-secondary/20"
+    image: profile2
   },
   { 
     quote: "This clarity changed everything for me", 
     name: "Michael T.",
-    initials: "MT",
-    color: "bg-primary/20"
+    image: profile6
   },
   { 
     quote: "The patterns suddenly made sense", 
     name: "Lisa Chen",
-    initials: "LC",
-    color: "bg-accent/20"
+    image: profile3
   },
   { 
     quote: "I wish I had found this sooner", 
     name: "David P.",
-    initials: "DP",
-    color: "bg-secondary/20"
+    image: profile7
   },
   { 
     quote: "Finally feeling like myself again", 
     name: "Anna B.",
-    initials: "AB",
-    color: "bg-primary/20"
+    image: profile4
   },
   { 
     quote: "This explained so much about my relationships", 
     name: "Chris W.",
-    initials: "CW",
-    color: "bg-accent/20"
+    image: profile8
   }
 ];
 
@@ -64,37 +66,60 @@ const loadingStages = [
   { min: 75, max: 100, text: "Finalizing results and conclusion" }
 ];
 
-// Non-linear easing function for more captivating progress
-const easeInOutCubic = (t: number): number => {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+// Custom non-linear progression: 0→9% (fast), 9→32%, 32→69%, 69→100%
+const getProgressForTime = (elapsedMs: number, totalDuration: number): number => {
+  const t = elapsedMs / totalDuration; // 0 to 1
+  
+  // Define keyframes: [time%, progress%]
+  const keyframes = [
+    [0, 0],       // Start at 0%
+    [0.05, 9],    // Reach 9% at 5% of time (3 seconds)
+    [0.25, 32],   // Reach 32% at 25% of time (15 seconds)
+    [0.55, 69],   // Reach 69% at 55% of time (33 seconds)
+    [1, 100]      // Reach 100% at 60 seconds
+  ];
+  
+  // Find which segment we're in
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const [t1, p1] = keyframes[i];
+    const [t2, p2] = keyframes[i + 1];
+    
+    if (t >= t1 && t <= t2) {
+      // Linear interpolation between keyframes with easing
+      const segmentProgress = (t - t1) / (t2 - t1);
+      // Apply ease-in-out to each segment
+      const eased = segmentProgress < 0.5 
+        ? 2 * segmentProgress * segmentProgress 
+        : 1 - Math.pow(-2 * segmentProgress + 2, 2) / 2;
+      return p1 + (p2 - p1) * eased;
+    }
+  }
+  
+  return 100;
 };
 
 export default function LoadingPage({ onComplete }: LoadingPageProps) {
-  const [rawProgress, setRawProgress] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
-  // Apply easing to create non-linear progress
-  const progress = easeInOutCubic(rawProgress / 100) * 100;
+  const totalDuration = 60000; // 60 seconds
+  const progress = getProgressForTime(elapsedTime, totalDuration);
 
   useEffect(() => {
-    // Progress bar animation over 60 seconds (1 minute)
-    const totalDuration = 60000; // 60 seconds
+    const startTime = Date.now();
     const interval = 50; // Update every 50ms for smooth animation
-    const increment = (100 / totalDuration) * interval;
 
     const timer = setInterval(() => {
-      setRawProgress((prev) => {
-        const newProgress = prev + increment;
-        if (newProgress >= 100) {
-          clearInterval(timer);
-          // Call onComplete after a brief delay when reaching 100%
-          setTimeout(() => {
-            onComplete();
-          }, 500);
-          return 100;
-        }
-        return newProgress;
-      });
+      const elapsed = Date.now() - startTime;
+      setElapsedTime(elapsed);
+      
+      if (elapsed >= totalDuration) {
+        clearInterval(timer);
+        // Call onComplete after a brief delay when reaching 100%
+        setTimeout(() => {
+          onComplete();
+        }, 500);
+      }
     }, interval);
 
     return () => clearInterval(timer);
@@ -130,8 +155,8 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="text-xl sm:text-2xl font-semibold text-foreground"
+                transition={{ duration: 0.4 }}
+                className="text-xl sm:text-2xl font-semibold text-foreground px-4"
                 data-testid="text-loading-stage"
               >
                 {currentStage.text}
@@ -140,51 +165,76 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
           </div>
 
           {/* Progress bar container */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div 
-              className="w-full h-3 bg-background rounded-full overflow-hidden border border-border"
+              className="w-full h-4 bg-card rounded-full overflow-hidden border border-card-border relative"
               data-testid="progress-bar-container"
             >
               <motion.div
-                className="h-full bg-primary rounded-full shadow-lg shadow-primary/50"
+                className="h-full bg-primary rounded-full relative"
                 style={{ width: `${progress}%` }}
                 initial={{ width: '0%' }}
-                transition={{ type: "spring", stiffness: 50, damping: 20 }}
+                animate={{ 
+                  boxShadow: [
+                    '0 0 10px hsl(var(--primary) / 0.3)',
+                    '0 0 20px hsl(var(--primary) / 0.5)',
+                    '0 0 10px hsl(var(--primary) / 0.3)'
+                  ]
+                }}
+                transition={{ 
+                  boxShadow: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                }}
                 data-testid="progress-bar-fill"
-              />
+              >
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" 
+                     style={{
+                       backgroundSize: '200% 100%',
+                       animation: 'shimmer 2s infinite'
+                     }}
+                />
+              </motion.div>
             </div>
             
             {/* Progress percentage */}
             <div className="text-center">
-              <span className="text-sm text-muted-foreground" data-testid="text-progress-percentage">
+              <motion.span 
+                className="text-base font-semibold text-primary" 
+                data-testid="text-progress-percentage"
+                key={Math.floor(progress)}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.3 }}
+              >
                 {Math.round(progress)}%
-              </span>
+              </motion.span>
             </div>
           </div>
 
           {/* Testimonials section */}
           <div className="pt-8">
-            <div className="relative min-h-[140px] flex items-center justify-center">
+            <div className="relative min-h-[160px] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentTestimonialIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
                   className="flex flex-col items-center gap-4"
                   data-testid={`testimonial-${currentTestimonialIndex}`}
                 >
                   {/* Avatar */}
-                  <Avatar className="w-14 h-14 border-2 border-primary/20">
-                    <AvatarFallback className={`${currentTestimonial.color} text-foreground font-semibold text-base`}>
-                      {currentTestimonial.initials}
+                  <Avatar className="w-16 h-16 border-2 border-primary/30 shadow-lg">
+                    <AvatarImage src={currentTestimonial.image} alt={currentTestimonial.name} className="object-cover" />
+                    <AvatarFallback className="bg-primary/20 text-foreground font-semibold">
+                      {currentTestimonial.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   
                   {/* Quote */}
-                  <div className="text-center max-w-md">
-                    <p className="text-base sm:text-lg text-foreground/90 mb-2">
+                  <div className="text-center max-w-md px-4">
+                    <p className="text-base sm:text-lg text-foreground/90 mb-3 leading-relaxed">
                       "{currentTestimonial.quote}"
                     </p>
                     <p className="text-sm text-muted-foreground font-medium">
