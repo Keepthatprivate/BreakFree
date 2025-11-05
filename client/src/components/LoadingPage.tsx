@@ -102,9 +102,16 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [shuffledTestimonials, setShuffledTestimonials] = useState<typeof testimonials>([]);
 
   const totalDuration = 60000; // 60 seconds
   const progress = getProgressForTime(elapsedTime, totalDuration);
+
+  // Shuffle testimonials once on mount to ensure random, non-repeating order
+  useEffect(() => {
+    const shuffled = [...testimonials].sort(() => Math.random() - 0.5);
+    setShuffledTestimonials(shuffled);
+  }, []);
 
   // Preload all testimonial images
   useEffect(() => {
@@ -146,16 +153,22 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   }, [onComplete, imagesLoaded]);
 
   useEffect(() => {
-    // Only start rotating testimonials once images are loaded
-    if (!imagesLoaded) return;
+    // Only start rotating testimonials once images are loaded and shuffled
+    if (!imagesLoaded || shuffledTestimonials.length === 0) return;
 
-    // Rotate testimonials every 4 seconds
+    // Rotate testimonials every 7 seconds, only move forward (no repeats)
     const testimonialTimer = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
+      setCurrentTestimonialIndex((prev) => {
+        // Only advance if we haven't shown all testimonials yet
+        if (prev < shuffledTestimonials.length - 1) {
+          return prev + 1;
+        }
+        return prev; // Stay on last testimonial
+      });
+    }, 7000);
 
     return () => clearInterval(testimonialTimer);
-  }, [imagesLoaded]);
+  }, [imagesLoaded, shuffledTestimonials]);
 
   // Get current stage based on progress
   const getCurrentStage = () => {
@@ -163,7 +176,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   };
 
   const currentStage = getCurrentStage();
-  const currentTestimonial = testimonials[currentTestimonialIndex];
+  const currentTestimonial = shuffledTestimonials[currentTestimonialIndex] || testimonials[0];
 
   // Show a simple loading state while images preload
   if (!imagesLoaded) {
