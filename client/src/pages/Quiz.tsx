@@ -4,6 +4,7 @@ import ProgressBar from '@/components/ProgressBar';
 import QuestionCard from '@/components/QuestionCard';
 import EmpathyMessage from '@/components/EmpathyMessage';
 import ContactForm from '@/components/ContactForm';
+import LoadingPage from '@/components/LoadingPage';
 import DonationPage from '@/components/DonationPage';
 import ResultsPage from '@/components/ResultsPage';
 import AnimatedBreakScreen from '@/components/AnimatedBreakScreen';
@@ -24,7 +25,7 @@ import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-25
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
-type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -206,7 +207,12 @@ export default function Quiz() {
     setUserEmail(data.email);
     localStorage.setItem('userName', data.name);
     localStorage.setItem('userEmail', data.email);
-    // Go to benefits pages first
+    // Go to loading page after contact form
+    setState('loading');
+  };
+
+  const handleLoadingComplete = () => {
+    // After loading completes, go to benefits pages
     setState('benefits');
   };
 
@@ -498,6 +504,10 @@ export default function Quiz() {
           />
           <ContactForm onSubmit={handleContactSubmit} />
         </>
+      )}
+
+      {state === 'loading' && (
+        <LoadingPage onComplete={handleLoadingComplete} />
       )}
     </div>
   );
