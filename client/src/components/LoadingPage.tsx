@@ -295,14 +295,14 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
                 className="h-full rounded-full relative"
                 style={{ 
                   width: `${progress}%`,
-                  backgroundColor: 'hsl(var(--primary))'
+                  backgroundColor: 'hsl(165, 70%, 55%)'
                 }}
                 initial={{ width: '0%' }}
                 animate={{ 
                   boxShadow: [
-                    '0 0 10px hsl(var(--primary) / 0.3)',
-                    '0 0 20px hsl(var(--primary) / 0.5)',
-                    '0 0 10px hsl(var(--primary) / 0.3)'
+                    '0 0 10px hsla(165, 70%, 55%, 0.3)',
+                    '0 0 20px hsla(165, 70%, 55%, 0.5)',
+                    '0 0 10px hsla(165, 70%, 55%, 0.3)'
                   ]
                 }}
                 transition={{ 
