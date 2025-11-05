@@ -191,7 +191,12 @@ export default function Quiz() {
     if (currentQuestionIndex < questions.length - 1) {
       setState('quiz');
       setTimeout(() => {
-        setCurrentQuestionIndex((prev) => prev + 1);
+        // Skip q4 (footsteps audio test at index 2) - go directly to q5
+        if (currentQuestionIndex === 2) {
+          setCurrentQuestionIndex(3); // Jump to index 3 (q5)
+        } else {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        }
       }, 300);
     } else {
       // After last question's animation + quote, go to contact
