@@ -296,8 +296,8 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
                 className="h-full rounded-full transition-all duration-500"
                 style={{ 
                   width: `${progress}%`,
-                  backgroundColor: '#4ADE80',
-                  boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+                  backgroundColor: 'hsl(165, 70%, 55%)',
+                  boxShadow: '0 0 20px hsla(165, 70%, 55%, 0.5)'
                 }}
                 data-testid="progress-bar-fill"
               />
