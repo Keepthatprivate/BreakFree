@@ -191,9 +191,12 @@ export default function Quiz() {
     if (currentQuestionIndex < questions.length - 1) {
       setState('quiz');
       setTimeout(() => {
-        // Skip q4 (footsteps audio test at index 2) - go directly to q5
-        if (currentQuestionIndex === 2) {
-          setCurrentQuestionIndex(3); // Jump to index 3 (q5)
+        // Skip audio test questions after quote breaks:
+        // - Skip q4 (footsteps audio at index 2) after Harvard School quote
+        // - Skip q8 (door closing audio at index 6) after "It's never too late..." quote
+        // - Skip q11 (at index 9) after "Break Free helped me..." quote
+        if (currentQuestionIndex === 2 || currentQuestionIndex === 6 || currentQuestionIndex === 9) {
+          setCurrentQuestionIndex((prev) => prev + 2); // Skip the audio test question
         } else {
           setCurrentQuestionIndex((prev) => prev + 1);
         }
