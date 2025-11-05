@@ -288,21 +288,23 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
           {/* Progress bar container */}
           <div className="space-y-4">
             <div 
-              className="w-full h-4 bg-card rounded-full overflow-hidden border border-card-border relative"
+              className="w-full h-4 bg-card rounded-full border border-card-border relative"
               data-testid="progress-bar-container"
             >
               <motion.div
-                className="h-full rounded-full relative"
+                className="h-full rounded-full"
                 style={{ 
                   width: `${progress}%`,
-                  backgroundColor: 'hsl(165, 70%, 55%)'
+                  background: '#4ADE80',
+                  position: 'relative',
+                  zIndex: 1
                 }}
                 initial={{ width: '0%' }}
                 animate={{ 
                   boxShadow: [
-                    '0 0 10px hsla(165, 70%, 55%, 0.3)',
-                    '0 0 20px hsla(165, 70%, 55%, 0.5)',
-                    '0 0 10px hsla(165, 70%, 55%, 0.3)'
+                    '0 0 10px rgba(74, 222, 128, 0.3)',
+                    '0 0 20px rgba(74, 222, 128, 0.5)',
+                    '0 0 10px rgba(74, 222, 128, 0.3)'
                   ]
                 }}
                 transition={{ 
@@ -311,11 +313,14 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
                 data-testid="progress-bar-fill"
               >
                 {/* Shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" 
-                     style={{
-                       backgroundSize: '200% 100%',
-                       animation: 'shimmer 2s infinite'
-                     }}
+                <div 
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 2s infinite',
+                    zIndex: 2
+                  }}
                 />
               </motion.div>
             </div>
