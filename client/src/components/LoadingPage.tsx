@@ -1,19 +1,60 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface LoadingPageProps {
   onComplete: () => void;
 }
 
 const testimonials = [
-  "It helped me save 10 years of therapy",
-  "My mental fog finally disappeared, such a relief",
-  "I finally understand why I react the way I do",
-  "This clarity changed everything for me",
-  "The patterns suddenly made sense",
-  "I wish I had found this sooner",
-  "Finally feeling like myself again",
-  "This explained so much about my relationships"
+  { 
+    quote: "It helped me save 10 years of therapy", 
+    name: "Sarah M.",
+    initials: "SM",
+    color: "bg-primary/20"
+  },
+  { 
+    quote: "My mental fog finally disappeared, such a relief", 
+    name: "James R.",
+    initials: "JR",
+    color: "bg-accent/20"
+  },
+  { 
+    quote: "I finally understand why I react the way I do", 
+    name: "Emily K.",
+    initials: "EK",
+    color: "bg-secondary/20"
+  },
+  { 
+    quote: "This clarity changed everything for me", 
+    name: "Michael T.",
+    initials: "MT",
+    color: "bg-primary/20"
+  },
+  { 
+    quote: "The patterns suddenly made sense", 
+    name: "Lisa Chen",
+    initials: "LC",
+    color: "bg-accent/20"
+  },
+  { 
+    quote: "I wish I had found this sooner", 
+    name: "David P.",
+    initials: "DP",
+    color: "bg-secondary/20"
+  },
+  { 
+    quote: "Finally feeling like myself again", 
+    name: "Anna B.",
+    initials: "AB",
+    color: "bg-primary/20"
+  },
+  { 
+    quote: "This explained so much about my relationships", 
+    name: "Chris W.",
+    initials: "CW",
+    color: "bg-accent/20"
+  }
 ];
 
 const loadingStages = [
@@ -23,9 +64,17 @@ const loadingStages = [
   { min: 75, max: 100, text: "Finalizing results and conclusion" }
 ];
 
+// Non-linear easing function for more captivating progress
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
 export default function LoadingPage({ onComplete }: LoadingPageProps) {
-  const [progress, setProgress] = useState(0);
+  const [rawProgress, setRawProgress] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+
+  // Apply easing to create non-linear progress
+  const progress = easeInOutCubic(rawProgress / 100) * 100;
 
   useEffect(() => {
     // Progress bar animation over 60 seconds (1 minute)
@@ -34,7 +83,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     const increment = (100 / totalDuration) * interval;
 
     const timer = setInterval(() => {
-      setProgress((prev) => {
+      setRawProgress((prev) => {
         const newProgress = prev + increment;
         if (newProgress >= 100) {
           clearInterval(timer);
@@ -66,6 +115,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   };
 
   const currentStage = getCurrentStage();
+  const currentTestimonial = testimonials[currentTestimonialIndex];
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6">
@@ -92,14 +142,14 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
           {/* Progress bar container */}
           <div className="space-y-3">
             <div 
-              className="w-full h-3 bg-muted rounded-full overflow-hidden"
+              className="w-full h-3 bg-background rounded-full overflow-hidden border border-border"
               data-testid="progress-bar-container"
             >
               <motion.div
-                className="h-full bg-primary rounded-full"
+                className="h-full bg-primary rounded-full shadow-lg shadow-primary/50"
                 style={{ width: `${progress}%` }}
                 initial={{ width: '0%' }}
-                transition={{ duration: 0.05, ease: 'linear' }}
+                transition={{ type: "spring", stiffness: 50, damping: 20 }}
                 data-testid="progress-bar-fill"
               />
             </div>
@@ -114,7 +164,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
 
           {/* Testimonials section */}
           <div className="pt-8">
-            <div className="relative min-h-[80px] flex items-center justify-center">
+            <div className="relative min-h-[140px] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentTestimonialIndex}
@@ -122,12 +172,25 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5 }}
-                  className="text-center"
+                  className="flex flex-col items-center gap-4"
                   data-testid={`testimonial-${currentTestimonialIndex}`}
                 >
-                  <p className="text-base sm:text-lg italic text-foreground/80 max-w-md mx-auto">
-                    "{testimonials[currentTestimonialIndex]}"
-                  </p>
+                  {/* Avatar */}
+                  <Avatar className="w-14 h-14 border-2 border-primary/20">
+                    <AvatarFallback className={`${currentTestimonial.color} text-foreground font-semibold text-base`}>
+                      {currentTestimonial.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  {/* Quote */}
+                  <div className="text-center max-w-md">
+                    <p className="text-base sm:text-lg text-foreground/90 mb-2">
+                      "{currentTestimonial.quote}"
+                    </p>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      — {currentTestimonial.name}
+                    </p>
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>
