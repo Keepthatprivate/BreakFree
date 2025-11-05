@@ -177,11 +177,97 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     );
   }
 
+  // Generate random floating elements for visual effect
+  const generateFloatingElements = () => {
+    const elements = [];
+    const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '%', '+', '=', '∞', '∑', '∆'];
+    const shapes = ['circle', 'square', 'triangle'];
+    
+    for (let i = 0; i < 15; i++) {
+      const isNumber = Math.random() > 0.4;
+      const type = isNumber ? 'number' : shapes[Math.floor(Math.random() * shapes.length)];
+      const delay = Math.random() * 3;
+      const duration = 4 + Math.random() * 4;
+      const xStart = Math.random() * 100;
+      const xEnd = xStart + (Math.random() - 0.5) * 30;
+      
+      elements.push({
+        id: i,
+        type,
+        content: isNumber ? numbers[Math.floor(Math.random() * numbers.length)] : type,
+        delay,
+        duration,
+        xStart,
+        xEnd,
+        size: isNumber ? 20 + Math.random() * 20 : 15 + Math.random() * 15
+      });
+    }
+    return elements;
+  };
+
+  const floatingElements = generateFloatingElements();
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6">
       <div className="w-full max-w-2xl mx-auto">
         {/* Main content container */}
         <div className="space-y-12">
+          {/* Dynamic calculation animation */}
+          <div className="relative h-32 overflow-hidden">
+            {floatingElements.map((element) => (
+              <motion.div
+                key={element.id}
+                className="absolute"
+                style={{
+                  left: `${element.xStart}%`,
+                }}
+                initial={{ y: 130, opacity: 0 }}
+                animate={{
+                  y: -30,
+                  x: `${element.xEnd - element.xStart}%`,
+                  opacity: [0, 0.6, 0.6, 0],
+                }}
+                transition={{
+                  duration: element.duration,
+                  delay: element.delay,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              >
+                {element.type === 'number' ? (
+                  <span 
+                    className="text-primary/40 font-mono font-bold"
+                    style={{ fontSize: `${element.size}px` }}
+                  >
+                    {element.content}
+                  </span>
+                ) : element.type === 'circle' ? (
+                  <div 
+                    className="rounded-full border-2 border-primary/30"
+                    style={{ width: `${element.size}px`, height: `${element.size}px` }}
+                  />
+                ) : element.type === 'square' ? (
+                  <div 
+                    className="border-2 border-accent/30"
+                    style={{ width: `${element.size}px`, height: `${element.size}px` }}
+                  />
+                ) : (
+                  <div 
+                    className="border-2 border-secondary/30"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderLeft: `${element.size / 2}px solid transparent`,
+                      borderRight: `${element.size / 2}px solid transparent`,
+                      borderBottom: `${element.size}px solid hsl(var(--secondary) / 0.3)`,
+                      borderTop: 'none',
+                    }}
+                  />
+                )}
+              </motion.div>
+            ))}
+          </div>
+
           {/* Loading stage text */}
           <div className="text-center">
             <AnimatePresence mode="wait">
