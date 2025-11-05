@@ -101,11 +101,31 @@ const getProgressForTime = (elapsedMs: number, totalDuration: number): number =>
 export default function LoadingPage({ onComplete }: LoadingPageProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   const totalDuration = 60000; // 60 seconds
   const progress = getProgressForTime(elapsedTime, totalDuration);
 
+  // Preload all testimonial images
   useEffect(() => {
+    const imagePromises = testimonials.map((testimonial) => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Resolve even on error to prevent hanging
+        img.src = testimonial.image;
+      });
+    });
+
+    Promise.all(imagePromises).then(() => {
+      setImagesLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Only start the timer once images are loaded
+    if (!imagesLoaded) return;
+
     const startTime = Date.now();
     const interval = 50; // Update every 50ms for smooth animation
 
@@ -123,16 +143,19 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     }, interval);
 
     return () => clearInterval(timer);
-  }, [onComplete]);
+  }, [onComplete, imagesLoaded]);
 
   useEffect(() => {
+    // Only start rotating testimonials once images are loaded
+    if (!imagesLoaded) return;
+
     // Rotate testimonials every 4 seconds
     const testimonialTimer = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
     }, 4000);
 
     return () => clearInterval(testimonialTimer);
-  }, []);
+  }, [imagesLoaded]);
 
   // Get current stage based on progress
   const getCurrentStage = () => {
@@ -141,6 +164,18 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
 
   const currentStage = getCurrentStage();
   const currentTestimonial = testimonials[currentTestimonialIndex];
+
+  // Show a simple loading state while images preload
+  if (!imagesLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6">
