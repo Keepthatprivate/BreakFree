@@ -189,18 +189,12 @@ export default function Quiz() {
   const handleQuoteBreakContinue = () => {
     // After quote break, advance to next question or contact form
     if (currentQuestionIndex < questions.length - 1) {
-      setState('quiz');
+      // Update question index first to prevent visual flash
+      setCurrentQuestionIndex((prev) => prev + 1);
+      // Then change state after a brief delay for smooth transition
       setTimeout(() => {
-        // Skip audio test questions after quote breaks:
-        // - Skip q4 (footsteps audio at index 2) after Harvard School quote
-        // - Skip q8 (door closing audio at index 6) after "It's never too late..." quote
-        // - Skip q11 (at index 9) after "Break Free helped me..." quote
-        if (currentQuestionIndex === 2 || currentQuestionIndex === 6 || currentQuestionIndex === 9) {
-          setCurrentQuestionIndex((prev) => prev + 2); // Skip the audio test question
-        } else {
-          setCurrentQuestionIndex((prev) => prev + 1);
-        }
-      }, 300);
+        setState('quiz');
+      }, 100);
     } else {
       // After last question's animation + quote, go to contact
       setState('contact');
