@@ -288,41 +288,19 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
           {/* Progress bar container */}
           <div className="space-y-4">
             <div 
-              className="w-full h-4 bg-card rounded-full border border-card-border relative"
+              className="w-full h-4 rounded-full relative"
+              style={{ backgroundColor: '#1a1a1a' }}
               data-testid="progress-bar-container"
             >
-              <motion.div
-                className="h-full rounded-full"
+              <div
+                className="h-full rounded-full transition-all duration-500"
                 style={{ 
                   width: `${progress}%`,
-                  background: '#4ADE80',
-                  position: 'relative',
-                  zIndex: 1
-                }}
-                initial={{ width: '0%' }}
-                animate={{ 
-                  boxShadow: [
-                    '0 0 10px rgba(74, 222, 128, 0.3)',
-                    '0 0 20px rgba(74, 222, 128, 0.5)',
-                    '0 0 10px rgba(74, 222, 128, 0.3)'
-                  ]
-                }}
-                transition={{ 
-                  boxShadow: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                  backgroundColor: '#4ADE80',
+                  boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
                 }}
                 data-testid="progress-bar-fill"
-              >
-                {/* Shimmer effect */}
-                <div 
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 2s infinite',
-                    zIndex: 2
-                  }}
-                />
-              </motion.div>
+              />
             </div>
             
             {/* Progress percentage */}
