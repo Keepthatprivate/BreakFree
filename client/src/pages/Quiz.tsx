@@ -21,6 +21,7 @@ import UpsellPage from '@/components/UpsellPage';
 import CheckoutPage from '@/components/CheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
+import { trackViewContent, trackLead } from '@/lib/facebook-tracking';
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
@@ -94,6 +95,11 @@ export default function Quiz() {
   useEffect(() => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
   }, [answers]);
+
+  // Track quiz page view on mount
+  useEffect(() => {
+    trackViewContent();
+  }, []);
 
   // Scroll to top whenever state or question changes
   useEffect(() => {
@@ -207,6 +213,13 @@ export default function Quiz() {
     setUserEmail(data.email);
     localStorage.setItem('userName', data.name);
     localStorage.setItem('userEmail', data.email);
+    
+    // Track lead event (email submission)
+    trackLead({
+      email: data.email,
+      firstName: data.name,
+    });
+    
     // Go to loading page after contact form
     setState('loading');
   };
