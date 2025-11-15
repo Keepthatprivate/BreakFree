@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
+import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } from '@/lib/facebook-tracking';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -14,14 +15,28 @@ const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
 interface CheckoutFormProps {
   amount: number;
   productName: string;
+  email: string;
+  name?: string;
   onSuccess: () => void;
 }
 
-function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
+function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
+
+  const handlePaymentElementReady = () => {
+    // Track AddPaymentInfo when payment element is ready and user can interact
+    if (!hasTrackedPaymentInfo) {
+      setHasTrackedPaymentInfo(true);
+      trackAddPaymentInfo({
+        email,
+        firstName: name,
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +64,15 @@ function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
         variant: "destructive",
       });
     } else {
+      // Track purchase event
+      trackPurchase({
+        email,
+        firstName: name,
+        value: amount / 100,
+        currency: 'EUR',
+        contentName: productName,
+      });
+
       toast({
         title: "Payment Successful",
         description: `Thank you for your purchase of ${productName}!`,
@@ -61,6 +85,7 @@ function CheckoutForm({ amount, productName, onSuccess }: CheckoutFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement 
+        onReady={handlePaymentElementReady}
         options={{
           layout: 'accordion',
           // Stripe integration: Preselect Apple Pay by prioritizing wallets
@@ -147,6 +172,17 @@ export default function CheckoutPage({ amount, productType, productName, email, 
         setIsLoading(false);
       });
   }, [amount, productType, email]);
+
+  // Track InitiateCheckout when checkout page loads
+  useEffect(() => {
+    trackInitiateCheckout({
+      email,
+      firstName: name,
+      value: amount / 100,
+      currency: 'EUR',
+      contentName: productName,
+    });
+  }, []);
 
   if (error) {
     return (
@@ -251,7 +287,13 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               },
             }}
           >
-            <CheckoutForm amount={amount} productName={productName} onSuccess={onComplete} />
+            <CheckoutForm 
+              amount={amount} 
+              productName={productName} 
+              email={email}
+              name={name}
+              onSuccess={onComplete} 
+            />
           </Elements>
 
           <p className="text-xs text-muted-foreground text-center mt-4">
