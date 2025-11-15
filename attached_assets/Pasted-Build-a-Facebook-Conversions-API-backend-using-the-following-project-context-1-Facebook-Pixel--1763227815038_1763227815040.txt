@@ -1,0 +1,56 @@
+Build a Facebook Conversions API backend using the following project context:
+
+1. Facebook Pixel & Access Token:
+   - Pixel ID: 24998264096489706
+   - Access Token: EAAfsK32I1ZAUBPZCnbgIahZCFZBBoMMS1rjvrZBCiMH3DP9LFLuHPL1SUJ5SBzZBWZBt79WT6CzbgttENdmK9ZBrWI6XSjn6BP5ExDvsZAf2XbT7m1eryIXeTwcPiixAwHR3h8Rj5JDwZCUgmO8pTqeLvGvvclsueZAw2C53PjwuLfZBmMeoOqBddJqKNKZCI3FcqtQZDZD
+
+2. Events to track (all must be implemented as server-side CAPI events):
+   - ViewContent → Triggered on each quiz page view
+   - Lead → Triggered when user gives email on information page
+   - InitiateCheckout → Triggered on checkout page
+   - AddPaymentInfo → Triggered when user starts entering payment
+   - Purchase → Triggered for:
+       • Gift page purchase
+       • Trial period purchase
+       • Upsell (guide) purchase
+
+3. Data collected for every event (must be hashed SHA256 before sending to Facebook):
+   - Email
+   - Phone
+   - First name
+   - Last name
+   - IP address (automatically detected)
+   - User agent (automatically detected)
+
+4. Backend setup requirements:
+   - Language: Node.js + Express
+   - Routes must be clean and modular (separate files allowed)
+   - Hosting: OVH
+   - System must use environment variables:
+       • FB_PIXEL_ID
+       • FB_ACCESS_TOKEN
+
+5. Technical specifications:
+   - Server must capture fbclid from URL and pass it to Facebook (fbc format)
+   - Server must support fbp cookie if provided
+   - Server must hash all user data using SHA256
+   - System must include retry queue for failed CAPI calls
+   - System must include debug endpoints:
+       • /debug/capi-queue
+       • /debug/test-event
+   - System must log all errors cleanly
+   - System must be fully compatible with Replit environment
+
+6. Required endpoints:
+   POST /facebook-capi/view
+   POST /facebook-capi/lead
+   POST /facebook-capi/initiate-checkout
+   POST /facebook-capi/payment-info
+   POST /facebook-capi/purchase
+
+7. Expected output:
+   - A single working Express.js server file that can be pasted inside Replit and run instantly.
+   - Includes automatic IP detection with app.set("trust proxy", true)
+   - Includes axios for HTTPS requests
+   - Includes crypto for hashing
+   - Includes dotenv for environment variables

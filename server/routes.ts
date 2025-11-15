@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { getUncachableResendClient } from "./resend-client";
 import { generateResultsEmail, generatePurchaseConfirmationEmail } from "./email-templates";
 import { analyzeQuizAnswers } from "./quiz-analyzer";
+import facebookCapiRoutes from "./facebook-capi-routes";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -48,6 +49,9 @@ function getProductDetails(type: string, amount: number) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Facebook Conversions API routes
+  app.use("/api/facebook-capi", facebookCapiRoutes);
+
   // BetterAuth routes - handles /api/auth/*
   app.all("/api/auth/*", auth.handler);
 

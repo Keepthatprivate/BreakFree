@@ -4,6 +4,9 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Enable trust proxy for accurate IP detection (required for Facebook CAPI)
+app.set('trust proxy', true);
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
