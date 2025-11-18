@@ -48,4 +48,5 @@ Preferred communication style: Simple, everyday language.
 **Session Management**: `connect-pg-simple` prepared for PostgreSQL-backed sessions.
 **Email Integration**: Resend connector for transactional emails, with `email-templates.ts` for personalized results and purchase confirmations.
 **Payment Processing**: Stripe Elements for unified checkout (upsell guides, donations, trials) with Apple Pay and Google Pay integration.
-**Development Tools**: Replit-specific plugins, TypeScript strict mode, path aliases.
+**Facebook Conversions API (CAPI)**: Server-side event tracking with strict environment validation, comprehensive diagnostic tools (`/debug/test-capi`, `/debug/health`), automatic retry queue for failed events, SHA256 hashing for PII, and enhanced development logging. Tracks ViewContent, Lead, InitiateCheckout, AddPaymentInfo, and Purchase events.
+**Development Tools**: Replit-specific plugins, TypeScript strict mode, path aliases, CORS for cross-domain requests.
