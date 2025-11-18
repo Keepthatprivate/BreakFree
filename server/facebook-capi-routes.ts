@@ -3,11 +3,23 @@ import FacebookCAPI from './facebook-capi';
 
 const router = Router();
 
-const pixelId = process.env.FB_PIXEL_ID || '';
-const accessToken = process.env.FB_ACCESS_TOKEN || '';
+// Strict environment variable validation - NO FALLBACKS
+const pixelId = process.env.FB_PIXEL_ID;
+const accessToken = process.env.FB_ACCESS_TOKEN;
 
 if (!pixelId || !accessToken) {
-  console.warn('[Facebook CAPI] Missing FB_PIXEL_ID or FB_ACCESS_TOKEN environment variables');
+  console.error('╔════════════════════════════════════════════════════════════╗');
+  console.error('║  CRITICAL ERROR: Facebook CAPI Configuration Missing      ║');
+  console.error('╠════════════════════════════════════════════════════════════╣');
+  console.error('║  Required environment variables:                           ║');
+  console.error(`║  - FB_PIXEL_ID: ${pixelId ? '✓ Set' : '✗ MISSING'}                                      ║`);
+  console.error(`║  - FB_ACCESS_TOKEN: ${accessToken ? '✓ Set' : '✗ MISSING'}                              ║`);
+  console.error('║                                                            ║');
+  console.error('║  Facebook Conversions API will NOT work until these       ║');
+  console.error('║  are properly configured in your Replit Secrets.          ║');
+  console.error('╚════════════════════════════════════════════════════════════╝');
+  
+  throw new Error('Missing required Facebook CAPI environment variables');
 }
 
 const fbCAPI = new FacebookCAPI(pixelId, accessToken);
@@ -215,6 +227,105 @@ router.post('/test-event', async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// DIAGNOSTIC ROUTE: Dedicated CAPI test endpoint
+router.get('/debug/test-capi', async (req: Request, res: Response) => {
+  try {
+    console.log('\n╔════════════════════════════════════════════════════════════╗');
+    console.log('║  Facebook CAPI Diagnostic Test - Starting                 ║');
+    console.log('╚════════════════════════════════════════════════════════════╝\n');
+
+    const testEventData = {
+      eventName: 'Purchase',
+      eventSourceUrl: 'https://break-free-app.com/debug-test',
+      userData: {
+        email: 'diagnostic@breakfree.test',
+        firstName: 'Diagnostic',
+        lastName: 'Test',
+        ip: req.ip || '127.0.0.1',
+        userAgent: req.get('user-agent') || 'Mozilla/5.0 (Test Agent) DiagnosticCAPI/1.0'
+      },
+      customData: {
+        value: 9.99,
+        currency: 'EUR',
+        content_name: 'Diagnostic Test Purchase'
+      }
+    };
+
+    console.log('Test Event Details:');
+    console.log('  Event Name:', testEventData.eventName);
+    console.log('  Event URL:', testEventData.eventSourceUrl);
+    console.log('  Has Email:', !!testEventData.userData.email);
+    console.log('  Has Name:', !!(testEventData.userData.firstName && testEventData.userData.lastName));
+    console.log('  Client IP:', testEventData.userData.ip);
+    console.log('  User Agent Length:', testEventData.userData.userAgent?.length || 0);
+    console.log('  Purchase Value:', testEventData.customData.value, testEventData.customData.currency);
+
+    const result = await fbCAPI.sendEvent(testEventData);
+
+    console.log('\n✓ Facebook Response:', JSON.stringify(result.response, null, 2));
+    console.log('\n╔════════════════════════════════════════════════════════════╗');
+    console.log('║  Check Facebook Events Manager → Test Events tab now      ║');
+    console.log('╚════════════════════════════════════════════════════════════╝\n');
+
+    res.json({
+      success: result.success,
+      message: 'Diagnostic test event sent to Facebook CAPI',
+      testEventDetails: {
+        eventName: testEventData.eventName,
+        eventSourceUrl: testEventData.eventSourceUrl,
+        hasEmail: !!testEventData.userData.email,
+        hasUserData: !!testEventData.userData,
+        purchaseValue: testEventData.customData.value,
+        currency: testEventData.customData.currency
+      },
+      facebookResponse: result.response,
+      instructions: 'Check Facebook Events Manager → Test Events tab. If you set FB_TEST_EVENT_CODE, events will appear there. Otherwise check the main events feed.'
+    });
+  } catch (error: any) {
+    console.error('\n✗ Diagnostic Test Failed:', error.message);
+    console.error('Full Error:', error);
+    
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.response?.data || 'No additional details',
+      troubleshooting: {
+        pixelId: `Using pixel: ${pixelId}`,
+        tokenConfigured: !!accessToken,
+        tokenLength: accessToken?.length || 0
+      }
+    });
+  }
+});
+
+// HEALTHCHECK ROUTE: System status endpoint
+router.get('/debug/health', (req: Request, res: Response) => {
+  const health = {
+    ok: true,
+    timestamp: new Date().toISOString(),
+    facebook: {
+      pixelIdDefined: !!pixelId,
+      pixelIdValue: pixelId ? `${pixelId.substring(0, 4)}...${pixelId.substring(pixelId.length - 4)}` : 'NOT SET',
+      tokenDefined: !!accessToken,
+      tokenLength: accessToken?.length || 0,
+      testEventCode: process.env.FB_TEST_EVENT_CODE ? 'CONFIGURED' : 'Not set (optional)'
+    },
+    server: {
+      nodeEnv: process.env.NODE_ENV || 'development',
+      requestIp: req.ip || 'unknown',
+      trustProxy: req.app.get('trust proxy') || false
+    },
+    retryQueue: {
+      size: failedEventsQueue.length,
+      oldestEvent: failedEventsQueue.length > 0 
+        ? new Date(failedEventsQueue[0].timestamp).toISOString() 
+        : null
+    }
+  };
+
+  res.json(health);
 });
 
 export default router;

@@ -1,0 +1,144 @@
+You are working on a Node.js + Express backend hosted on Replit that sends Facebook Conversions API (CAPI) events for my product “Break Free App”.
+
+Context:
+- The Meta dashboard says the Conversion API is “Connected”.
+- However, when I complete my funnel and make a test purchase, NO events appear in Events Manager for my pixel.
+- I want you to 100% verify and fix everything end-to-end so that server-side events definitely arrive, are accepted by Meta, and show up in Events Manager → Test Events.
+
+Here are the known constants (do NOT hardcode them; use env vars instead):
+- FB_PIXEL_ID is already set in the environment (numeric string).
+- FB_ACCESS_TOKEN is already set in the environment (long Meta-generated token).
+- We are using Node.js + Express on Replit, with routes already created for:
+  - /facebook-capi/view
+  - /facebook-capi/lead
+  - /facebook-capi/initiate-checkout
+  - /facebook-capi/payment-info
+  - /facebook-capi/purchase
+
+Your job is to:
+1. OPEN AND ANALYSE THE EXISTING CODE
+   - Find the main Express server file (e.g. index.js, server.js, or similar).
+   - Find the CAPI-related code:
+     - The function that builds the payload for Facebook (event_name, event_time, action_source, event_source_url, user_data, etc.).
+     - The routes that call this function for each event.
+   - Confirm that:
+     - We import axios, crypto, dotenv (if used).
+     - We call app.use(express.json()).
+     - We call app.set("trust proxy", true) so IP detection works behind Replit proxies.
+     - The CAPI URL is: https://graph.facebook.com/v18.0/<PIXEL_ID>/events?access_token=<ACCESS_TOKEN>
+
+2. FIX ENVIRONMENT VARIABLE HANDLING
+   - Verify that:
+     - process.env.FB_PIXEL_ID is used and not hardcoded.
+     - process.env.FB_ACCESS_TOKEN is used and not hardcoded.
+   - If any default fallback values exist for pixel or token, REMOVE THEM. We want the app to crash or log clearly if env vars are missing, not silently use dummy values.
+   - Add clear console.error logs if either env var is missing at startup.
+
+3. ADD ROBUST LOGGING AROUND FACEBOOK CALLS
+   - Around the axios.post call to the Facebook Graph API, add detailed logging ONLY in non-production mode:
+     - Log the event_name.
+     - Log event_source_url.
+     - Log whether user_data includes email, phone, and other identifiers (but NEVER log raw personal data; only whether they exist and their lengths).
+     - Log the HTTP status and a short version of any error message from Facebook (err.response.data if present).
+   - Make sure we do NOT log the full access token or full raw PII.
+   - Ensure that if Facebook returns an error, we return a JSON with { success: false, error: "short description" } to the client, not just a generic 500 without info.
+
+4. VERIFY AND FIX THE PAYLOAD FORMAT
+   - For ALL events, ensure the payload follows Meta’s CAPI spec:
+     - event_name: correct string (“ViewContent”, “Lead”, “InitiateCheckout”, “AddPaymentInfo”, “Purchase”).
+     - event_time: Math.floor(Date.now() / 1000) (UNIX seconds, not ms).
+     - action_source: "website".
+     - event_source_url: non-empty string, ideally taken from req.body.url OR req.headers.referer OR a default like https://break-free-app.com.
+     - user_data:
+       - em: SHA256(email in lowercase, trimmed)
+       - ph: SHA256(phone, trimmed)
+       - fn: SHA256(first name)
+       - ln: SHA256(last name)
+       - client_ip_address: user.clientIp OR req.headers["x-forwarded-for"] OR req.socket.remoteAddress
+       - client_user_agent: user.userAgent OR req.headers["user-agent"]
+       - fbc: if fbclid is present in URL, build fbc like "fb.1.<timestamp>.<fbclid>"
+       - fbp: optional but supported from cookie if passed
+   - Add a helper to extract fbclid from URL query string.
+   - Ensure we never send undefined properties inside user_data (ok if some are missing, but undefined should just be absent).
+
+5. ADD A DEDICATED DIAGNOSTIC TEST ROUTE
+   - Create a GET route: /debug/test-capi
+   - When called, this route should:
+     1) Build a hard-coded test event with:
+        - event_name: "Purchase"
+        - event_time: current UNIX timestamp
+        - action_source: "website"
+        - event_source_url: "https://break-free-app.com/debug-test"
+        - user_data containing at least:
+          - em: SHA256("test@example.com")
+          - client_user_agent: something like "Mozilla/5.0 test-agent"
+        - custom_data with:
+          - value: 9.99
+          - currency: "EUR"
+     2) Send this payload directly to the CAPI endpoint using axios.post.
+     3) Log the full response JSON from Facebook (but again, no token or PII).
+     4) Return the response JSON to the client { success: true/false, fb: <fb response or error> }.
+   - This route should NOT depend on any frontend data. It’s just a server-only test.
+
+6. ADD A SIMPLE HEALTHCHECK ENDPOINT
+   - Create GET /debug/health that returns:
+     {
+       ok: true,
+       pixelIdDefined: boolean,
+       tokenDefined: boolean,
+       time: current ISO string
+     }
+
+7. VERIFY ALL EXISTING EVENT ROUTES
+   For each of:
+     - /facebook-capi/view
+     - /facebook-capi/lead
+     - /facebook-capi/initiate-checkout
+     - /facebook-capi/payment-info
+     - /facebook-capi/purchase
+
+   Do the following:
+   - Confirm that they:
+     - Call the same core sendEvent function internally.
+     - Pass req so sendEvent can read req.body.url, req.headers, etc.
+   - If any route is missing or inconsistent, fix it so they ALL use the same standard:
+     - The request body should expect:
+       {
+         "url": "<current page URL>",
+         "user": {
+           "email": "...",
+           "phone": "...",
+           "firstName": "...",
+           "lastName": "...",
+           "userAgent": "...",
+           "fbp": "...",       (optional)
+           "clientIp": "..."   (optional)
+         }
+       }
+   - Make sure the server:
+     - Returns a JSON response for each route.
+     - Does not crash if some fields are missing; it should just send the event with what it has.
+
+8. ADD CORS IF NEEDED
+   - If this Replit backend is called from a different domain (like break-free-app.com), add basic CORS middleware:
+     - Install and configure the cors package.
+     - Allow at least the front-end origin and the needed methods (POST/GET).
+   - If everything runs on the same origin, you can still safely set up permissive CORS for testing.
+
+9. CREATE A MINI README IN THE PROJECT (OPTIONAL BUT HELPFUL)
+   - In a README.md file, document:
+     - How to run the server in Replit.
+     - The env vars that must be set: FB_PIXEL_ID, FB_ACCESS_TOKEN.
+     - How to test:
+       1) Go to Facebook Events Manager → Test Events.
+       2) In a browser, call /debug/test-capi (e.g. via curl or just opening the URL in the browser if it’s GET-only).
+       3) Confirm the test Purchase event appears as a server event in the Test Events tab.
+       4) Once that works, hook up the frontend funnel to call the /facebook-capi/... endpoints.
+
+10. WHEN YOU ARE DONE, SHOW ME:
+    - The final version of the main server file with all the fixes.
+    - A short summary of what was wrong (if anything) and what you changed.
+    - Instructions I should follow to:
+      1) Set the env vars properly in Replit.
+      2) Trigger /debug/test-capi and see the result in Facebook Events Manager.
+      3) Verify that a real funnel purchase will now trigger a visible Purchase event.

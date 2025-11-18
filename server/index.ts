@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -6,6 +7,16 @@ const app = express();
 
 // Enable trust proxy for accurate IP detection (required for Facebook CAPI)
 app.set('trust proxy', true);
+
+// Enable CORS for cross-domain requests (e.g., from break-free-app.com)
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://break-free-app.com', 'https://www.break-free-app.com']
+    : true, // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 declare module 'http' {
   interface IncomingMessage {

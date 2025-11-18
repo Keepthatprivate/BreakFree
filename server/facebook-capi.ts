@@ -77,6 +77,8 @@ class FacebookCAPI {
       const eventTime = Math.floor(Date.now() / 1000);
       const eventId = eventData.eventId || `${eventTime}-${Math.random().toString(36).substring(7)}`;
 
+      const userData = this.buildUserData(eventData.userData);
+
       const payload = {
         data: [
           {
@@ -85,12 +87,37 @@ class FacebookCAPI {
             event_id: eventId,
             event_source_url: eventData.eventSourceUrl,
             action_source: 'website',
-            user_data: this.buildUserData(eventData.userData),
+            user_data: userData,
             custom_data: eventData.customData || {}
           }
         ],
         test_event_code: process.env.FB_TEST_EVENT_CODE || undefined
       };
+
+      // Enhanced logging in development mode
+      const isDev = process.env.NODE_ENV !== 'production';
+      if (isDev) {
+        console.log('\n📤 Sending Facebook CAPI Event:');
+        console.log('  Event:', eventData.eventName);
+        console.log('  Event ID:', eventId);
+        console.log('  Source URL:', eventData.eventSourceUrl);
+        console.log('  Event Time:', new Date(eventTime * 1000).toISOString());
+        console.log('  User Data Present:');
+        console.log('    - Email:', userData.em ? `Yes (${userData.em.substring(0, 8)}...)` : 'No');
+        console.log('    - Phone:', userData.ph ? `Yes (${userData.ph.substring(0, 8)}...)` : 'No');
+        console.log('    - First Name:', userData.fn ? 'Yes' : 'No');
+        console.log('    - Last Name:', userData.ln ? 'Yes' : 'No');
+        console.log('    - IP Address:', userData.client_ip_address || 'No');
+        console.log('    - User Agent:', userData.client_user_agent ? `Yes (${userData.client_user_agent.length} chars)` : 'No');
+        console.log('    - FBC:', userData.fbc || 'No');
+        console.log('    - FBP:', userData.fbp || 'No');
+        if (eventData.customData && Object.keys(eventData.customData).length > 0) {
+          console.log('  Custom Data:', JSON.stringify(eventData.customData, null, 2));
+        }
+        if (payload.test_event_code) {
+          console.log('  🧪 Test Event Code:', payload.test_event_code);
+        }
+      }
 
       const url = `${this.baseUrl}/${this.apiVersion}/${this.pixelId}/events`;
       
@@ -103,11 +130,20 @@ class FacebookCAPI {
         }
       });
 
-      console.log(`[Facebook CAPI] ${eventData.eventName} sent successfully:`, {
-        eventId,
-        eventsReceived: response.data.events_received,
-        fbTraceId: response.data.fbtrace_id
-      });
+      if (isDev) {
+        console.log('✅ Facebook Response:');
+        console.log('  Events Received:', response.data.events_received);
+        console.log('  FB Trace ID:', response.data.fbtrace_id);
+        if (response.data.messages) {
+          console.log('  Messages:', response.data.messages);
+        }
+      } else {
+        console.log(`[Facebook CAPI] ${eventData.eventName} sent successfully:`, {
+          eventId,
+          eventsReceived: response.data.events_received,
+          fbTraceId: response.data.fbtrace_id
+        });
+      }
 
       return {
         success: true,
@@ -115,14 +151,33 @@ class FacebookCAPI {
       };
 
     } catch (error: any) {
-      console.error(`[Facebook CAPI] Error sending ${eventData.eventName}:`, {
-        message: error.message,
-        response: error.response?.data
-      });
+      const isDev = process.env.NODE_ENV !== 'production';
+      
+      if (isDev) {
+        console.error('\n❌ Facebook CAPI Error:');
+        console.error('  Event:', eventData.eventName);
+        console.error('  Error Message:', error.message);
+        console.error('  HTTP Status:', error.response?.status);
+        
+        if (error.response?.data) {
+          console.error('  Facebook Error Details:');
+          console.error('    ', JSON.stringify(error.response.data, null, 4));
+        }
+        
+        if (error.config?.url) {
+          console.error('  API URL:', error.config.url.replace(this.accessToken, 'TOKEN_HIDDEN'));
+        }
+      } else {
+        console.error(`[Facebook CAPI] Error sending ${eventData.eventName}:`, {
+          message: error.message,
+          status: error.response?.status,
+          fbError: error.response?.data?.error?.message
+        });
+      }
 
       return {
         success: false,
-        error: error.message,
+        error: error.response?.data?.error?.message || error.message,
         response: error.response?.data
       };
     }
