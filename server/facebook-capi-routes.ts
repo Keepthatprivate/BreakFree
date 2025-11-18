@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import FacebookCAPI from './facebook-capi';
+import axios from 'axios';
 
 const router = Router();
 
@@ -300,9 +301,9 @@ router.get('/debug/test-capi', async (req: Request, res: Response) => {
   }
 });
 
-// HEALTHCHECK ROUTE: System status endpoint
-router.get('/debug/health', (req: Request, res: Response) => {
-  const health = {
+// HEALTHCHECK ROUTE: System status endpoint with permission validation
+router.get('/debug/health', async (req: Request, res: Response) => {
+  const health: any = {
     ok: true,
     timestamp: new Date().toISOString(),
     facebook: {
@@ -324,6 +325,42 @@ router.get('/debug/health', (req: Request, res: Response) => {
         : null
     }
   };
+
+  // Validate token has permission to access pixel
+  if (pixelId && accessToken) {
+    try {
+      const permissionCheck = await axios.get(
+        `https://graph.facebook.com/v21.0/${pixelId}`,
+        {
+          params: {
+            fields: 'name,is_unavailable',
+            access_token: accessToken
+          },
+          timeout: 5000
+        }
+      );
+
+      health.facebook.pixelAccessible = true;
+      health.facebook.pixelName = permissionCheck.data.name || 'Unknown';
+      health.facebook.pixelStatus = permissionCheck.data.is_unavailable ? 'UNAVAILABLE' : 'ACTIVE';
+      
+      console.log('✅ Pixel access validated:', {
+        pixelId,
+        name: permissionCheck.data.name,
+        accessible: true
+      });
+    } catch (error: any) {
+      health.ok = false;
+      health.facebook.pixelAccessible = false;
+      health.facebook.permissionError = error.response?.data?.error?.message || error.message;
+      health.facebook.errorCode = error.response?.data?.error?.code;
+      
+      console.error('❌ CRITICAL: Token cannot access pixel!');
+      console.error('   Error:', error.response?.data?.error?.message);
+      console.error('   This means events are being SILENTLY DROPPED by Facebook');
+      console.error('   You must generate a new access token from Events Manager');
+    }
+  }
 
   res.json(health);
 });
