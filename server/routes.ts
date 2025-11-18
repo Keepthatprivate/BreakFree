@@ -52,6 +52,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Facebook Conversions API routes
   app.use("/api/facebook-capi", facebookCapiRoutes);
 
+  // TEST ENDPOINT: Simulate a complete purchase flow for testing Facebook events
+  app.post("/api/test-purchase", async (req, res) => {
+    try {
+      console.log('\n🧪 TEST PURCHASE SIMULATION - Starting...\n');
+
+      const testData = {
+        email: 'test.customer@breakfree.test',
+        firstName: 'Test',
+        lastName: 'Customer',
+        value: 14.99,
+        currency: 'EUR',
+        contentName: 'Healing Guides Collection (Test Purchase)'
+      };
+
+      // Send Purchase event to Facebook CAPI
+      const purchaseResponse = await fetch(`http://localhost:5000/api/facebook-capi/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: 'https://break-free-app.com/test-purchase',
+          email: testData.email,
+          firstName: testData.firstName,
+          lastName: testData.lastName,
+          value: testData.value,
+          currency: testData.currency,
+          contentName: testData.contentName
+        })
+      });
+
+      const purchaseResult = await purchaseResponse.json();
+
+      console.log('✅ Test Purchase Complete!');
+      console.log('   Customer:', testData.firstName, testData.lastName);
+      console.log('   Email:', testData.email);
+      console.log('   Amount:', testData.value, testData.currency);
+      console.log('   Product:', testData.contentName);
+      console.log('   Facebook Response:', purchaseResult.success ? 'SUCCESS' : 'FAILED');
+
+      res.json({
+        success: true,
+        message: 'Test purchase completed and Facebook Purchase event sent',
+        testPurchaseDetails: testData,
+        facebookEventResult: purchaseResult,
+        instructions: 'Check your Facebook Events Manager now! Look for a Purchase event with value €14.99 from the last minute.'
+      });
+
+    } catch (error: any) {
+      console.error('❌ Test Purchase Failed:', error.message);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
+
   // BetterAuth routes - handles /api/auth/*
   app.all("/api/auth/*", auth.handler);
 
