@@ -11,10 +11,10 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
   const [selectedDonation, setSelectedDonation] = useState<number>(10);
 
   const donationAmounts = [
-    { amount: 1, label: '€1' },
-    { amount: 2, label: '€2' },
-    { amount: 10, label: '€10' },
-    { amount: 17.34, label: '€17.34' },
+    { amount: 1, label: '$1' },
+    { amount: 2, label: '$2' },
+    { amount: 10, label: '$10' },
+    { amount: 19, label: '$19' },
   ];
 
   const handleDonationClick = (amount: number) => {
@@ -96,7 +96,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
                 <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
               </div>
               <p className="text-foreground text-xs sm:text-sm leading-relaxed">
-                We work to ensure our mental health resources are accessible for everyone. It costs us €17.34 to provide this trial offer, but we want you to choose what feels right for you.
+                We work to ensure our mental health resources are accessible for everyone. It costs us $19 to provide this trial offer, but we want you to choose what feels right for you.
               </p>
             </div>
           </div>

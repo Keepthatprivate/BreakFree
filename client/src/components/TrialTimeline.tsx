@@ -90,12 +90,12 @@ export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-foreground text-sm sm:text-base">7-day trial</span>
                   <div className="text-right">
-                    <span className="text-base sm:text-lg font-bold text-foreground">€0.14</span>
+                    <span className="text-base sm:text-lg font-bold text-foreground">$0.14</span>
                     <span className="text-xs sm:text-sm text-muted-foreground">/per day</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs sm:text-sm text-blue-400">Billed at €1.00</span>
+                  <span className="text-xs sm:text-sm text-blue-400">Billed at $1.00</span>
                 </div>
               </div>
 
@@ -111,12 +111,12 @@ export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-foreground text-sm sm:text-base">4-weeks plan</span>
                   <div className="text-right">
-                    <span className="text-base sm:text-lg font-bold text-foreground">€0.99</span>
+                    <span className="text-base sm:text-lg font-bold text-foreground">$0.99</span>
                     <span className="text-xs sm:text-sm text-muted-foreground">/per day</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs sm:text-sm text-blue-400">Billed at €29.99/month</span>
+                  <span className="text-xs sm:text-sm text-blue-400">Billed at $29.99/month</span>
                 </div>
               </div>
             </div>

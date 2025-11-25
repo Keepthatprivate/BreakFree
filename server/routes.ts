@@ -35,25 +35,25 @@ function getProductDetails(type: string, amount: number) {
       return {
         productName: 'Healing Guides Collection',
         productLink: `${baseUrl}/guides`,
-        amount: '€14.99'
+        amount: '$14.99'
       };
     case 'trial':
       return {
         productName: '7-Day BreakFree App Trial',
         productLink: `${baseUrl}/app`,
-        amount: '€1.00'
+        amount: '$1.00'
       };
     case 'donation':
       return {
         productName: 'Thank You for Your Contribution',
         productLink: `${baseUrl}/`,
-        amount: `€${(amount / 100).toFixed(2)}`
+        amount: `$${(amount / 100).toFixed(2)}`
       };
     default:
       return {
         productName: 'BreakFree Purchase',
         productLink: baseUrl,
-        amount: `€${(amount / 100).toFixed(2)}`
+        amount: `$${(amount / 100).toFixed(2)}`
       };
   }
 }
@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName: 'Test',
         lastName: 'Customer',
         value: 14.99,
-        currency: 'EUR',
+        currency: 'USD',
         contentName: 'Healing Guides Collection (Test Purchase)'
       };
 
@@ -105,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Test purchase completed and Facebook Purchase event sent',
         testPurchaseDetails: testData,
         facebookEventResult: purchaseResult,
-        instructions: 'Check your Facebook Events Manager now! Look for a Purchase event with value €14.99 from the last minute.'
+        instructions: 'Check your Facebook Events Manager now! Look for a Purchase event with value $14.99 from the last minute.'
       });
 
     } catch (error: any) {
@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
-        currency: "eur",
+        currency: "usd",
         automatic_payment_methods: {
           enabled: true,
         },
@@ -149,10 +149,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, name } = req.body;
       
-      // Create payment intent for 7-day trial at €1.00
+      // Create payment intent for 7-day trial at $1.00
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 100, // €1.00 in cents for 7-day trial
-        currency: "eur",
+        amount: 100, // $1.00 in cents for 7-day trial
+        currency: "usd",
         automatic_payment_methods: {
           enabled: true,
         },
@@ -176,8 +176,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, name } = req.body;
       
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 1499, // €14.99 in cents
-        currency: "eur",
+        amount: 1499, // $14.99 in cents
+        currency: "usd",
         automatic_payment_methods: {
           enabled: true,
         },
@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
-        currency: "eur",
+        currency: "usd",
         automatic_payment_methods: {
           enabled: true,
         },

@@ -143,8 +143,8 @@ export default function UpsellPage({ onAccept, onSkip }: UpsellPageProps) {
         <div className="text-center mb-6">
           <p className="text-foreground text-base mb-1">
             One-time offer for{' '}
-            <span className="text-primary font-bold text-xl">€14.99</span>{' '}
-            <span className="text-foreground/50 line-through text-sm">€25.98</span>
+            <span className="text-primary font-bold text-xl">$14.99</span>{' '}
+            <span className="text-foreground/50 line-through text-sm">$25.98</span>
           </p>
         </div>
 

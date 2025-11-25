@@ -69,7 +69,7 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
         email,
         firstName: name,
         value: amount / 100,
-        currency: 'EUR',
+        currency: 'USD',
         contentName: productName,
       });
 
@@ -261,11 +261,11 @@ export default function CheckoutPage({ amount, productType, productName, email, 
             </div>
             <div className="flex items-center justify-between text-base sm:text-lg font-bold">
               <span className="text-foreground">{productName}</span>
-              <span className="text-primary">€{(amount / 100).toFixed(2)}</span>
+              <span className="text-primary">${(amount / 100).toFixed(2)}</span>
             </div>
             {productType === 'trial' && (
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">
-                €29.99 after trial
+                $29.99 after trial
               </p>
             )}
           </div>
