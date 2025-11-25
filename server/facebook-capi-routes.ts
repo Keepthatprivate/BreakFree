@@ -467,4 +467,203 @@ router.post('/debug/validate-token', async (req: Request, res: Response) => {
   }
 });
 
+// HISTORICAL EVENTS: Send past Stripe events to Facebook
+router.post('/send-historical-events', async (req: Request, res: Response) => {
+  try {
+    console.log('\n╔════════════════════════════════════════════════════════════╗');
+    console.log('║  Sending Historical Events to Facebook CAPI               ║');
+    console.log('╚════════════════════════════════════════════════════════════╝\n');
+
+    const results: any[] = [];
+
+    // Historical succeeded purchases
+    const succeededPayments = [
+      {
+        email: 'mdpandrkr@aol.com',
+        firstName: 'Rebecca',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1764033457
+      },
+      {
+        email: 'bergers0616@outlook.com',
+        firstName: 'Andrea',
+        lastName: 'Berger',
+        value: 10.00,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1763958277
+      },
+      {
+        email: 'tom@keakoltd.com',
+        firstName: 'Tom',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763474261
+      },
+      {
+        email: 'tom@keakoltd.com',
+        firstName: 'Tom',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763464509
+      },
+      {
+        email: 'tom@keakoltd.com',
+        firstName: 'Tom',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763456481
+      }
+    ];
+
+    // Historical initiated checkouts (not completed)
+    const initiatedCheckouts = [
+      {
+        email: 'holly.s.kollmorgen@gmail.com',
+        firstName: 'Holly',
+        lastName: 'Lyon',
+        value: 10.00,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1764052642
+      },
+      {
+        email: 'brookepare1987@gmail.com',
+        firstName: 'Brooke',
+        value: 10.00,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1764039794
+      },
+      {
+        email: 'donnalovesmarcus1994@gmail.com',
+        firstName: 'Donna',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763813880
+      },
+      {
+        email: 'shafercory@gmail.com',
+        firstName: 'Cory',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763889424
+      },
+      {
+        email: 'lynnloriedesvari@gmail.com',
+        firstName: 'Lorie',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1763814010
+      },
+      {
+        email: 'laceylev79@gmail.com',
+        firstName: 'Lacey',
+        value: 1.00,
+        currency: 'EUR',
+        type: 'trial',
+        timestamp: 1763813880
+      },
+      {
+        email: 'leggia@proton.me',
+        firstName: 'Windy',
+        value: 17.34,
+        currency: 'EUR',
+        type: 'donation',
+        timestamp: 1762362221
+      }
+    ];
+
+    // Send Purchase events for succeeded payments
+    console.log('Sending Purchase events...');
+    for (const payment of succeededPayments) {
+      const contentName = payment.type === 'donation' 
+        ? 'Thank You for Your Contribution' 
+        : '7-Day BreakFree App Trial';
+      
+      const result = await fbCAPI.sendPurchase(
+        'https://break-free-app.com/checkout',
+        {
+          email: payment.email,
+          firstName: payment.firstName,
+          lastName: payment.lastName
+        },
+        {
+          value: payment.value,
+          currency: payment.currency,
+          content_name: contentName
+        }
+      );
+      
+      results.push({
+        type: 'Purchase',
+        email: payment.email,
+        value: payment.value,
+        success: result.success,
+        eventsReceived: result.response?.events_received
+      });
+      
+      console.log(`  ✓ Purchase: ${payment.firstName} - €${payment.value} - ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    }
+
+    // Send InitiateCheckout events for incomplete payments
+    console.log('\nSending InitiateCheckout events...');
+    for (const checkout of initiatedCheckouts) {
+      const contentName = checkout.type === 'donation' 
+        ? 'Donation Checkout' 
+        : 'Trial Checkout';
+      
+      const result = await fbCAPI.sendInitiateCheckout(
+        'https://break-free-app.com/checkout',
+        {
+          email: checkout.email,
+          firstName: checkout.firstName,
+          lastName: checkout.lastName
+        },
+        {
+          value: checkout.value,
+          currency: checkout.currency,
+          content_name: contentName
+        }
+      );
+      
+      results.push({
+        type: 'InitiateCheckout',
+        email: checkout.email,
+        value: checkout.value,
+        success: result.success,
+        eventsReceived: result.response?.events_received
+      });
+      
+      console.log(`  ✓ InitiateCheckout: ${checkout.firstName} - €${checkout.value} - ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    }
+
+    const successCount = results.filter(r => r.success).length;
+    
+    console.log(`\n✓ Completed: ${successCount}/${results.length} events sent successfully`);
+
+    res.json({
+      success: true,
+      message: `Sent ${successCount}/${results.length} historical events to Facebook`,
+      summary: {
+        purchases: succeededPayments.length,
+        initiateCheckouts: initiatedCheckouts.length,
+        totalSent: successCount
+      },
+      details: results
+    });
+  } catch (error: any) {
+    console.error('Error sending historical events:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
