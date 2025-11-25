@@ -476,7 +476,7 @@ router.post('/send-historical-events', async (req: Request, res: Response) => {
 
     const results: any[] = [];
 
-    // Historical succeeded purchases
+    // Historical succeeded purchases (excluding test accounts)
     const succeededPayments = [
       {
         email: 'mdpandrkr@aol.com',
@@ -494,34 +494,10 @@ router.post('/send-historical-events', async (req: Request, res: Response) => {
         currency: 'EUR',
         type: 'donation',
         timestamp: 1763958277
-      },
-      {
-        email: 'tom@keakoltd.com',
-        firstName: 'Tom',
-        value: 1.00,
-        currency: 'EUR',
-        type: 'trial',
-        timestamp: 1763474261
-      },
-      {
-        email: 'tom@keakoltd.com',
-        firstName: 'Tom',
-        value: 1.00,
-        currency: 'EUR',
-        type: 'trial',
-        timestamp: 1763464509
-      },
-      {
-        email: 'tom@keakoltd.com',
-        firstName: 'Tom',
-        value: 1.00,
-        currency: 'EUR',
-        type: 'trial',
-        timestamp: 1763456481
       }
     ];
 
-    // Historical initiated checkouts (not completed)
+    // Historical initiated checkouts (not completed, excluding test accounts)
     const initiatedCheckouts = [
       {
         email: 'holly.s.kollmorgen@gmail.com',
@@ -571,14 +547,6 @@ router.post('/send-historical-events', async (req: Request, res: Response) => {
         currency: 'EUR',
         type: 'trial',
         timestamp: 1763813880
-      },
-      {
-        email: 'leggia@proton.me',
-        firstName: 'Windy',
-        value: 17.34,
-        currency: 'EUR',
-        type: 'donation',
-        timestamp: 1762362221
       }
     ];
 
