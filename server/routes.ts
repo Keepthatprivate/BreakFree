@@ -62,6 +62,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Facebook Conversions API routes
   app.use("/api/facebook-capi", facebookCapiRoutes);
 
+  // SYNC ENDPOINT: Retroactively sync Stripe purchases to Meta CAPI
+  // This allows you to send historical purchases that weren't tracked
+  app.post("/api/sync-stripe-to-meta", async (req, res) => {
+    try {
+      console.log('\n╔════════════════════════════════════════════════════════════╗');
+      console.log('║  STRIPE TO META CAPI SYNC - Starting...                    ║');
+      console.log('╚════════════════════════════════════════════════════════════╝\n');
+
+      if (!fbCAPI) {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Facebook CAPI not configured - missing FB_PIXEL_ID or FB_ACCESS_TOKEN' 
+        });
+      }
+
+      // Get date range from request or default to last 7 days
+      const { startDate, endDate, limit = 100 } = req.body;
+      
+      const created = {
+        gte: startDate ? Math.floor(new Date(startDate).getTime() / 1000) : Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000),
+        lte: endDate ? Math.floor(new Date(endDate).getTime() / 1000) : Math.floor(Date.now() / 1000),
+      };
+
+      console.log(`Fetching Stripe payments from ${new Date(created.gte * 1000).toISOString()} to ${new Date(created.lte * 1000).toISOString()}`);
+
+      // Fetch successful payment intents from Stripe
+      const paymentIntents = await stripe.paymentIntents.list({
+        created,
+        limit: Math.min(limit, 100),
+      });
+
+      const successfulPayments = paymentIntents.data.filter(pi => pi.status === 'succeeded');
+      console.log(`Found ${successfulPayments.length} successful payments`);
+
+      const results: any[] = [];
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const payment of successfulPayments) {
+        const { email, name, type } = payment.metadata;
+        const amountInDollars = payment.amount / 100;
+        const productDetails = getProductDetails(type, payment.amount);
+
+        // Parse name
+        const nameParts = (name || '').trim().split(' ');
+        const firstName = nameParts[0] || undefined;
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          : 'https://break-free-app.com';
+
+        try {
+          const result = await fbCAPI.sendPurchase(
+            `${baseUrl}/checkout`,
+            {
+              email: email || undefined,
+              firstName,
+              lastName,
+            },
+            {
+              value: amountInDollars,
+              currency: 'USD',
+              content_name: productDetails.productName,
+            }
+          );
+
+          results.push({
+            paymentId: payment.id,
+            amount: amountInDollars,
+            email: email ? `${email.substring(0, 3)}***` : 'none',
+            name: name || 'Unknown',
+            type: type || 'unknown',
+            created: new Date(payment.created * 1000).toISOString(),
+            capiResult: result.success ? 'SUCCESS' : 'FAILED',
+            error: result.error,
+          });
+
+          if (result.success) {
+            successCount++;
+            console.log(`✓ Synced: ${payment.id} - $${amountInDollars} - ${email || 'no email'}`);
+          } else {
+            failCount++;
+            console.log(`✗ Failed: ${payment.id} - ${result.error}`);
+          }
+        } catch (error: any) {
+          failCount++;
+          results.push({
+            paymentId: payment.id,
+            amount: amountInDollars,
+            email: email ? `${email.substring(0, 3)}***` : 'none',
+            capiResult: 'ERROR',
+            error: error.message,
+          });
+          console.log(`✗ Error: ${payment.id} - ${error.message}`);
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      console.log(`\n╔════════════════════════════════════════════════════════════╗`);
+      console.log(`║  SYNC COMPLETE: ${successCount} success, ${failCount} failed               ║`);
+      console.log(`╚════════════════════════════════════════════════════════════╝\n`);
+
+      res.json({
+        success: true,
+        summary: {
+          totalFound: successfulPayments.length,
+          synced: successCount,
+          failed: failCount,
+          dateRange: {
+            from: new Date(created.gte * 1000).toISOString(),
+            to: new Date(created.lte * 1000).toISOString(),
+          },
+        },
+        payments: results,
+        instructions: 'Check Facebook Events Manager to verify Purchase events. If events show as FAILED, your access token may need to be regenerated with proper permissions.',
+      });
+
+    } catch (error: any) {
+      console.error('Sync failed:', error.message);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+
+  // Get Stripe payment history (for viewing before syncing)
+  app.get("/api/stripe-payments", async (req, res) => {
+    try {
+      const { startDate, endDate, limit = 20 } = req.query;
+      
+      const created: { gte?: number; lte?: number } = {};
+      if (startDate) created.gte = Math.floor(new Date(startDate as string).getTime() / 1000);
+      if (endDate) created.lte = Math.floor(new Date(endDate as string).getTime() / 1000);
+
+      // Default to last 7 days if no dates provided
+      if (!startDate && !endDate) {
+        created.gte = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
+        created.lte = Math.floor(Date.now() / 1000);
+      }
+
+      const paymentIntents = await stripe.paymentIntents.list({
+        created: Object.keys(created).length > 0 ? created : undefined,
+        limit: Math.min(Number(limit), 100),
+      });
+
+      const payments = paymentIntents.data
+        .filter(pi => pi.status === 'succeeded')
+        .map(pi => ({
+          id: pi.id,
+          amount: pi.amount / 100,
+          currency: pi.currency.toUpperCase(),
+          status: pi.status,
+          created: new Date(pi.created * 1000).toISOString(),
+          email: pi.metadata.email ? `${pi.metadata.email.substring(0, 3)}***` : null,
+          name: pi.metadata.name || null,
+          type: pi.metadata.type || 'unknown',
+        }));
+
+      res.json({
+        success: true,
+        count: payments.length,
+        payments,
+        instructions: 'Use POST /api/sync-stripe-to-meta to sync these purchases to Meta CAPI',
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // TEST ENDPOINT: Simulate a complete purchase flow for testing Facebook events
   app.post("/api/test-purchase", async (req, res) => {
     try {
