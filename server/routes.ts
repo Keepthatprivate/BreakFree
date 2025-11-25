@@ -7,12 +7,22 @@ import { getUncachableResendClient } from "./resend-client";
 import { generateResultsEmail, generatePurchaseConfirmationEmail } from "./email-templates";
 import { analyzeQuizAnswers } from "./quiz-analyzer";
 import facebookCapiRoutes from "./facebook-capi-routes";
+import FacebookCAPI from "./facebook-capi";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Initialize Facebook CAPI for server-side purchase tracking
+const fbPixelId = process.env.FB_PIXEL_ID;
+const fbAccessToken = process.env.FB_ACCESS_TOKEN;
+const fbCAPI = (fbPixelId && fbAccessToken) ? new FacebookCAPI(fbPixelId, fbAccessToken) : null;
+
+if (!fbCAPI) {
+  console.warn('[Stripe Webhook] Facebook CAPI not configured - purchase events will not be tracked server-side');
+}
 
 // Helper to get product details based on payment type
 function getProductDetails(type: string, amount: number) {
@@ -258,13 +268,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: paymentIntent.amount
       });
 
+      // Get product details based on payment type
+      const productDetails = getProductDetails(type, paymentIntent.amount);
+      const amountInEuros = paymentIntent.amount / 100;
+
+      // Send Purchase event to Facebook CAPI (server-side tracking)
+      // This ensures purchases are tracked even if client-side tracking fails
+      if (fbCAPI) {
+        try {
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+          
+          // Parse first name and last name from full name
+          const nameParts = (name || '').trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+          const result = await fbCAPI.sendPurchase(
+            `${baseUrl}/checkout`,
+            {
+              email: email || undefined,
+              firstName,
+              lastName,
+            },
+            {
+              value: amountInEuros,
+              currency: 'EUR',
+              content_name: productDetails.productName,
+            }
+          );
+
+          if (result.success) {
+            console.log(`[Stripe Webhook] Facebook CAPI Purchase event sent for ${type}:`, {
+              paymentId: paymentIntent.id,
+              amount: amountInEuros,
+              email: email ? `${email.substring(0, 3)}***` : 'none',
+              eventsReceived: result.response?.events_received
+            });
+          } else {
+            console.error(`[Stripe Webhook] Facebook CAPI Purchase event failed:`, result.error);
+          }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending Facebook CAPI event:', fbError.message);
+          // Don't fail the webhook - payment already succeeded
+        }
+      }
+
       if (email) {
         try {
           // Use provided name or fallback to "Valued Customer"
           const customerName = name || 'Valued Customer';
-          
-          // Get product details based on payment type
-          const productDetails = getProductDetails(type, paymentIntent.amount);
 
           // Get Resend client
           const { client: resend, fromEmail } = await getUncachableResendClient();
