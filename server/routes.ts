@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get product details based on payment type
       const productDetails = getProductDetails(type, paymentIntent.amount);
-      const amountInEuros = paymentIntent.amount / 100;
+      const amountInDollars = paymentIntent.amount / 100;
 
       // Send Purchase event to Facebook CAPI (server-side tracking)
       // This ensures purchases are tracked even if client-side tracking fails
@@ -293,8 +293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lastName,
             },
             {
-              value: amountInEuros,
-              currency: 'EUR',
+              value: amountInDollars,
+              currency: 'USD',
               content_name: productDetails.productName,
             }
           );
@@ -302,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (result.success) {
             console.log(`[Stripe Webhook] Facebook CAPI Purchase event sent for ${type}:`, {
               paymentId: paymentIntent.id,
-              amount: amountInEuros,
+              amount: amountInDollars,
               email: email ? `${email.substring(0, 3)}***` : 'none',
               eventsReceived: result.response?.events_received
             });

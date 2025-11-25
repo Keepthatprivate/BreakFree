@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
 import type { BreakScreen } from '@shared/quiz-data';
@@ -10,6 +11,12 @@ interface BreakScreenProps {
 }
 
 export default function BreakScreenComponent({ breakScreen, onContinue }: BreakScreenProps) {
+  // Trigger haptic feedback on mobile devices when break screen appears
+  useEffect(() => {
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
+  }, []);
 
   // Data Break
   if (breakScreen.type === 'data-break') {

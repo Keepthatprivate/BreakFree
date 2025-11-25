@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
 interface EmpathyMessageProps {
@@ -6,6 +7,13 @@ interface EmpathyMessageProps {
 }
 
 export default function EmpathyMessage({ message, onContinue }: EmpathyMessageProps) {
+  // Trigger haptic feedback on mobile devices when empathy message appears
+  useEffect(() => {
+    if (navigator.vibrate) {
+      navigator.vibrate([40, 20, 40]);
+    }
+  }, []);
+
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div

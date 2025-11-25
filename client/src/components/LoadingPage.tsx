@@ -133,6 +133,11 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     // Only start the timer once images are loaded
     if (!imagesLoaded) return;
 
+    // Trigger haptic feedback when loading starts
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
+
     const startTime = Date.now();
     const interval = 50; // Update every 50ms for smooth animation
 
@@ -142,6 +147,10 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
       
       if (elapsed >= totalDuration) {
         clearInterval(timer);
+        // Trigger haptic feedback on completion
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100, 50, 100]);
+        }
         // Call onComplete after a brief delay when reaching 100%
         setTimeout(() => {
           onComplete();
@@ -161,6 +170,10 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
       setCurrentTestimonialIndex((prev) => {
         // Only advance if we haven't shown all testimonials yet
         if (prev < shuffledTestimonials.length - 1) {
+          // Trigger haptic feedback on testimonial change
+          if (navigator.vibrate) {
+            navigator.vibrate([30]);
+          }
           return prev + 1;
         }
         return prev; // Stay on last testimonial
