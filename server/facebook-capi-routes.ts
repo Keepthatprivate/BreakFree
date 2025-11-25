@@ -249,7 +249,7 @@ router.get('/debug/test-capi', async (req: Request, res: Response) => {
       },
       customData: {
         value: 9.99,
-        currency: 'EUR',
+        currency: 'USD',
         content_name: 'Diagnostic Test Purchase'
       }
     };
