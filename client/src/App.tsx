@@ -1,4 +1,5 @@
 import { Switch, Route } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +9,7 @@ import LandingPage from "@/pages/LandingPage";
 import Quiz from "@/pages/Quiz";
 import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
+import { initFacebookTracking } from "@/lib/facebook-tracking";
 
 function Router() {
   return (
@@ -22,6 +24,10 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    initFacebookTracking();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
