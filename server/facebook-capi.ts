@@ -23,12 +23,42 @@ interface EventData {
 class FacebookCAPI {
   private pixelId: string;
   private accessToken: string;
-  private apiVersion = 'v21.0';
+  private apiVersion = 'v18.0'; // Using v18.0 for stability - widely supported
   private baseUrl = 'https://graph.facebook.com';
+  private isValidated = false;
+  private validationError: string | null = null;
 
   constructor(pixelId: string, accessToken: string) {
     this.pixelId = pixelId;
     this.accessToken = accessToken;
+    
+    // Validate on startup
+    this.validateCredentials();
+  }
+
+  private async validateCredentials(): Promise<void> {
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/${this.apiVersion}/${this.pixelId}`,
+        {
+          params: {
+            fields: 'name,id',
+            access_token: this.accessToken
+          },
+          timeout: 10000
+        }
+      );
+      this.isValidated = true;
+      console.log(`[Facebook CAPI] Connected to Pixel: ${response.data.name} (${response.data.id})`);
+    } catch (error: any) {
+      this.validationError = error.response?.data?.error?.message || error.message;
+      console.error(`[Facebook CAPI] WARNING: Token validation failed - ${this.validationError}`);
+      console.error('[Facebook CAPI] Events will still be attempted, but may fail.');
+    }
+  }
+
+  getStatus(): { isValidated: boolean; error: string | null } {
+    return { isValidated: this.isValidated, error: this.validationError };
   }
 
   private hashSHA256(value: string | undefined): string | undefined {

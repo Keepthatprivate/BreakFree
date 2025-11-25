@@ -311,7 +311,9 @@ router.get('/debug/health', async (req: Request, res: Response) => {
       pixelIdValue: pixelId ? `${pixelId.substring(0, 4)}...${pixelId.substring(pixelId.length - 4)}` : 'NOT SET',
       tokenDefined: !!accessToken,
       tokenLength: accessToken?.length || 0,
-      testEventCode: process.env.FB_TEST_EVENT_CODE ? 'CONFIGURED' : 'Not set (optional)'
+      tokenFormat: accessToken?.startsWith('EAA') ? 'VALID (starts with EAA)' : 'INVALID FORMAT',
+      testEventCode: process.env.FB_TEST_EVENT_CODE ? 'CONFIGURED' : 'Not set (optional)',
+      capiStatus: fbCAPI.getStatus()
     },
     server: {
       nodeEnv: process.env.NODE_ENV || 'development',
@@ -330,7 +332,7 @@ router.get('/debug/health', async (req: Request, res: Response) => {
   if (pixelId && accessToken) {
     try {
       const permissionCheck = await axios.get(
-        `https://graph.facebook.com/v21.0/${pixelId}`,
+        `https://graph.facebook.com/v18.0/${pixelId}`,
         {
           params: {
             fields: 'name,is_unavailable',
@@ -354,6 +356,16 @@ router.get('/debug/health', async (req: Request, res: Response) => {
       health.facebook.pixelAccessible = false;
       health.facebook.permissionError = error.response?.data?.error?.message || error.message;
       health.facebook.errorCode = error.response?.data?.error?.code;
+      health.facebook.troubleshooting = [
+        'Your access token appears to be blocked or revoked by Facebook.',
+        'To fix this issue:',
+        '1. Go to Meta Business Suite > Events Manager',
+        '2. Select your Pixel',
+        '3. Go to Settings > Conversions API',
+        '4. Generate a NEW access token',
+        '5. Update FB_ACCESS_TOKEN in Replit Secrets',
+        '6. Restart the application'
+      ];
       
       console.error('❌ CRITICAL: Token cannot access pixel!');
       console.error('   Error:', error.response?.data?.error?.message);
@@ -363,6 +375,96 @@ router.get('/debug/health', async (req: Request, res: Response) => {
   }
 
   res.json(health);
+});
+
+// TOKEN VALIDATION ENDPOINT: Check if a new token works before saving
+router.post('/debug/validate-token', async (req: Request, res: Response) => {
+  const { newToken } = req.body;
+  
+  if (!newToken) {
+    return res.status(400).json({ success: false, error: 'Please provide newToken in request body' });
+  }
+  
+  try {
+    // Test 1: Token debug
+    const debugResponse = await axios.get('https://graph.facebook.com/debug_token', {
+      params: {
+        input_token: newToken,
+        access_token: newToken
+      },
+      timeout: 10000
+    });
+    
+    // Test 2: Pixel access
+    const pixelResponse = await axios.get(
+      `https://graph.facebook.com/v18.0/${pixelId}`,
+      {
+        params: {
+          fields: 'name,id',
+          access_token: newToken
+        },
+        timeout: 5000
+      }
+    );
+    
+    // Test 3: Send test event
+    const testPayload = {
+      data: [{
+        event_name: 'PageView',
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: 'website',
+        event_source_url: 'https://break-free-app.com/token-validation-test',
+        user_data: {
+          client_ip_address: req.ip || '1.2.3.4',
+          client_user_agent: req.get('user-agent') || 'TokenValidation/1.0'
+        }
+      }],
+      access_token: newToken
+    };
+    
+    if (process.env.FB_TEST_EVENT_CODE) {
+      (testPayload as any).test_event_code = process.env.FB_TEST_EVENT_CODE;
+    }
+    
+    const eventResponse = await axios.post(
+      `https://graph.facebook.com/v18.0/${pixelId}/events`,
+      testPayload,
+      { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Token is VALID and working!',
+      tokenInfo: {
+        valid: debugResponse.data.data?.is_valid,
+        type: debugResponse.data.data?.type,
+        scopes: debugResponse.data.data?.scopes,
+        expiresAt: debugResponse.data.data?.expires_at ? new Date(debugResponse.data.data.expires_at * 1000).toISOString() : 'Never'
+      },
+      pixelInfo: {
+        id: pixelResponse.data.id,
+        name: pixelResponse.data.name
+      },
+      eventTest: {
+        eventsReceived: eventResponse.data.events_received,
+        fbTraceId: eventResponse.data.fbtrace_id
+      },
+      nextSteps: [
+        'Token validated successfully!',
+        'Update FB_ACCESS_TOKEN in Replit Secrets with this token',
+        'Restart the application to apply the new token'
+      ]
+    });
+  } catch (error: any) {
+    const errData = error.response?.data?.error;
+    res.status(400).json({
+      success: false,
+      error: errData?.message || error.message,
+      errorCode: errData?.code,
+      errorType: errData?.type,
+      troubleshooting: 'This token does not have access to the pixel. Make sure the system user has access to the pixel in Business Manager.'
+    });
+  }
 });
 
 export default router;
