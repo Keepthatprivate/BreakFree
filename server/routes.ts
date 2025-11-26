@@ -559,22 +559,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ received: true });
     }
 
-    // Handle payment_intent.requires_payment_method - Track as AddPaymentInfo when payment method was attached
-    if (event.type === 'payment_intent.requires_payment_method') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const { email, name, type, fbc, fbp } = paymentIntent.metadata;
-
-      // This event fires when customer enters payment info but it fails validation or needs more info
-      console.log('[Stripe Webhook] Payment requires payment method:', {
-        paymentId: paymentIntent.id,
-        email: email ? `${email.substring(0, 3)}***` : 'none',
-        type,
-        lastPaymentError: paymentIntent.last_payment_error?.message
-      });
-
-      return res.json({ received: true });
-    }
-
     // Handle payment_intent.payment_failed - Track as PaymentFailed
     if (event.type === 'payment_intent.payment_failed') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
