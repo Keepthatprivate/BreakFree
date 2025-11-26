@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Check, Shield, Sparkles, Heart, Brain, Users, BookOpen } from 'lucide-react';
+import { Check, Shield, Sparkles, Heart, Brain, Users, BookOpen, Star } from 'lucide-react';
 
 interface MasterclassBundlePageProps {
   onAccept: () => void;
@@ -9,157 +9,162 @@ interface MasterclassBundlePageProps {
 
 export default function MasterclassBundlePage({ onAccept, onDecline }: MasterclassBundlePageProps) {
   const masterclasses = [
-    { icon: Heart, title: 'Inner Child Healing Masterclass', description: 'Reconnect with and heal your younger self' },
-    { icon: Users, title: 'Attachment Style Deep-Dive', description: 'Understand your relationship patterns' },
-    { icon: Brain, title: 'Emotional Regulation Masterclass', description: 'Master your emotional responses' },
-    { icon: Sparkles, title: 'Self-Worth Rebuilding Workshop', description: 'Reclaim your inherent value' },
-    { icon: Shield, title: 'Boundaries & Communication Masterclass', description: 'Protect your peace and speak your truth' },
+    { icon: Heart, title: 'Inner Child Healing', color: 'from-rose-500 to-pink-600' },
+    { icon: Users, title: 'Attachment Style Deep-Dive', color: 'from-violet-500 to-purple-600' },
+    { icon: Brain, title: 'Emotional Regulation', color: 'from-blue-500 to-indigo-600' },
+    { icon: Sparkles, title: 'Self-Worth Rebuilding', color: 'from-amber-500 to-orange-600' },
+    { icon: Shield, title: 'Boundaries & Communication', color: 'from-emerald-500 to-teal-600' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
-      <div className="max-w-2xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
+      
+      <div className="relative max-w-2xl mx-auto px-5 py-8 sm:py-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-6"
         >
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Sparkles className="w-4 h-4" />
-            Special One-Time Offer
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            One-Time Exclusive Offer
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
-            Finally Break Free From the Patterns That Keep You Stuck
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-3 leading-tight tracking-tight">
+            Break Free From
+            <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">
+              What's Holding You Back
+            </span>
           </h1>
           
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Deepen your healing journey with our complete Trauma Healing Masterclass Bundle — 
-            expert-guided sessions designed to transform pain into peace.
+          <p className="text-base sm:text-lg text-purple-200/80 max-w-md mx-auto">
+            Transform pain into power with our complete masterclass bundle
           </p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-card rounded-xl p-6 mb-8 border border-border/50"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-white/10"
         >
-          <p className="text-foreground/90 leading-relaxed text-center italic">
-            "The patterns you developed to survive are now keeping you from thriving. 
-            These masterclasses give you the roadmap to finally release what no longer serves you — 
-            to understand your inner child, regulate your emotions, and rebuild the self-worth 
-            that was taken from you. This is where real transformation begins."
+          <p className="text-purple-100/90 text-sm sm:text-base text-center italic leading-relaxed">
+            "The patterns keeping you stuck were learned for survival. 
+            Now it's time to unlearn them and <span className="text-pink-300 font-semibold">reclaim your life</span>."
           </p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-8"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-6"
         >
-          <h2 className="text-xl font-semibold text-foreground mb-6 text-center">
-            What's Included in Your Bundle:
+          <h2 className="text-lg font-bold text-white mb-4 text-center flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            5 Transformative Masterclasses
           </h2>
           
-          <div className="space-y-4">
+          <div className="grid gap-2.5">
             {masterclasses.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                className="flex items-start gap-4 p-4 bg-card rounded-lg border border-border/30"
+                transition={{ duration: 0.4, delay: 0.3 + index * 0.08 }}
+                className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-primary" />
+                <div className={`flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+                  <item.icon className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
+                <span className="font-semibold text-white text-sm sm:text-base">{item.title}</span>
+                <Check className="w-5 h-5 text-emerald-400 ml-auto" />
               </motion.div>
             ))}
-            
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.8 }}
-              className="flex items-start gap-4 p-4 bg-primary/5 rounded-lg border border-primary/20"
-            >
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground">BONUS: Printable Workbook</h3>
-                  <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">FREE</span>
-                </div>
-                <p className="text-sm text-muted-foreground">Integration exercises to deepen your practice</p>
-              </div>
-            </motion.div>
+          </div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
+            className="flex items-center gap-3 p-3 mt-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/30"
+          >
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <span className="font-semibold text-amber-200 text-sm sm:text-base">BONUS: Printable Workbook</span>
+            </div>
+            <span className="text-xs font-bold bg-amber-500 text-slate-900 px-2 py-1 rounded-full">FREE</span>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="relative bg-gradient-to-br from-purple-600/30 via-pink-600/20 to-rose-600/30 rounded-2xl p-6 mb-6 border border-purple-400/30 overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-500/20 to-transparent rounded-full blur-2xl" />
+          
+          <div className="relative text-center">
+            <p className="text-purple-300 text-sm mb-1">
+              <span className="line-through opacity-70">Total Value: $199+</span>
+            </p>
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <span className="text-white/60 text-xl">Today:</span>
+              <span className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent">
+                $69
+              </span>
+            </div>
+            <p className="text-purple-200/70 text-sm">One-time payment • Lifetime access</p>
           </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9 }}
-          className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-xl p-6 mb-8 text-center"
+          transition={{ duration: 0.5, delay: 0.9 }}
+          className="flex items-center justify-center gap-2 mb-5 text-sm"
         >
-          <p className="text-muted-foreground mb-2">
-            <span className="line-through">Total Value: $199+</span>
-          </p>
-          <p className="text-3xl font-bold text-foreground mb-2">
-            Today Only: <span className="text-primary">$69</span>
-          </p>
-          <p className="text-sm text-muted-foreground">One-time payment • Lifetime access</p>
+          <Shield className="w-4 h-4 text-emerald-400" />
+          <span className="text-emerald-300 font-medium">30-Day Money-Back Guarantee</span>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.0 }}
-          className="flex items-center justify-center gap-2 mb-6 text-sm text-muted-foreground"
-        >
-          <Shield className="w-4 h-4 text-green-500" />
-          <span>30-day satisfaction guarantee — No questions asked</span>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.1 }}
-          className="space-y-4"
+          transition={{ duration: 0.5, delay: 1.0 }}
+          className="space-y-3"
         >
           <Button
             onClick={onAccept}
             size="lg"
-            className="w-full py-6 text-lg font-semibold"
+            className="w-full py-7 text-lg font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-500 hover:via-pink-500 hover:to-rose-500 border-0 shadow-xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 rounded-xl"
             data-testid="button-accept-masterclass"
           >
             <Check className="w-5 h-5 mr-2" />
-            YES — I Want the Masterclass Bundle
+            YES — I Want the Bundle
           </Button>
           
           <button
             onClick={onDecline}
-            className="w-full text-center text-muted-foreground hover:text-foreground transition-colors py-2 text-sm"
+            className="w-full text-center text-purple-300/60 hover:text-purple-200 transition-colors py-2 text-sm"
             data-testid="button-decline-masterclass"
           >
-            No thanks, I'll pass on this offer
+            No thanks, I'll pass
           </button>
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1.2 }}
-          className="text-xs text-muted-foreground/70 text-center mt-8"
+          transition={{ duration: 0.5, delay: 1.1 }}
+          className="text-xs text-purple-300/40 text-center mt-6"
         >
-          This program is for educational purposes and is not a replacement for professional therapy or medical advice.
+          Educational content only. Not a replacement for therapy.
         </motion.p>
       </div>
     </div>
