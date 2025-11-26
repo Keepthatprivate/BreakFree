@@ -32,16 +32,39 @@ interface QuizAnswers {
   [questionId: string]: string[];
 }
 
+// Dev mode: Allow direct navigation via URL params like /quiz?state=donation
+const getInitialState = (): QuizState => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const stateParam = urlParams.get('state');
+  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell'];
+  if (stateParam && validStates.includes(stateParam as QuizState)) {
+    return stateParam as QuizState;
+  }
+  return 'quiz';
+};
+
+const getInitialQuestionIndex = (): number => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const questionParam = urlParams.get('question');
+  if (questionParam) {
+    const index = parseInt(questionParam, 10);
+    if (!isNaN(index) && index >= 0 && index < 13) {
+      return index;
+    }
+  }
+  return 0;
+};
+
 export default function Quiz() {
   const [, setLocation] = useLocation();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(getInitialQuestionIndex);
   const [answers, setAnswers] = useState<QuizAnswers>(() => {
     const saved = localStorage.getItem('quizAnswers');
     return saved ? JSON.parse(saved) : {};
   });
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [state, setState] = useState<QuizState>('quiz');
+  const [userName, setUserName] = useState(() => localStorage.getItem('userName') || 'Test User');
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('userEmail') || 'test@example.com');
+  const [state, setState] = useState<QuizState>(getInitialState);
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentAnimationIndex, setCurrentAnimationIndex] = useState(0);
   const [currentQuoteBreakIndex, setCurrentQuoteBreakIndex] = useState(0);
