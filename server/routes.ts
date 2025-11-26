@@ -681,6 +681,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to send results email using Resend test address
+  app.post("/api/test-results-email", async (req, res) => {
+    try {
+      const { email, name } = req.body;
+
+      if (!email || !name) {
+        return res.status(400).json({ message: "Missing email or name" });
+      }
+
+      // Get Resend client
+      const { client: resend } = await getUncachableResendClient();
+
+      // Use test data for a realistic preview
+      const testAnalysis = {
+        traumaScore: 72,
+        primaryPattern: 'Emotional Regulation Challenges',
+        recommendations: [
+          'Learn to name and identify your emotions throughout the day',
+          'Practice the 5-4-3-2-1 grounding technique during overwhelm',
+          'Create a "feelings wheel" to expand your emotional vocabulary',
+          'Develop healthy emotional release practices (movement, art, writing)',
+        ],
+      };
+
+      // Send email using Resend test address
+      const { data, error } = await resend.emails.send({
+        from: 'Break Free <onboarding@resend.dev>',
+        to: [email],
+        subject: '🌸 Your Break Free Quiz Results',
+        html: generateResultsEmail({
+          userName: name,
+          traumaScore: testAnalysis.traumaScore,
+          primaryPattern: testAnalysis.primaryPattern,
+          recommendations: testAnalysis.recommendations,
+        }),
+      });
+
+      if (error) {
+        console.error('Error sending test email:', error);
+        return res.status(500).json({ message: "Error sending email: " + error.message });
+      }
+
+      res.json({ success: true, messageId: data?.id });
+    } catch (error: any) {
+      console.error("Error sending test results email:", error);
+      res.status(500).json({ message: "Error sending email: " + error.message });
+    }
+  });
+
   // Analyze quiz answers (without sending email)
   app.post("/api/analyze-quiz", async (req, res) => {
     try {
