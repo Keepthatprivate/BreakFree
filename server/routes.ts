@@ -63,11 +63,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/facebook-capi", facebookCapiRoutes);
 
   // SYNC ENDPOINT: Retroactively sync Stripe purchases to Meta CAPI
-  // This allows you to send historical purchases that weren't tracked
+  // This properly categorizes events based on their actual status
   app.post("/api/sync-stripe-to-meta", async (req, res) => {
     try {
       console.log('\n╔════════════════════════════════════════════════════════════╗');
       console.log('║  STRIPE TO META CAPI SYNC - Starting...                    ║');
+      console.log('║  Properly flagging: Purchase, InitiateCheckout, Failed     ║');
       console.log('╚════════════════════════════════════════════════════════════╝\n');
 
       if (!fbCAPI) {
@@ -77,50 +78,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get date range from request or default to last 7 days
+      // Get date range from request or default to last 30 days
       const { startDate, endDate, limit = 100 } = req.body;
       
       const created = {
-        gte: startDate ? Math.floor(new Date(startDate).getTime() / 1000) : Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000),
+        gte: startDate ? Math.floor(new Date(startDate).getTime() / 1000) : Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000),
         lte: endDate ? Math.floor(new Date(endDate).getTime() / 1000) : Math.floor(Date.now() / 1000),
       };
 
       console.log(`Fetching Stripe payments from ${new Date(created.gte * 1000).toISOString()} to ${new Date(created.lte * 1000).toISOString()}`);
 
-      // Fetch successful payment intents from Stripe
+      // Fetch ALL payment intents from Stripe (not just succeeded)
       const paymentIntents = await stripe.paymentIntents.list({
         created,
         limit: Math.min(limit, 100),
       });
 
-      const successfulPayments = paymentIntents.data.filter(pi => pi.status === 'succeeded');
-      console.log(`Found ${successfulPayments.length} successful payments`);
+      // Categorize payments by status
+      const succeededPayments = paymentIntents.data.filter(pi => pi.status === 'succeeded');
+      const incompletePayments = paymentIntents.data.filter(pi => 
+        ['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing'].includes(pi.status)
+      );
+      const canceledPayments = paymentIntents.data.filter(pi => pi.status === 'canceled');
+      
+      console.log(`Found ${paymentIntents.data.length} total payments:`);
+      console.log(`  - ${succeededPayments.length} succeeded (Purchase)`);
+      console.log(`  - ${incompletePayments.length} incomplete (InitiateCheckout)`);
+      console.log(`  - ${canceledPayments.length} canceled (checking for failures)`);
 
       const results: any[] = [];
-      let successCount = 0;
-      let failCount = 0;
+      const summary = {
+        purchases: { sent: 0, failed: 0 },
+        initiateCheckout: { sent: 0, failed: 0 },
+        paymentFailed: { sent: 0, failed: 0 },
+      };
 
-      for (const payment of successfulPayments) {
-        const { email, name, type } = payment.metadata;
-        const amountInDollars = payment.amount / 100;
-        const productDetails = getProductDetails(type, payment.amount);
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : 'https://break-free-app.com';
 
-        // Parse name
+      // Helper function to parse user data
+      const parseUserData = (payment: Stripe.PaymentIntent) => {
+        const { email, name, type, fbc, fbp } = payment.metadata;
         const nameParts = (name || '').trim().split(' ');
         const firstName = nameParts[0] || undefined;
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+        return { email, name, type, fbc, fbp, firstName, lastName };
+      };
 
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-          : 'https://break-free-app.com';
+      // 1. Send PURCHASE events for succeeded payments
+      console.log('\n📦 Sending Purchase events for completed transactions...');
+      for (const payment of succeededPayments) {
+        const userData = parseUserData(payment);
+        const amountInDollars = payment.amount / 100;
+        const productDetails = getProductDetails(userData.type, payment.amount);
 
         try {
           const result = await fbCAPI.sendPurchase(
             `${baseUrl}/checkout`,
             {
-              email: email || undefined,
-              firstName,
-              lastName,
+              email: userData.email || undefined,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              fbc: userData.fbc || undefined,
+              fbp: userData.fbp || undefined,
             },
             {
               value: amountInDollars,
@@ -131,55 +152,252 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           results.push({
             paymentId: payment.id,
+            eventType: 'Purchase',
+            status: 'succeeded',
             amount: amountInDollars,
-            email: email ? `${email.substring(0, 3)}***` : 'none',
-            name: name || 'Unknown',
-            type: type || 'unknown',
+            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+            name: userData.name || 'Unknown',
+            type: userData.type || 'unknown',
             created: new Date(payment.created * 1000).toISOString(),
             capiResult: result.success ? 'SUCCESS' : 'FAILED',
             error: result.error,
           });
 
           if (result.success) {
-            successCount++;
-            console.log(`✓ Synced: ${payment.id} - $${amountInDollars} - ${email || 'no email'}`);
+            summary.purchases.sent++;
+            console.log(`  ✓ Purchase: ${payment.id} - $${amountInDollars} - ${userData.email || 'no email'}`);
           } else {
-            failCount++;
-            console.log(`✗ Failed: ${payment.id} - ${result.error}`);
+            summary.purchases.failed++;
+            console.log(`  ✗ Purchase Failed: ${payment.id} - ${result.error}`);
           }
         } catch (error: any) {
-          failCount++;
+          summary.purchases.failed++;
           results.push({
             paymentId: payment.id,
+            eventType: 'Purchase',
+            status: 'succeeded',
             amount: amountInDollars,
-            email: email ? `${email.substring(0, 3)}***` : 'none',
+            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
             capiResult: 'ERROR',
             error: error.message,
           });
-          console.log(`✗ Error: ${payment.id} - ${error.message}`);
         }
 
-        // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
+      // 2. Send INITIATE_CHECKOUT events for incomplete payments
+      console.log('\n🛒 Sending InitiateCheckout events for incomplete transactions...');
+      for (const payment of incompletePayments) {
+        const userData = parseUserData(payment);
+        const amountInDollars = payment.amount / 100;
+        const productDetails = getProductDetails(userData.type, payment.amount);
+
+        // Skip if no email (can't track without user data)
+        if (!userData.email) {
+          console.log(`  ⊘ Skipped: ${payment.id} - no email`);
+          continue;
+        }
+
+        try {
+          const result = await fbCAPI.sendInitiateCheckout(
+            `${baseUrl}/checkout`,
+            {
+              email: userData.email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              fbc: userData.fbc || undefined,
+              fbp: userData.fbp || undefined,
+            },
+            {
+              value: amountInDollars,
+              currency: 'USD',
+              content_name: productDetails.productName,
+            }
+          );
+
+          results.push({
+            paymentId: payment.id,
+            eventType: 'InitiateCheckout',
+            status: payment.status,
+            amount: amountInDollars,
+            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+            name: userData.name || 'Unknown',
+            type: userData.type || 'unknown',
+            created: new Date(payment.created * 1000).toISOString(),
+            capiResult: result.success ? 'SUCCESS' : 'FAILED',
+            error: result.error,
+          });
+
+          if (result.success) {
+            summary.initiateCheckout.sent++;
+            console.log(`  ✓ InitiateCheckout: ${payment.id} - $${amountInDollars} - ${userData.email}`);
+          } else {
+            summary.initiateCheckout.failed++;
+            console.log(`  ✗ InitiateCheckout Failed: ${payment.id} - ${result.error}`);
+          }
+        } catch (error: any) {
+          summary.initiateCheckout.failed++;
+          results.push({
+            paymentId: payment.id,
+            eventType: 'InitiateCheckout',
+            status: payment.status,
+            amount: amountInDollars,
+            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+            capiResult: 'ERROR',
+            error: error.message,
+          });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // 3. Send PAYMENT_FAILED events for canceled payments with errors
+      console.log('\n❌ Sending PaymentFailed events for failed transactions...');
+      for (const payment of canceledPayments) {
+        const userData = parseUserData(payment);
+        const amountInDollars = payment.amount / 100;
+        const productDetails = getProductDetails(userData.type, payment.amount);
+        const failureCode = payment.last_payment_error?.code || 'canceled';
+        const failureMessage = payment.last_payment_error?.message || 'Payment was canceled';
+
+        // Skip if no email (can't track without user data)
+        if (!userData.email) {
+          console.log(`  ⊘ Skipped: ${payment.id} - no email`);
+          continue;
+        }
+
+        // Only send PaymentFailed if there was an actual payment error
+        if (payment.last_payment_error) {
+          try {
+            const result = await fbCAPI.sendPaymentFailed(
+              `${baseUrl}/checkout`,
+              {
+                email: userData.email,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                fbc: userData.fbc || undefined,
+                fbp: userData.fbp || undefined,
+              },
+              {
+                value: amountInDollars,
+                currency: 'USD',
+                content_name: productDetails.productName,
+                error_reason: failureCode === 'card_declined' ? 'insufficient_funds' : failureCode,
+              }
+            );
+
+            results.push({
+              paymentId: payment.id,
+              eventType: 'PaymentFailed',
+              status: 'canceled',
+              failureCode,
+              failureMessage,
+              amount: amountInDollars,
+              email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+              name: userData.name || 'Unknown',
+              type: userData.type || 'unknown',
+              created: new Date(payment.created * 1000).toISOString(),
+              capiResult: result.success ? 'SUCCESS' : 'FAILED',
+              error: result.error,
+            });
+
+            if (result.success) {
+              summary.paymentFailed.sent++;
+              console.log(`  ✓ PaymentFailed: ${payment.id} - ${failureCode} - ${userData.email}`);
+            } else {
+              summary.paymentFailed.failed++;
+              console.log(`  ✗ PaymentFailed API Error: ${payment.id} - ${result.error}`);
+            }
+          } catch (error: any) {
+            summary.paymentFailed.failed++;
+            results.push({
+              paymentId: payment.id,
+              eventType: 'PaymentFailed',
+              status: 'canceled',
+              failureCode,
+              amount: amountInDollars,
+              email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+              capiResult: 'ERROR',
+              error: error.message,
+            });
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } else {
+          // No payment error - this was just an abandoned checkout, send as InitiateCheckout
+          try {
+            const result = await fbCAPI.sendInitiateCheckout(
+              `${baseUrl}/checkout`,
+              {
+                email: userData.email,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                fbc: userData.fbc || undefined,
+                fbp: userData.fbp || undefined,
+              },
+              {
+                value: amountInDollars,
+                currency: 'USD',
+                content_name: productDetails.productName,
+              }
+            );
+
+            results.push({
+              paymentId: payment.id,
+              eventType: 'InitiateCheckout',
+              status: 'canceled (abandoned)',
+              amount: amountInDollars,
+              email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
+              name: userData.name || 'Unknown',
+              type: userData.type || 'unknown',
+              created: new Date(payment.created * 1000).toISOString(),
+              capiResult: result.success ? 'SUCCESS' : 'FAILED',
+              error: result.error,
+            });
+
+            if (result.success) {
+              summary.initiateCheckout.sent++;
+              console.log(`  ✓ InitiateCheckout (abandoned): ${payment.id} - $${amountInDollars} - ${userData.email}`);
+            } else {
+              summary.initiateCheckout.failed++;
+            }
+          } catch (error: any) {
+            summary.initiateCheckout.failed++;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      const totalSent = summary.purchases.sent + summary.initiateCheckout.sent + summary.paymentFailed.sent;
+      const totalFailed = summary.purchases.failed + summary.initiateCheckout.failed + summary.paymentFailed.failed;
+
       console.log(`\n╔════════════════════════════════════════════════════════════╗`);
-      console.log(`║  SYNC COMPLETE: ${successCount} success, ${failCount} failed               ║`);
+      console.log(`║  SYNC COMPLETE                                             ║`);
+      console.log(`╠════════════════════════════════════════════════════════════╣`);
+      console.log(`║  Purchase events:        ${summary.purchases.sent} sent, ${summary.purchases.failed} failed          ║`);
+      console.log(`║  InitiateCheckout events: ${summary.initiateCheckout.sent} sent, ${summary.initiateCheckout.failed} failed          ║`);
+      console.log(`║  PaymentFailed events:   ${summary.paymentFailed.sent} sent, ${summary.paymentFailed.failed} failed          ║`);
+      console.log(`║  TOTAL: ${totalSent} sent, ${totalFailed} failed                            ║`);
       console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 
       res.json({
         success: true,
         summary: {
-          totalFound: successfulPayments.length,
-          synced: successCount,
-          failed: failCount,
+          totalPayments: paymentIntents.data.length,
+          purchases: summary.purchases,
+          initiateCheckout: summary.initiateCheckout,
+          paymentFailed: summary.paymentFailed,
+          totalSent,
+          totalFailed,
           dateRange: {
             from: new Date(created.gte * 1000).toISOString(),
             to: new Date(created.lte * 1000).toISOString(),
           },
         },
         payments: results,
-        instructions: 'Check Facebook Events Manager to verify Purchase events. If events show as FAILED, your access token may need to be regenerated with proper permissions.',
+        instructions: 'Events have been properly categorized and sent to Facebook. Check Events Manager to verify: Purchase (completed), InitiateCheckout (incomplete/abandoned), PaymentFailed (declined/insufficient funds).',
       });
 
     } catch (error: any) {
