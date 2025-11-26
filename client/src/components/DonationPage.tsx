@@ -13,7 +13,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
   const donationAmounts = [
     { amount: 4.99, label: '$4.99' },
     { amount: 9.99, label: '$9.99' },
-    { amount: 29.99, label: '$29.99' },
+    { amount: 19.99, label: '$19.99' },
   ];
 
   const handleDonationClick = (amount: number) => {
