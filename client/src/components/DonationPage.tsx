@@ -8,13 +8,13 @@ interface DonationPageProps {
 }
 
 export default function DonationPage({ userName, onContinue }: DonationPageProps) {
-  const [selectedDonation, setSelectedDonation] = useState<number>(10);
+  const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
 
   const donationAmounts = [
-    { amount: 1, label: '$1' },
-    { amount: 2, label: '$2' },
-    { amount: 10, label: '$10' },
-    { amount: 19, label: '$19' },
+    { amount: 4.99, label: '$4.99' },
+    { amount: 9.99, label: '$9.99' },
+    { amount: 14.99, label: '$14.99' },
+    { amount: 19.99, label: '$19.99' },
   ];
 
   const handleDonationClick = (amount: number) => {
@@ -66,7 +66,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
           <div className="grid grid-cols-4 gap-2.5 sm:gap-3 mb-1.5">
             {donationAmounts.map((option) => {
               const isSelected = selectedDonation === option.amount;
-              const isHighlighted = option.amount === 10;
+              const isHighlighted = option.amount === 9.99;
               return (
                 <button
                   key={option.amount}
