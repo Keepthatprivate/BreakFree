@@ -519,11 +519,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
 
-          // BreakFree App Monthly Subscription - $30/month
-          const MONTHLY_PRICE_ID = 'price_1SXg8QFmbb3h0dKoJNxwpN6Q';
+          // BreakFree App Monthly Subscription - $29.99/month
+          const MONTHLY_PRICE_ID = 'price_1SXgKrFmbb3h0dKoBmtSeD96';
 
           // Create subscription with 7-day trial
-          // First billing of $30 will happen 7 days from now
+          // First billing of $29.99 will happen 7 days from now
           const subscription = await stripe.subscriptions.create({
             customer: customerId,
             items: [{ price: MONTHLY_PRICE_ID }],
