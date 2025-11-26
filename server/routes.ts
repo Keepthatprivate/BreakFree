@@ -320,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for trial subscription
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
-      const { email, name } = req.body;
+      const { email, name, fbc, fbp } = req.body;
       
       // Create payment intent for 7-day trial at $1.00
       const paymentIntent = await stripe.paymentIntents.create({
@@ -332,7 +332,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           email,
           name,
-          type: "trial"
+          type: "trial",
+          fbc: fbc || '',
+          fbp: fbp || '',
         },
       });
 
@@ -346,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for upsell guides
   app.post("/api/create-upsell-payment", async (req, res) => {
     try {
-      const { email, name } = req.body;
+      const { email, name, fbc, fbp } = req.body;
       
       const paymentIntent = await stripe.paymentIntents.create({
         amount: 1499, // $14.99 in cents
@@ -357,7 +359,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           email,
           name: name || 'Valued Customer',
-          type: "upsell-guides"
+          type: "upsell-guides",
+          fbc: fbc || '',
+          fbp: fbp || '',
         },
       });
 
@@ -371,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for donation
   app.post("/api/create-donation-payment", async (req, res) => {
     try {
-      const { amount, email, name } = req.body;
+      const { amount, email, name, fbc, fbp } = req.body;
       
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: "Invalid amount" });
@@ -386,7 +390,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           email: email || 'anonymous',
           name: name || 'Anonymous Supporter',
-          type: "donation"
+          type: "donation",
+          fbc: fbc || '',
+          fbp: fbp || '',
         },
       });
 
