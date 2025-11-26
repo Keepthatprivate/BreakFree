@@ -254,6 +254,18 @@ class FacebookCAPI {
       customData
     });
   }
+
+  async sendPaymentFailed(eventSourceUrl: string, userData: UserData, customData?: { value?: number; currency?: string; content_name?: string; error_reason?: string }): Promise<any> {
+    return this.sendEvent({
+      eventName: 'PaymentFailed',
+      eventSourceUrl,
+      userData,
+      customData: {
+        ...customData,
+        status: 'failed'
+      }
+    });
+  }
 }
 
 export default FacebookCAPI;

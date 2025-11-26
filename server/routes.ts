@@ -498,7 +498,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle the event
+    // Handle the event based on type
+    console.log(`[Stripe Webhook] Received event: ${event.type}`);
+
+    // Handle payment_intent.created - Track as InitiateCheckout
+    if (event.type === 'payment_intent.created') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const { email, name, type, fbc, fbp } = paymentIntent.metadata;
+
+      console.log('[Stripe Webhook] Payment intent created (InitiateCheckout):', {
+        paymentId: paymentIntent.id,
+        email: email ? `${email.substring(0, 3)}***` : 'none',
+        type,
+        amount: paymentIntent.amount
+      });
+
+      // Send InitiateCheckout event to Facebook CAPI
+      if (fbCAPI && email) {
+        try {
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+          
+          const nameParts = (name || '').trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+          const amountInDollars = paymentIntent.amount / 100;
+          const productDetails = getProductDetails(type, paymentIntent.amount);
+
+          const result = await fbCAPI.sendInitiateCheckout(
+            `${baseUrl}/checkout`,
+            {
+              email: email || undefined,
+              firstName,
+              lastName,
+              fbc: fbc || undefined,
+              fbp: fbp || undefined,
+            },
+            {
+              value: amountInDollars,
+              currency: 'USD',
+              content_name: productDetails.productName,
+            }
+          );
+
+          if (result.success) {
+            console.log(`[Stripe Webhook] Facebook CAPI InitiateCheckout event sent:`, {
+              paymentId: paymentIntent.id,
+              amount: amountInDollars,
+              eventsReceived: result.response?.events_received
+            });
+          } else {
+            console.error(`[Stripe Webhook] Facebook CAPI InitiateCheckout failed:`, result.error);
+          }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending InitiateCheckout event:', fbError.message);
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle payment_intent.requires_payment_method - Track as AddPaymentInfo when payment method was attached
+    if (event.type === 'payment_intent.requires_payment_method') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const { email, name, type, fbc, fbp } = paymentIntent.metadata;
+
+      // This event fires when customer enters payment info but it fails validation or needs more info
+      console.log('[Stripe Webhook] Payment requires payment method:', {
+        paymentId: paymentIntent.id,
+        email: email ? `${email.substring(0, 3)}***` : 'none',
+        type,
+        lastPaymentError: paymentIntent.last_payment_error?.message
+      });
+
+      return res.json({ received: true });
+    }
+
+    // Handle payment_intent.payment_failed - Track as PaymentFailed
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const { email, name, type, fbc, fbp } = paymentIntent.metadata;
+      const failureMessage = paymentIntent.last_payment_error?.message || 'Unknown error';
+      const failureCode = paymentIntent.last_payment_error?.code || 'unknown';
+
+      console.log('[Stripe Webhook] Payment failed:', {
+        paymentId: paymentIntent.id,
+        email: email ? `${email.substring(0, 3)}***` : 'none',
+        type,
+        failureCode,
+        failureMessage
+      });
+
+      // Send PaymentFailed event to Facebook CAPI
+      if (fbCAPI && email) {
+        try {
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+          
+          const nameParts = (name || '').trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+          const amountInDollars = paymentIntent.amount / 100;
+          const productDetails = getProductDetails(type, paymentIntent.amount);
+
+          const result = await fbCAPI.sendPaymentFailed(
+            `${baseUrl}/checkout`,
+            {
+              email: email || undefined,
+              firstName,
+              lastName,
+              fbc: fbc || undefined,
+              fbp: fbp || undefined,
+            },
+            {
+              value: amountInDollars,
+              currency: 'USD',
+              content_name: productDetails.productName,
+              error_reason: failureCode === 'card_declined' ? 'insufficient_funds' : failureCode,
+            }
+          );
+
+          if (result.success) {
+            console.log(`[Stripe Webhook] Facebook CAPI PaymentFailed event sent:`, {
+              paymentId: paymentIntent.id,
+              failureCode,
+              eventsReceived: result.response?.events_received
+            });
+          } else {
+            console.error(`[Stripe Webhook] Facebook CAPI PaymentFailed failed:`, result.error);
+          }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending PaymentFailed event:', fbError.message);
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle payment_intent.succeeded - Track as Purchase (COMPLETED)
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const { email, name, type, fbc, fbp } = paymentIntent.metadata;
