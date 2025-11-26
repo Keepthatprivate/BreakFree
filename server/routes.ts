@@ -583,7 +583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
 
             const { data, error } = await resend.emails.send({
-              from: fromEmail || 'Break Free <onboarding@resend.dev>',
+              from: 'Break Free <hello@break-free-app.com>',
               to: [email],
               subject: '🌸 Your Break Free Quiz Results',
               html: generateResultsEmail({
@@ -711,7 +711,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send email
       const { data, error } = await resend.emails.send({
-        from: fromEmail || 'Break Free <onboarding@resend.dev>',
+        from: 'Break Free <hello@break-free-app.com>',
         to: [email],
         subject: '🌸 Your Break Free Quiz Results',
         html: generateResultsEmail({
@@ -758,9 +758,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
       };
 
-      // Send email using Resend test address
+      // Send email using verified domain
       const { data, error } = await resend.emails.send({
-        from: 'Break Free <onboarding@resend.dev>',
+        from: 'Break Free <hello@break-free-app.com>',
         to: [email],
         subject: '🌸 Your Break Free Quiz Results',
         html: generateResultsEmail({
