@@ -393,13 +393,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create payment intent for upsell guides
+  // Create payment intent for upsell products (guides, masterclass, journal)
   app.post("/api/create-upsell-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp } = req.body;
+      const { email, name, fbc, fbp, amount, productName } = req.body;
+      
+      // Support custom amounts for masterclass ($69) and journal ($14.99)
+      // Default to $14.99 (guides) if no amount specified
+      const paymentAmount = amount ? Math.round(amount * 100) : 1499;
+      const productType = productName || "Mental Well-Being Guides";
       
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 1499, // $14.99 in cents
+        amount: paymentAmount,
         currency: "usd",
         automatic_payment_methods: {
           enabled: true,
@@ -407,7 +412,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           email,
           name: name || 'Valued Customer',
-          type: "upsell-guides",
+          type: "upsell",
+          productName: productType,
           fbc: fbc || '',
           fbp: fbp || '',
         },

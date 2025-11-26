@@ -113,7 +113,7 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
 
 interface CheckoutPageProps {
   amount: number;
-  productType: 'upsell' | 'donation' | 'trial';
+  productType: 'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal';
   productName: string;
   email: string;
   name?: string;
@@ -148,25 +148,41 @@ export default function CheckoutPage({ amount, productType, productName, email, 
 
   useEffect(() => {
     // Stripe integration: Create PaymentIntent as soon as the page loads
-    const endpoint = productType === 'upsell' 
-      ? '/api/create-upsell-payment'
-      : productType === 'trial'
-      ? '/api/create-trial-payment'
-      : '/api/create-donation-payment';
+    // Masterclass and journal use the upsell endpoint with custom amount
+    const getEndpoint = () => {
+      switch (productType) {
+        case 'trial': return '/api/create-trial-payment';
+        case 'donation': return '/api/create-donation-payment';
+        case 'upsell':
+        case 'masterclass':
+        case 'journal':
+        default: return '/api/create-upsell-payment';
+      }
+    };
+    const endpoint = getEndpoint();
 
     // Capture Facebook tracking data for attribution
     const fbc = getFbc();
     const fbp = getFbp();
 
-    const basePayload = productType === 'donation' 
-      ? { amount: amount / 100, email, name }
-      : productType === 'trial'
-      ? { email, name }
-      : { email, name };
+    // Build payload based on product type
+    const getBasePayload = () => {
+      switch (productType) {
+        case 'donation':
+          return { amount: amount / 100, email, name };
+        case 'masterclass':
+        case 'journal':
+          return { amount: amount / 100, email, name, productName };
+        case 'trial':
+        case 'upsell':
+        default:
+          return { email, name };
+      }
+    };
 
     // Include Facebook tracking data for proper campaign attribution
     const payload = {
-      ...basePayload,
+      ...getBasePayload(),
       fbc,
       fbp,
     };

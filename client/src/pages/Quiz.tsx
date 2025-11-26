@@ -18,6 +18,8 @@ import TestimonialsPage from '@/components/TestimonialsPage';
 import TrialTimeline from '@/components/TrialTimeline';
 import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
+import MasterclassBundlePage from '@/components/MasterclassBundlePage';
+import HealingJournalPage from '@/components/HealingJournalPage';
 import CheckoutPage from '@/components/CheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
@@ -26,7 +28,7 @@ import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-25
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
-type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell';
+type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'masterclass' | 'journal';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -36,7 +38,7 @@ interface QuizAnswers {
 const getInitialState = (): QuizState => {
   const urlParams = new URLSearchParams(window.location.search);
   const stateParam = urlParams.get('state');
-  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell'];
+  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
   if (stateParam && validStates.includes(stateParam as QuizState)) {
     return stateParam as QuizState;
   }
@@ -70,7 +72,7 @@ export default function Quiz() {
   const [currentQuoteBreakIndex, setCurrentQuoteBreakIndex] = useState(0);
   const [hasPaid, setHasPaid] = useState(false);
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
-  const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial'>('upsell');
+  const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
   const [assetsLoaded, setAssetsLoaded] = useState(false);
 
@@ -261,7 +263,33 @@ export default function Quiz() {
   };
 
   const handlePaymentSkip = () => {
-    // If user skips upsell guides, go to results
+    // If user skips upsell guides, go to masterclass upsell
+    setState('masterclass');
+  };
+
+  const handleMasterclassAccept = () => {
+    // When user clicks "Get Masterclass Bundle", go to checkout
+    setCheckoutAmount(6900); // $69 in cents
+    setCheckoutType('masterclass');
+    setCheckoutProductName('Trauma Healing Masterclass Bundle');
+    setState('checkout');
+  };
+
+  const handleMasterclassDecline = () => {
+    // If user declines masterclass, show downsell (journal)
+    setState('journal');
+  };
+
+  const handleJournalAccept = () => {
+    // When user clicks "Get Healing Journal", go to checkout
+    setCheckoutAmount(1499); // $14.99 in cents
+    setCheckoutType('journal');
+    setCheckoutProductName('Inner Child Healing Journal');
+    setState('checkout');
+  };
+
+  const handleJournalSkip = () => {
+    // If user skips journal, go to results
     setState('results');
   };
 
@@ -284,7 +312,8 @@ export default function Quiz() {
     setHasPaid(true);
     localStorage.setItem('hasPaid', 'true');
     
-    // Determine next step based on checkout type (Donation → Membership → Guide → Results)
+    // Determine next step based on checkout type
+    // Flow: Donation → Timeline → Trial → Guides → Masterclass → Results
     if (checkoutType === 'donation') {
       // After donation checkout, go to membership/timeline page
       setState('timeline');
@@ -292,7 +321,13 @@ export default function Quiz() {
       // After trial/membership checkout, go to guide upsell page
       setState('payment');
     } else if (checkoutType === 'upsell') {
-      // After buying guides, go to results
+      // After buying guides, go to masterclass upsell
+      setState('masterclass');
+    } else if (checkoutType === 'masterclass') {
+      // After buying masterclass, go to results
+      setState('results');
+    } else if (checkoutType === 'journal') {
+      // After buying journal (downsell), go to results
       setState('results');
     }
   };
@@ -344,6 +379,14 @@ export default function Quiz() {
 
   if (state === 'payment') {
     return <UpsellPage onAccept={handlePaymentComplete} onSkip={handlePaymentSkip} />;
+  }
+
+  if (state === 'masterclass') {
+    return <MasterclassBundlePage onAccept={handleMasterclassAccept} onDecline={handleMasterclassDecline} />;
+  }
+
+  if (state === 'journal') {
+    return <HealingJournalPage onAccept={handleJournalAccept} onSkip={handleJournalSkip} />;
   }
 
   if (state === 'checkout') {
