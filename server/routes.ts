@@ -436,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Handle the event
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const { email, name, type } = paymentIntent.metadata;
+      const { email, name, type, fbc, fbp } = paymentIntent.metadata;
 
       // Log metadata for debugging
       console.log('Payment intent succeeded:', {
@@ -444,7 +444,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         name,
         type,
-        amount: paymentIntent.amount
+        amount: paymentIntent.amount,
+        fbc: fbc ? 'present' : 'none',
+        fbp: fbp ? 'present' : 'none'
       });
 
       // Get product details based on payment type
@@ -470,6 +472,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               email: email || undefined,
               firstName,
               lastName,
+              fbc: fbc || undefined,
+              fbp: fbp || undefined,
             },
             {
               value: amountInDollars,
@@ -483,6 +487,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               paymentId: paymentIntent.id,
               amount: amountInDollars,
               email: email ? `${email.substring(0, 3)}***` : 'none',
+              fbc: fbc ? 'yes' : 'no',
+              fbp: fbp ? 'yes' : 'no',
               eventsReceived: result.response?.events_received
             });
           } else {
