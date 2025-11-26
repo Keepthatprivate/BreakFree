@@ -321,7 +321,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: Collect $1 via PaymentIntent -> Webhook creates subscription with trial
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp } = req.body;
+      const { email, name, fbc, fbp, answers } = req.body;
+      
+      // Analyze quiz answers if provided
+      let quizAnalysis = null;
+      if (answers) {
+        quizAnalysis = analyzeQuizAnswers(answers);
+      }
       
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
@@ -378,6 +384,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fbc: fbc || '',
           fbp: fbp || '',
           create_subscription: 'true', // Flag for webhook to create subscription
+          // Store quiz analysis for results email
+          traumaScore: quizAnalysis?.traumaScore?.toString() || '',
+          primaryPattern: quizAnalysis?.primaryPattern || '',
+          recommendations: quizAnalysis?.recommendations ? JSON.stringify(quizAnalysis.recommendations) : '',
+          send_results_email: quizAnalysis ? 'true' : 'false',
         },
       });
 
@@ -550,6 +561,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (subError: any) {
           console.error('[Subscription] Error creating subscription:', subError.message);
           // Don't fail the webhook - the trial payment already succeeded
+        }
+
+        // Send quiz results email after successful trial payment
+        if (paymentIntent.metadata.send_results_email === 'true' && email) {
+          try {
+            const { client: resend, fromEmail } = await getUncachableResendClient();
+            
+            const traumaScore = parseInt(paymentIntent.metadata.traumaScore) || 50;
+            const primaryPattern = paymentIntent.metadata.primaryPattern || 'Emotional Regulation Challenges';
+            let recommendations: string[] = [];
+            try {
+              recommendations = JSON.parse(paymentIntent.metadata.recommendations || '[]');
+            } catch {
+              recommendations = [
+                'Practice self-compassion and self-care daily',
+                'Explore healing resources and support groups',
+                'Consider working with a trauma-informed therapist',
+                'Start a journaling practice to process emotions',
+              ];
+            }
+
+            const { data, error } = await resend.emails.send({
+              from: fromEmail || 'Break Free <onboarding@resend.dev>',
+              to: [email],
+              subject: '🌸 Your Break Free Quiz Results',
+              html: generateResultsEmail({
+                userName: name || 'Friend',
+                traumaScore,
+                primaryPattern,
+                recommendations,
+              }),
+            });
+
+            if (error) {
+              console.error('[Results Email] Error sending:', error);
+            } else {
+              console.log(`[Results Email] Sent to ${email}, messageId: ${data?.id}`);
+            }
+          } catch (emailError: any) {
+            console.error('[Results Email] Error:', emailError.message);
+            // Don't fail the webhook - payment already succeeded
+          }
         }
       }
 

@@ -117,10 +117,11 @@ interface CheckoutPageProps {
   productName: string;
   email: string;
   name?: string;
+  answers?: Record<string, string[]>;
   onComplete: () => void;
 }
 
-export default function CheckoutPage({ amount, productType, productName, email, name, onComplete }: CheckoutPageProps) {
+export default function CheckoutPage({ amount, productType, productName, email, name, answers, onComplete }: CheckoutPageProps) {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +175,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
         case 'journal':
           return { amount: amount / 100, email, name, productName };
         case 'trial':
+          return { email, name, answers };
         case 'upsell':
         default:
           return { email, name };

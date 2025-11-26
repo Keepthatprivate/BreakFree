@@ -397,6 +397,7 @@ export default function Quiz() {
         productName={checkoutProductName}
         email={userEmail}
         name={userName}
+        answers={checkoutType === 'trial' ? answers : undefined}
         onComplete={handleCheckoutComplete}
       />
     );
