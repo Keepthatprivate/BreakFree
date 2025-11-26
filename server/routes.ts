@@ -317,28 +317,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create payment intent for trial subscription
+  // Create trial payment with $1 upfront, then subscription for $30/month after 7 days
+  // Flow: Collect $1 via PaymentIntent -> Webhook creates subscription with trial
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
       const { email, name, fbc, fbp } = req.body;
       
-      // Create payment intent for 7-day trial at $1.00
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check if customer already exists
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1,
+      });
+
+      let customer: Stripe.Customer;
+      
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+        // Update customer metadata
+        await stripe.customers.update(customer.id, {
+          name: name || customer.name,
+          metadata: {
+            ...customer.metadata,
+            fbc: fbc || customer.metadata?.fbc || '',
+            fbp: fbp || customer.metadata?.fbp || '',
+          },
+        });
+      } else {
+        // Create new customer
+        customer = await stripe.customers.create({
+          email,
+          name: name || 'Trial User',
+          metadata: {
+            fbc: fbc || '',
+            fbp: fbp || '',
+            source: 'breakfree-quiz',
+          },
+        });
+      }
+
+      console.log(`[Trial] Customer ${customer.id} for ${email}`);
+
+      // Create payment intent for $1 trial fee
+      // After successful payment, webhook will create the subscription
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 100, // $1.00 in cents for 7-day trial
-        currency: "usd",
+        amount: 100, // $1.00 in cents
+        currency: 'usd',
+        customer: customer.id,
+        setup_future_usage: 'off_session', // Save payment method for subscription
         automatic_payment_methods: {
           enabled: true,
         },
         metadata: {
           email,
-          name,
-          type: "trial",
+          name: name || '',
+          type: 'trial',
           fbc: fbc || '',
           fbp: fbp || '',
+          create_subscription: 'true', // Flag for webhook to create subscription
         },
       });
 
-      res.json({ clientSecret: paymentIntent.client_secret });
+      console.log(`[Trial] Created PaymentIntent ${paymentIntent.id} for ${email}`);
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        customerId: customer.id,
+      });
     } catch (error: any) {
       console.error("Error creating trial payment:", error);
       res.status(500).json({ message: "Error creating trial payment: " + error.message });
@@ -446,8 +494,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type,
         amount: paymentIntent.amount,
         fbc: fbc ? 'present' : 'none',
-        fbp: fbp ? 'present' : 'none'
+        fbp: fbp ? 'present' : 'none',
+        customerId: paymentIntent.customer,
+        createSubscription: paymentIntent.metadata.create_subscription
       });
+
+      // If this is a trial payment, create the subscription
+      if (type === 'trial' && paymentIntent.metadata.create_subscription === 'true' && paymentIntent.customer) {
+        try {
+          const customerId = typeof paymentIntent.customer === 'string' 
+            ? paymentIntent.customer 
+            : paymentIntent.customer.id;
+
+          // Get the payment method from the payment intent
+          const paymentMethod = paymentIntent.payment_method;
+          
+          if (paymentMethod) {
+            // Attach payment method to customer as default
+            const pmId = typeof paymentMethod === 'string' ? paymentMethod : paymentMethod.id;
+            await stripe.customers.update(customerId, {
+              invoice_settings: {
+                default_payment_method: pmId,
+              },
+            });
+          }
+
+          // BreakFree App Monthly Subscription - $30/month
+          const MONTHLY_PRICE_ID = 'price_1SXg8QFmbb3h0dKoJNxwpN6Q';
+
+          // Create subscription with 7-day trial
+          // First billing of $30 will happen 7 days from now
+          const subscription = await stripe.subscriptions.create({
+            customer: customerId,
+            items: [{ price: MONTHLY_PRICE_ID }],
+            trial_period_days: 7,
+            metadata: {
+              type: 'trial_subscription',
+              email: email || '',
+              name: name || '',
+              original_payment_id: paymentIntent.id,
+              fbc: fbc || '',
+              fbp: fbp || '',
+            },
+          });
+
+          console.log(`[Subscription] Created subscription ${subscription.id} for customer ${customerId}`);
+          console.log(`[Subscription] Trial ends: ${new Date((subscription.trial_end || 0) * 1000).toISOString()}`);
+          console.log(`[Subscription] Status: ${subscription.status}`);
+        } catch (subError: any) {
+          console.error('[Subscription] Error creating subscription:', subError.message);
+          // Don't fail the webhook - the trial payment already succeeded
+        }
+      }
 
       // Get product details based on payment type
       const productDetails = getProductDetails(type, paymentIntent.amount);
