@@ -1,0 +1,69 @@
+I need you to implement a robust Stripe webhook + Meta Conversion API (CAPI) integration with the following requirements:
+
+## Core Requirements
+
+### 1. Stripe Webhook Handler
+Create a webhook endpoint that:
+- Listens for these specific Stripe events:
+  - `checkout.session.completed` - Primary event for successful payments
+  - `checkout.session.async_payment_succeeded` - For delayed payment methods (bank transfers, etc.)
+  - `checkout.session.async_payment_failed` - To handle failed async payments
+  - `payment_intent.payment_failed` - To track failed payment attempts (DO NOT send to Meta as Purchase)
+  
+- Verifies webhook signatures using the Stripe webhook secret
+- Extracts payment details: amount, currency, customer email, customer name, phone (if available)
+- Uses idempotency to prevent processing the same event twice
+
+### 2. Meta Conversion API Integration
+Send events to Meta CAPI with:
+- Event name: "Purchase" (only for successful payments)
+- Required parameters:
+  - `event_time`: Unix timestamp of when payment occurred (use Stripe's `created` timestamp)
+  - `event_id`: Use Stripe's PaymentIntent ID or Checkout Session ID as the unique identifier
+  - `event_source_url`: Your checkout/payment page URL
+  - `action_source`: "website"
+  - `value`: Payment amount
+  - `currency`: Payment currency (uppercase, e.g., "USD")
+
+### 3. User Data for Event Matching (EMQ)
+Include these hashed parameters when available:
+- `em`: Customer email (SHA256 hashed, lowercase, trimmed)
+- `ph`: Phone number (SHA256 hashed, digits only, with country code)
+- `fn`: First name (SHA256 hashed, lowercase, trimmed)
+- `ln`: Last name (SHA256 hashed, lowercase, trimmed)
+- `client_ip_address`: From the original request if stored
+- `client_user_agent`: From the original request if stored
+- `fbc`: Facebook click ID (if captured from `?fbclid=` parameter)
+- `fbp`: Facebook browser ID (if captured from `_fbp` cookie)
+
+### 4. CRITICAL: Deduplication Logic
+Implement these safeguards to prevent duplicate events:
+
+**A. Database Tracking Table:**
+```sql
+CREATE TABLE conversion_events (
+  id SERIAL PRIMARY KEY,
+  event_id VARCHAR(255) UNIQUE NOT NULL,  -- Stripe PaymentIntent ID
+  stripe_event_id VARCHAR(255) UNIQUE NOT NULL,  -- Stripe webhook event ID
+  event_type VARCHAR(50) NOT NULL,
+  amount DECIMAL(10,2),
+  currency VARCHAR(3),
+  customer_email VARCHAR(255),
+  meta_sent_at TIMESTAMP,
+  meta_response TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**B. Before sending to Meta:**
+1. Check if `event_id` (PaymentIntent ID) already exists in database
+2. If exists, skip sending to Meta and log "Duplicate prevented"
+3. If not exists, insert record, then send to Meta
+4. Use database transaction to prevent race conditions
+
+**C. Event ID Strategy:**
+- Use the Stripe PaymentIntent ID as the `event_id` for Meta
+- This ensures the same payment is NEVER sent twice
+- Format: `pi_xxxxxxxxxxxxxx` (Stripe PaymentIntent IDs are globally unique)
+
+### 5. Payment Status Logic
