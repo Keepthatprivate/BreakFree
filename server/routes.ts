@@ -1175,6 +1175,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true });
   });
 
+  // Development-only test endpoint for webhook (bypasses signature verification)
+  if (process.env.NODE_ENV === 'development') {
+    app.post("/api/test-webhook/stripe", async (req, res) => {
+      console.log('\n╔════════════════════════════════════════════════════════════╗');
+      console.log('║  TEST WEBHOOK ENDPOINT - Development Only                  ║');
+      console.log('╚════════════════════════════════════════════════════════════╝\n');
+
+      const { eventType, paymentIntentId, amount, email, name, productName } = req.body;
+
+      if (!eventType) {
+        return res.status(400).json({ error: 'Missing eventType' });
+      }
+
+      const testPaymentIntentId = paymentIntentId || `pi_test_${Date.now()}`;
+      const testAmount = amount || 14.99;
+      const testEmail = email || 'test@example.com';
+      const testName = name || 'Test User';
+      const testProductName = productName || 'Test Purchase';
+
+      console.log(`[Test Webhook] Simulating ${eventType}:`, {
+        paymentIntentId: testPaymentIntentId,
+        amount: testAmount,
+        email: testEmail
+      });
+
+      // Simulate checkout.session.completed with payment_status === 'paid'
+      if (eventType === 'checkout.session.completed') {
+        if (!fbCAPI) {
+          return res.status(500).json({ error: 'Facebook CAPI not configured' });
+        }
+
+        try {
+          // Check for duplicate
+          const dedupResult = await checkAndRecordConversionEvent(
+            testPaymentIntentId,
+            `evt_test_${Date.now()}`,
+            'Purchase',
+            testAmount,
+            'USD',
+            testEmail
+          );
+
+          if (dedupResult.isDuplicate) {
+            return res.json({
+              success: true,
+              message: 'Duplicate prevented - event already processed',
+              paymentIntentId: testPaymentIntentId
+            });
+          }
+
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+
+          const nameParts = testName.trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+          const result = await fbCAPI.sendPurchase(
+            `${baseUrl}/checkout`,
+            {
+              email: testEmail,
+              firstName,
+              lastName,
+            },
+            {
+              value: testAmount,
+              currency: 'USD',
+              content_name: testProductName,
+            },
+            {
+              eventId: testPaymentIntentId,
+              eventTime: Math.floor(Date.now() / 1000),
+            }
+          );
+
+          await updateConversionEventMetaResponse(testPaymentIntentId, JSON.stringify(result));
+
+          console.log(`[Test Webhook] Purchase event sent to Meta:`, {
+            success: result.success,
+            eventsReceived: result.response?.events_received,
+            error: result.error
+          });
+
+          return res.json({
+            success: result.success,
+            message: result.success ? 'Purchase event sent to Meta' : 'Failed to send event',
+            paymentIntentId: testPaymentIntentId,
+            metaResponse: result.response,
+            error: result.error
+          });
+        } catch (error: any) {
+          console.error('[Test Webhook] Error:', error.message);
+          return res.status(500).json({ error: error.message });
+        }
+      }
+
+      // Simulate payment_intent.payment_failed
+      if (eventType === 'payment_intent.payment_failed') {
+        if (!fbCAPI) {
+          return res.status(500).json({ error: 'Facebook CAPI not configured' });
+        }
+
+        try {
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+
+          const nameParts = testName.trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+          const result = await fbCAPI.sendPaymentFailed(
+            `${baseUrl}/checkout`,
+            {
+              email: testEmail,
+              firstName,
+              lastName,
+            },
+            {
+              value: testAmount,
+              currency: 'USD',
+              content_name: testProductName,
+              error_reason: 'card_declined',
+            }
+          );
+
+          console.log(`[Test Webhook] PaymentFailed event sent to Meta:`, {
+            success: result.success,
+            eventsReceived: result.response?.events_received
+          });
+
+          return res.json({
+            success: result.success,
+            message: result.success ? 'PaymentFailed event sent to Meta' : 'Failed to send event',
+            paymentIntentId: testPaymentIntentId,
+            metaResponse: result.response,
+            error: result.error
+          });
+        } catch (error: any) {
+          console.error('[Test Webhook] Error:', error.message);
+          return res.status(500).json({ error: error.message });
+        }
+      }
+
+      return res.status(400).json({ 
+        error: 'Unsupported eventType',
+        supportedTypes: ['checkout.session.completed', 'payment_intent.payment_failed']
+      });
+    });
+
+    console.log('[Dev] Test webhook endpoint available at POST /api/test-webhook/stripe');
+  }
+
   // Send quiz results via email
   app.post("/api/send-results-email", async (req, res) => {
     try {
