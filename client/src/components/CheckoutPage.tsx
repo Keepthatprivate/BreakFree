@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
-import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, getFbc, getFbp } from '@/lib/facebook-tracking';
+import { trackInitiateCheckout, trackAddPaymentInfo, getFbc, getFbp } from '@/lib/facebook-tracking';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -64,14 +64,10 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
         variant: "destructive",
       });
     } else {
-      // Track purchase event
-      trackPurchase({
-        email,
-        firstName: name,
-        value: amount / 100,
-        currency: 'USD',
-        contentName: productName,
-      });
+      // NOTE: Do NOT track Purchase here!
+      // Purchase events are ONLY sent via the server-side Stripe webhook (payment_intent.succeeded)
+      // This ensures only truly completed payments are tracked as purchases in Meta
+      // The frontend confirmation just means the form was submitted, not that payment succeeded
 
       toast({
         title: "Payment Successful",
