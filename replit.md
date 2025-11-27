@@ -50,10 +50,10 @@ Preferred communication style: Simple, everyday language.
 **Payment Processing**: Stripe Elements for unified checkout (upsell guides, donations, trials) with Apple Pay and Google Pay integration.
 **Facebook Conversions API (CAPI)**: Server-side event tracking with strict environment validation, comprehensive diagnostic tools (`/debug/test-capi`, `/debug/health`), automatic retry queue for failed events, SHA256 hashing for PII, and enhanced development logging. Tracks ViewContent, Lead, InitiateCheckout, AddPaymentInfo, and Purchase events.
 **Stripe Webhook + Meta CAPI Integration**: Robust webhook handler at `/api/webhook/stripe` that processes:
-- `payment_intent.created` → InitiateCheckout event
-- `payment_intent.succeeded` → Purchase event with deduplication
+- `payment_intent.created` → InitiateCheckout event sent to Meta
+- `payment_intent.succeeded` → Handles subscriptions & emails only (NO Purchase to Meta)
 - `payment_intent.payment_failed` → PaymentFailed event (NOT sent as Purchase)
-- `checkout.session.completed` → Purchase event for Checkout Sessions
+- `checkout.session.completed` → Purchase event ONLY when `payment_status === 'paid'`
 - `checkout.session.async_payment_succeeded` → Purchase for delayed payments (bank transfers)
 - `checkout.session.async_payment_failed` → Logged but NOT sent as Purchase
 Uses `conversion_events` PostgreSQL table for idempotent event processing, preventing duplicate Purchase events to Meta using PaymentIntent ID as unique event_id. Signature verification via STRIPE_WEBHOOK_SECRET in production.

@@ -1,0 +1,86 @@
+ONLY send to Meta as "Purchase" when:
+
+checkout.session.completed AND payment_status === "paid"
+OR checkout.session.async_payment_succeeded
+
+NEVER send to Meta when:
+
+payment_intent.payment_failed
+checkout.session.async_payment_failed
+checkout.session.completed with payment_status === "unpaid" or "no_payment_required"
+
+
+### 6. Real-time Processing
+- Process webhook immediately upon receipt (no batching/queuing)
+- Return 200 status to Stripe within 5 seconds
+- Use async processing if Meta API call takes longer
+
+### 7. Environment Variables Needed
+STRIPE_SECRET_KEY=sk_live_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+META_PIXEL_ID=123456789
+META_ACCESS_TOKEN=EAAxxxxx
+META_TEST_EVENT_CODE=TEST12345  # Remove in production
+
+### 8. Code Structure
+Create these files:
+- `/api/webhooks/stripe.js` - Stripe webhook handler
+- `/lib/meta-capi.js` - Meta Conversion API helper
+- `/lib/hash.js` - SHA256 hashing utilities
+- `/lib/db.js` - Database operations for deduplication
+
+### 9. Logging Requirements
+Log the following for debugging:
+- Every incoming Stripe webhook event (event type, event ID)
+- Deduplication checks (passed/blocked)
+- Meta API request payload (sanitized - no raw PII)
+- Meta API response (event_id, success status)
+- Any errors with full stack traces
+
+### 10. Sample Meta API Request Format
+```javascript
+const payload = {
+  data: [{
+    event_name: "Purchase",
+    event_time: Math.floor(stripeEvent.created), // Unix timestamp from Stripe
+    event_id: paymentIntentId, // e.g., "pi_3ABC123def456"
+    event_source_url: "https://yoursite.com/checkout",
+    action_source: "website",
+    user_data: {
+      em: [hashSHA256(email.toLowerCase().trim())],
+      ph: [hashSHA256(phoneDigitsOnly)],
+      fn: [hashSHA256(firstName.toLowerCase().trim())],
+      ln: [hashSHA256(lastName.toLowerCase().trim())],
+      client_ip_address: clientIp,
+      client_user_agent: userAgent,
+      fbc: fbClickId, // if available
+      fbp: fbBrowserId // if available
+    },
+    custom_data: {
+      value: amount / 100, // Stripe amounts are in cents
+      currency: currency.toUpperCase(),
+      order_id: checkoutSessionId
+    }
+  }],
+  // test_event_code: "TEST12345" // Remove in production
+};
+
+// POST to: https://graph.facebook.com/v18.0/{PIXEL_ID}/events
+```
+
+### 11. Error Handling
+- If Meta API fails, log error but DON'T retry automatically (prevents duplicates)
+- Store failed events in a separate table for manual review
+- Never throw errors that would cause Stripe webhook to retry
+
+### 12. Testing Checklist
+Verify these scenarios:
+□ Successful card payment → Purchase event sent to Meta
+□ Failed card payment → NO event sent to Meta
+□ Same webhook received twice → Only ONE event sent to Meta
+□ Async payment (bank transfer) succeeded → Purchase event sent to Meta
+□ Async payment failed → NO event sent to Meta
+□ Event has correct timestamp (within seconds of payment)
+□ Event ID matches PaymentIntent ID in Meta Events Manager
+
+Please implement this complete integration now.

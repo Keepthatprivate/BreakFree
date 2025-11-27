@@ -930,78 +930,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productDetails = getProductDetails(type, paymentIntent.amount);
       const amountInDollars = paymentIntent.amount / 100;
 
-      // Send Purchase event to Facebook CAPI with DEDUPLICATION
-      // Use PaymentIntent ID as event_id to prevent duplicates
-      if (fbCAPI) {
-        try {
-          // Check for duplicate before sending to Meta
-          const dedupResult = await checkAndRecordConversionEvent(
-            paymentIntent.id,
-            event.id,
-            'Purchase',
-            amountInDollars,
-            paymentIntent.currency.toUpperCase(),
-            email
-          );
-
-          if (dedupResult.isDuplicate) {
-            console.log(`[Stripe Webhook] Skipping duplicate Purchase event for ${paymentIntent.id}`);
-          } else {
-            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-              : 'https://break-free-app.com';
-            
-            // Parse first name and last name from full name
-            const nameParts = (name || '').trim().split(' ');
-            const firstName = nameParts[0] || undefined;
-            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
-
-            const result = await fbCAPI.sendPurchase(
-              `${baseUrl}/checkout`,
-              {
-                email: email || undefined,
-                firstName,
-                lastName,
-                fbc: fbc || undefined,
-                fbp: fbp || undefined,
-              },
-              {
-                value: amountInDollars,
-                currency: paymentIntent.currency.toUpperCase(),
-                content_name: productDetails.productName,
-              },
-              {
-                eventId: paymentIntent.id,
-                eventTime: paymentIntent.created,
-              }
-            );
-
-            // Update database with Meta response
-            await updateConversionEventMetaResponse(
-              paymentIntent.id,
-              JSON.stringify(result)
-            );
-
-            if (result.success) {
-              console.log(`[Stripe Webhook] Facebook CAPI Purchase event sent for ${type}:`, {
-                paymentId: paymentIntent.id,
-                amount: amountInDollars,
-                email: email ? `${email.substring(0, 3)}***` : 'none',
-                fbc: fbc ? 'yes' : 'no',
-                fbp: fbp ? 'yes' : 'no',
-                eventId: paymentIntent.id,
-                eventTime: new Date(paymentIntent.created * 1000).toISOString(),
-                eventsReceived: result.response?.events_received
-              });
-            } else {
-              console.error(`[Stripe Webhook] Facebook CAPI Purchase event failed:`, result.error);
-            }
-          }
-        } catch (fbError: any) {
-          console.error('[Stripe Webhook] Error sending Facebook CAPI event:', fbError.message);
-          // Don't fail the webhook - payment already succeeded
-        }
-      }
+      // NOTE: Purchase events are NOT sent from payment_intent.succeeded
+      // They are ONLY sent from:
+      // - checkout.session.completed (when payment_status === 'paid')
+      // - checkout.session.async_payment_succeeded
+      // This prevents duplicate Purchase events in Meta
+      console.log(`[Stripe Webhook] payment_intent.succeeded: NOT sending Purchase to Meta (will be sent from checkout.session events)`);
 
       if (email) {
         try {
@@ -1049,8 +983,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amountTotal: session.amount_total
       });
 
-      // Only process if payment is complete (not pending)
-      if (session.payment_status === 'paid' && session.payment_intent) {
+      // Only send Purchase to Meta if payment_status === 'paid'
+      // DO NOT send for 'unpaid' or 'no_payment_required' statuses
+      if (session.payment_status !== 'paid') {
+        console.log(`[Stripe Webhook] checkout.session.completed: NOT sending Purchase (payment_status=${session.payment_status})`);
+        return res.json({ received: true });
+      }
+
+      // Only process if we have a payment_intent
+      if (session.payment_intent) {
         const paymentIntentId = typeof session.payment_intent === 'string' 
           ? session.payment_intent 
           : session.payment_intent.id;
