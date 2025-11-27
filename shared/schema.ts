@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, serial, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -63,3 +63,24 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
+
+export const conversionEvents = pgTable("conversion_events", {
+  id: serial("id").primaryKey(),
+  eventId: varchar("event_id", { length: 255 }).notNull().unique(),
+  stripeEventId: varchar("stripe_event_id", { length: 255 }).notNull().unique(),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  currency: varchar("currency", { length: 3 }),
+  customerEmail: varchar("customer_email", { length: 255 }),
+  metaSentAt: timestamp("meta_sent_at"),
+  metaResponse: text("meta_response"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertConversionEventSchema = createInsertSchema(conversionEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
+export type ConversionEvent = typeof conversionEvents.$inferSelect;
