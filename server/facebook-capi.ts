@@ -18,6 +18,7 @@ interface EventData {
   userData: UserData;
   customData?: Record<string, any>;
   eventId?: string;
+  eventTime?: number;
 }
 
 class FacebookCAPI {
@@ -104,7 +105,7 @@ class FacebookCAPI {
 
   async sendEvent(eventData: EventData): Promise<{ success: boolean; error?: string; response?: any }> {
     try {
-      const eventTime = Math.floor(Date.now() / 1000);
+      const eventTime = eventData.eventTime || Math.floor(Date.now() / 1000);
       const eventId = eventData.eventId || `${eventTime}-${Math.random().toString(36).substring(7)}`;
 
       const userData = this.buildUserData(eventData.userData);
@@ -246,12 +247,19 @@ class FacebookCAPI {
     });
   }
 
-  async sendPurchase(eventSourceUrl: string, userData: UserData, customData: { value: number; currency: string; content_name?: string }): Promise<any> {
+  async sendPurchase(
+    eventSourceUrl: string, 
+    userData: UserData, 
+    customData: { value: number; currency: string; content_name?: string },
+    options?: { eventId?: string; eventTime?: number }
+  ): Promise<any> {
     return this.sendEvent({
       eventName: 'Purchase',
       eventSourceUrl,
       userData,
-      customData
+      customData,
+      eventId: options?.eventId,
+      eventTime: options?.eventTime
     });
   }
 
