@@ -62,13 +62,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Facebook Conversions API routes
   app.use("/api/facebook-capi", facebookCapiRoutes);
 
-  // SYNC ENDPOINT: Retroactively sync Stripe purchases to Meta CAPI
-  // This properly categorizes events based on their actual status
+  // SYNC ENDPOINT: Send InitiateCheckout events for incomplete payments only
+  // IMPORTANT: This endpoint does NOT send Purchase events - those ONLY come from Stripe webhooks
+  // This prevents duplicate Purchase events in Meta
   app.post("/api/sync-stripe-to-meta", async (req, res) => {
     try {
       console.log('\n╔════════════════════════════════════════════════════════════╗');
       console.log('║  STRIPE TO META CAPI SYNC - Starting...                    ║');
-      console.log('║  Properly flagging: Purchase, InitiateCheckout, Failed     ║');
+      console.log('║  NOTE: Only sending InitiateCheckout & PaymentFailed       ║');
+      console.log('║  Purchase events ONLY come from Stripe webhooks            ║');
       console.log('╚════════════════════════════════════════════════════════════╝\n');
 
       if (!fbCAPI) {
@@ -102,13 +104,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const canceledPayments = paymentIntents.data.filter(pi => pi.status === 'canceled');
       
       console.log(`Found ${paymentIntents.data.length} total payments:`);
-      console.log(`  - ${succeededPayments.length} succeeded (Purchase)`);
+      console.log(`  - ${succeededPayments.length} succeeded (Purchase already sent via webhook - SKIPPING)`);
       console.log(`  - ${incompletePayments.length} incomplete (InitiateCheckout)`);
       console.log(`  - ${canceledPayments.length} canceled (checking for failures)`);
 
       const results: any[] = [];
       const summary = {
-        purchases: { sent: 0, failed: 0 },
+        purchases: { skipped: succeededPayments.length },
         initiateCheckout: { sent: 0, failed: 0 },
         paymentFailed: { sent: 0, failed: 0 },
       };
@@ -126,65 +128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return { email, name, type, fbc, fbp, firstName, lastName };
       };
 
-      // 1. Send PURCHASE events for succeeded payments
-      console.log('\n📦 Sending Purchase events for completed transactions...');
-      for (const payment of succeededPayments) {
-        const userData = parseUserData(payment);
-        const amountInDollars = payment.amount / 100;
-        const productDetails = getProductDetails(userData.type, payment.amount);
-
-        try {
-          const result = await fbCAPI.sendPurchase(
-            `${baseUrl}/checkout`,
-            {
-              email: userData.email || undefined,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              fbc: userData.fbc || undefined,
-              fbp: userData.fbp || undefined,
-            },
-            {
-              value: amountInDollars,
-              currency: 'USD',
-              content_name: productDetails.productName,
-            }
-          );
-
-          results.push({
-            paymentId: payment.id,
-            eventType: 'Purchase',
-            status: 'succeeded',
-            amount: amountInDollars,
-            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
-            name: userData.name || 'Unknown',
-            type: userData.type || 'unknown',
-            created: new Date(payment.created * 1000).toISOString(),
-            capiResult: result.success ? 'SUCCESS' : 'FAILED',
-            error: result.error,
-          });
-
-          if (result.success) {
-            summary.purchases.sent++;
-            console.log(`  ✓ Purchase: ${payment.id} - $${amountInDollars} - ${userData.email || 'no email'}`);
-          } else {
-            summary.purchases.failed++;
-            console.log(`  ✗ Purchase Failed: ${payment.id} - ${result.error}`);
-          }
-        } catch (error: any) {
-          summary.purchases.failed++;
-          results.push({
-            paymentId: payment.id,
-            eventType: 'Purchase',
-            status: 'succeeded',
-            amount: amountInDollars,
-            email: userData.email ? `${userData.email.substring(0, 3)}***` : 'none',
-            capiResult: 'ERROR',
-            error: error.message,
-          });
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+      // SKIPPING PURCHASE EVENTS - They are ONLY sent from Stripe webhooks (payment_intent.succeeded)
+      // This prevents duplicate/incorrect Purchase events in Meta
+      console.log('\n📦 Purchase events: SKIPPED (only sent via Stripe webhooks)');
+      console.log(`   ${succeededPayments.length} succeeded payments will NOT be re-sent as Purchase events`);
 
       // 2. Send INITIATE_CHECKOUT events for incomplete payments
       console.log('\n🛒 Sending InitiateCheckout events for incomplete transactions...');
@@ -370,13 +317,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const totalSent = summary.purchases.sent + summary.initiateCheckout.sent + summary.paymentFailed.sent;
-      const totalFailed = summary.purchases.failed + summary.initiateCheckout.failed + summary.paymentFailed.failed;
+      const totalSent = summary.initiateCheckout.sent + summary.paymentFailed.sent;
+      const totalFailed = summary.initiateCheckout.failed + summary.paymentFailed.failed;
 
       console.log(`\n╔════════════════════════════════════════════════════════════╗`);
       console.log(`║  SYNC COMPLETE                                             ║`);
       console.log(`╠════════════════════════════════════════════════════════════╣`);
-      console.log(`║  Purchase events:        ${summary.purchases.sent} sent, ${summary.purchases.failed} failed          ║`);
+      console.log(`║  Purchase events:        ${summary.purchases.skipped} SKIPPED (webhook only)    ║`);
       console.log(`║  InitiateCheckout events: ${summary.initiateCheckout.sent} sent, ${summary.initiateCheckout.failed} failed          ║`);
       console.log(`║  PaymentFailed events:   ${summary.paymentFailed.sent} sent, ${summary.paymentFailed.failed} failed          ║`);
       console.log(`║  TOTAL: ${totalSent} sent, ${totalFailed} failed                            ║`);
@@ -397,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         },
         payments: results,
-        instructions: 'Events have been properly categorized and sent to Facebook. Check Events Manager to verify: Purchase (completed), InitiateCheckout (incomplete/abandoned), PaymentFailed (declined/insufficient funds).',
+        instructions: 'InitiateCheckout and PaymentFailed events sent. Purchase events are NOT sent from sync - they ONLY come from Stripe webhooks when payment succeeds. This prevents duplicate/incorrect Purchase events in Meta.',
       });
 
     } catch (error: any) {
@@ -453,59 +400,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // TEST ENDPOINT: Simulate a complete purchase flow for testing Facebook events
+  // DISABLED: Test purchase endpoint - Purchase events only come from Stripe webhooks
+  // This endpoint was sending fake Purchase events which polluted Meta data
   app.post("/api/test-purchase", async (req, res) => {
-    try {
-      console.log('\n🧪 TEST PURCHASE SIMULATION - Starting...\n');
-
-      const testData = {
-        email: 'test.customer@breakfree.test',
-        firstName: 'Test',
-        lastName: 'Customer',
-        value: 14.99,
-        currency: 'USD',
-        contentName: 'Healing Guides Collection (Test Purchase)'
-      };
-
-      // Send Purchase event to Facebook CAPI
-      const purchaseResponse = await fetch(`http://localhost:5000/api/facebook-capi/purchase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: 'https://break-free-app.com/test-purchase',
-          email: testData.email,
-          firstName: testData.firstName,
-          lastName: testData.lastName,
-          value: testData.value,
-          currency: testData.currency,
-          contentName: testData.contentName
-        })
-      });
-
-      const purchaseResult = await purchaseResponse.json();
-
-      console.log('✅ Test Purchase Complete!');
-      console.log('   Customer:', testData.firstName, testData.lastName);
-      console.log('   Email:', testData.email);
-      console.log('   Amount:', testData.value, testData.currency);
-      console.log('   Product:', testData.contentName);
-      console.log('   Facebook Response:', purchaseResult.success ? 'SUCCESS' : 'FAILED');
-
-      res.json({
-        success: true,
-        message: 'Test purchase completed and Facebook Purchase event sent',
-        testPurchaseDetails: testData,
-        facebookEventResult: purchaseResult,
-        instructions: 'Check your Facebook Events Manager now! Look for a Purchase event with value $14.99 from the last minute.'
-      });
-
-    } catch (error: any) {
-      console.error('❌ Test Purchase Failed:', error.message);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
-    }
+    console.warn('[Test Purchase] DISABLED - Purchase events only come from Stripe webhooks');
+    res.status(403).json({
+      success: false,
+      error: 'Test purchase endpoint is disabled. Purchase events ONLY come from Stripe webhooks when payment_intent.succeeded fires.',
+      reason: 'This prevents fake/incorrect Purchase events in Meta Ads',
+      suggestion: 'To test purchase tracking, make a real $1 trial payment. The Stripe webhook will send the Purchase event.'
+    });
   });
 
   // BetterAuth routes - handles /api/auth/*

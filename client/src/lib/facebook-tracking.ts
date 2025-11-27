@@ -208,27 +208,7 @@ export async function trackAddPaymentInfo(data: FacebookEventData): Promise<void
   }
 }
 
-/**
- * Track Purchase event (payment completed)
- */
-export async function trackPurchase(data: FacebookEventData): Promise<void> {
-  try {
-    const params = getTrackingParams();
-    await fetch('/api/facebook-capi/purchase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: data.url || window.location.href,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        value: data.value,
-        currency: data.currency || 'USD',
-        contentName: data.contentName,
-        ...params,
-      }),
-    });
-  } catch (error) {
-    console.error('Failed to track Purchase:', error);
-  }
-}
+// REMOVED: trackPurchase function
+// Purchase events should ONLY be sent from server-side Stripe webhooks (payment_intent.succeeded)
+// This prevents incorrect Purchase events from being tracked before payment is confirmed
+// See: server/routes.ts - Stripe webhook handler

@@ -170,26 +170,15 @@ router.post('/payment-info', async (req: Request, res: Response) => {
   }
 });
 
+// DISABLED: Purchase events should ONLY come from Stripe webhooks (payment_intent.succeeded)
+// This endpoint was causing duplicate/incorrect Purchase events in Meta
 router.post('/purchase', async (req: Request, res: Response) => {
-  try {
-    const userData = extractUserData(req, req.body);
-    const eventSourceUrl = req.body.url || 'https://break-free-app.com';
-    const customData = {
-      value: req.body.value || 0,
-      currency: req.body.currency || 'USD',
-      content_name: req.body.contentName || 'Purchase'
-    };
-
-    const result = await sendWithRetry(
-      () => fbCAPI.sendPurchase(eventSourceUrl, userData, customData),
-      { eventName: 'Purchase', eventSourceUrl, userData, customData }
-    );
-
-    res.json({ success: result.success, message: 'Purchase event tracked' });
-  } catch (error: any) {
-    console.error('[Facebook CAPI] Error in /purchase:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
+  console.warn('[Facebook CAPI] /purchase endpoint is DISABLED - Purchase events only come from Stripe webhooks');
+  res.status(403).json({ 
+    success: false, 
+    error: 'Purchase tracking is disabled on this endpoint. Purchase events are only sent from Stripe webhooks when payment is confirmed.',
+    reason: 'This prevents duplicate/incorrect Purchase events in Meta Ads'
+  });
 });
 
 router.get('/queue', (req: Request, res: Response) => {
