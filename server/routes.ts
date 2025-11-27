@@ -8,6 +8,9 @@ import { generateResultsEmail, generatePurchaseConfirmationEmail } from "./email
 import { analyzeQuizAnswers } from "./quiz-analyzer";
 import facebookCapiRoutes from "./facebook-capi-routes";
 import FacebookCAPI from "./facebook-capi";
+import { db } from "./db";
+import { conversionEvents } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -22,6 +25,78 @@ const fbCAPI = (fbPixelId && fbAccessToken) ? new FacebookCAPI(fbPixelId, fbAcce
 
 if (!fbCAPI) {
   console.warn('[Stripe Webhook] Facebook CAPI not configured - purchase events will not be tracked server-side');
+}
+
+// Deduplication helper: Check if event already processed and insert if not
+async function checkAndRecordConversionEvent(
+  eventId: string,
+  stripeEventId: string,
+  eventType: string,
+  amount?: number,
+  currency?: string,
+  customerEmail?: string
+): Promise<{ isDuplicate: boolean; error?: string }> {
+  try {
+    // Check if event_id (PaymentIntent ID) already exists
+    const existingByEventId = await db.select()
+      .from(conversionEvents)
+      .where(eq(conversionEvents.eventId, eventId))
+      .limit(1);
+
+    if (existingByEventId.length > 0) {
+      console.log(`[Dedup] Duplicate prevented: event_id ${eventId} already processed`);
+      return { isDuplicate: true };
+    }
+
+    // Check if stripe_event_id already exists (idempotency check)
+    const existingByStripeEventId = await db.select()
+      .from(conversionEvents)
+      .where(eq(conversionEvents.stripeEventId, stripeEventId))
+      .limit(1);
+
+    if (existingByStripeEventId.length > 0) {
+      console.log(`[Dedup] Duplicate prevented: stripe_event_id ${stripeEventId} already processed`);
+      return { isDuplicate: true };
+    }
+
+    // Insert new record (transaction-safe)
+    await db.insert(conversionEvents).values({
+      eventId,
+      stripeEventId,
+      eventType,
+      amount: amount?.toString(),
+      currency,
+      customerEmail,
+    });
+
+    console.log(`[Dedup] New event recorded: ${eventId} (${eventType})`);
+    return { isDuplicate: false };
+  } catch (error: any) {
+    // Handle unique constraint violations (race condition)
+    if (error.code === '23505') {
+      console.log(`[Dedup] Race condition caught: event already exists`);
+      return { isDuplicate: true };
+    }
+    console.error(`[Dedup] Error checking/recording event:`, error.message);
+    return { isDuplicate: false, error: error.message };
+  }
+}
+
+// Update conversion event with Meta response
+async function updateConversionEventMetaResponse(
+  eventId: string,
+  metaResponse: string
+): Promise<void> {
+  try {
+    await db.update(conversionEvents)
+      .set({
+        metaSentAt: new Date(),
+        metaResponse,
+      })
+      .where(eq(conversionEvents.eventId, eventId));
+  } catch (error: any) {
+    console.error(`[Dedup] Error updating Meta response:`, error.message);
+  }
 }
 
 // Helper to get product details based on payment type
@@ -855,46 +930,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productDetails = getProductDetails(type, paymentIntent.amount);
       const amountInDollars = paymentIntent.amount / 100;
 
-      // Send Purchase event to Facebook CAPI (server-side tracking)
-      // This ensures purchases are tracked even if client-side tracking fails
+      // Send Purchase event to Facebook CAPI with DEDUPLICATION
+      // Use PaymentIntent ID as event_id to prevent duplicates
       if (fbCAPI) {
         try {
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-            : 'https://break-free-app.com';
-          
-          // Parse first name and last name from full name
-          const nameParts = (name || '').trim().split(' ');
-          const firstName = nameParts[0] || undefined;
-          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
-
-          const result = await fbCAPI.sendPurchase(
-            `${baseUrl}/checkout`,
-            {
-              email: email || undefined,
-              firstName,
-              lastName,
-              fbc: fbc || undefined,
-              fbp: fbp || undefined,
-            },
-            {
-              value: amountInDollars,
-              currency: 'USD',
-              content_name: productDetails.productName,
-            }
+          // Check for duplicate before sending to Meta
+          const dedupResult = await checkAndRecordConversionEvent(
+            paymentIntent.id,
+            event.id,
+            'Purchase',
+            amountInDollars,
+            paymentIntent.currency.toUpperCase(),
+            email
           );
 
-          if (result.success) {
-            console.log(`[Stripe Webhook] Facebook CAPI Purchase event sent for ${type}:`, {
-              paymentId: paymentIntent.id,
-              amount: amountInDollars,
-              email: email ? `${email.substring(0, 3)}***` : 'none',
-              fbc: fbc ? 'yes' : 'no',
-              fbp: fbp ? 'yes' : 'no',
-              eventsReceived: result.response?.events_received
-            });
+          if (dedupResult.isDuplicate) {
+            console.log(`[Stripe Webhook] Skipping duplicate Purchase event for ${paymentIntent.id}`);
           } else {
-            console.error(`[Stripe Webhook] Facebook CAPI Purchase event failed:`, result.error);
+            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+              : 'https://break-free-app.com';
+            
+            // Parse first name and last name from full name
+            const nameParts = (name || '').trim().split(' ');
+            const firstName = nameParts[0] || undefined;
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+            const result = await fbCAPI.sendPurchase(
+              `${baseUrl}/checkout`,
+              {
+                email: email || undefined,
+                firstName,
+                lastName,
+                fbc: fbc || undefined,
+                fbp: fbp || undefined,
+              },
+              {
+                value: amountInDollars,
+                currency: paymentIntent.currency.toUpperCase(),
+                content_name: productDetails.productName,
+              },
+              {
+                eventId: paymentIntent.id,
+                eventTime: paymentIntent.created,
+              }
+            );
+
+            // Update database with Meta response
+            await updateConversionEventMetaResponse(
+              paymentIntent.id,
+              JSON.stringify(result)
+            );
+
+            if (result.success) {
+              console.log(`[Stripe Webhook] Facebook CAPI Purchase event sent for ${type}:`, {
+                paymentId: paymentIntent.id,
+                amount: amountInDollars,
+                email: email ? `${email.substring(0, 3)}***` : 'none',
+                fbc: fbc ? 'yes' : 'no',
+                fbp: fbp ? 'yes' : 'no',
+                eventId: paymentIntent.id,
+                eventTime: new Date(paymentIntent.created * 1000).toISOString(),
+                eventsReceived: result.response?.events_received
+              });
+            } else {
+              console.error(`[Stripe Webhook] Facebook CAPI Purchase event failed:`, result.error);
+            }
           }
         } catch (fbError: any) {
           console.error('[Stripe Webhook] Error sending Facebook CAPI event:', fbError.message);
@@ -934,6 +1035,200 @@ export async function registerRoutes(app: Express): Promise<Server> {
           metadata: paymentIntent.metadata
         });
       }
+    }
+
+    // Handle checkout.session.completed - Primary event for successful Checkout Sessions
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      console.log('[Stripe Webhook] Checkout session completed:', {
+        sessionId: session.id,
+        paymentIntentId: session.payment_intent,
+        paymentStatus: session.payment_status,
+        customerEmail: session.customer_email,
+        amountTotal: session.amount_total
+      });
+
+      // Only process if payment is complete (not pending)
+      if (session.payment_status === 'paid' && session.payment_intent) {
+        const paymentIntentId = typeof session.payment_intent === 'string' 
+          ? session.payment_intent 
+          : session.payment_intent.id;
+        
+        const amountInDollars = (session.amount_total || 0) / 100;
+        const email = session.customer_email || session.customer_details?.email;
+        const name = session.customer_details?.name;
+        const currency = (session.currency || 'usd').toUpperCase();
+
+        // Extract fbc/fbp from metadata if available
+        const fbc = session.metadata?.fbc;
+        const fbp = session.metadata?.fbp;
+
+        if (fbCAPI && email) {
+          try {
+            // Check for duplicate using PaymentIntent ID
+            const dedupResult = await checkAndRecordConversionEvent(
+              paymentIntentId,
+              event.id,
+              'Purchase',
+              amountInDollars,
+              currency,
+              email
+            );
+
+            if (dedupResult.isDuplicate) {
+              console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${paymentIntentId}`);
+            } else {
+              const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+                ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+                : 'https://break-free-app.com';
+
+              const nameParts = (name || '').trim().split(' ');
+              const firstName = nameParts[0] || undefined;
+              const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+              const result = await fbCAPI.sendPurchase(
+                `${baseUrl}/checkout`,
+                {
+                  email,
+                  firstName,
+                  lastName,
+                  fbc: fbc || undefined,
+                  fbp: fbp || undefined,
+                },
+                {
+                  value: amountInDollars,
+                  currency,
+                  content_name: session.metadata?.product_name || 'BreakFree Purchase',
+                },
+                {
+                  eventId: paymentIntentId,
+                  eventTime: session.created,
+                }
+              );
+
+              await updateConversionEventMetaResponse(paymentIntentId, JSON.stringify(result));
+
+              if (result.success) {
+                console.log(`[Stripe Webhook] Checkout session Purchase sent to Meta:`, {
+                  sessionId: session.id,
+                  paymentIntentId,
+                  amount: amountInDollars,
+                  currency,
+                  eventsReceived: result.response?.events_received
+                });
+              } else {
+                console.error(`[Stripe Webhook] Checkout session Purchase to Meta failed:`, result.error);
+              }
+            }
+          } catch (fbError: any) {
+            console.error('[Stripe Webhook] Error sending checkout session Purchase:', fbError.message);
+          }
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle checkout.session.async_payment_succeeded - For delayed payment methods (bank transfers, etc.)
+    if (event.type === 'checkout.session.async_payment_succeeded') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      console.log('[Stripe Webhook] Async payment succeeded:', {
+        sessionId: session.id,
+        paymentIntentId: session.payment_intent,
+        customerEmail: session.customer_email
+      });
+
+      if (session.payment_intent) {
+        const paymentIntentId = typeof session.payment_intent === 'string' 
+          ? session.payment_intent 
+          : session.payment_intent.id;
+        
+        const amountInDollars = (session.amount_total || 0) / 100;
+        const email = session.customer_email || session.customer_details?.email;
+        const name = session.customer_details?.name;
+        const currency = (session.currency || 'usd').toUpperCase();
+        const fbc = session.metadata?.fbc;
+        const fbp = session.metadata?.fbp;
+
+        if (fbCAPI && email) {
+          try {
+            const dedupResult = await checkAndRecordConversionEvent(
+              paymentIntentId,
+              event.id,
+              'Purchase',
+              amountInDollars,
+              currency,
+              email
+            );
+
+            if (dedupResult.isDuplicate) {
+              console.log(`[Stripe Webhook] Skipping duplicate async_payment Purchase for ${paymentIntentId}`);
+            } else {
+              const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+                ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+                : 'https://break-free-app.com';
+
+              const nameParts = (name || '').trim().split(' ');
+              const firstName = nameParts[0] || undefined;
+              const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+              const result = await fbCAPI.sendPurchase(
+                `${baseUrl}/checkout`,
+                {
+                  email,
+                  firstName,
+                  lastName,
+                  fbc: fbc || undefined,
+                  fbp: fbp || undefined,
+                },
+                {
+                  value: amountInDollars,
+                  currency,
+                  content_name: session.metadata?.product_name || 'BreakFree Purchase',
+                },
+                {
+                  eventId: paymentIntentId,
+                  eventTime: Math.floor(Date.now() / 1000),
+                }
+              );
+
+              await updateConversionEventMetaResponse(paymentIntentId, JSON.stringify(result));
+
+              if (result.success) {
+                console.log(`[Stripe Webhook] Async payment Purchase sent to Meta:`, {
+                  sessionId: session.id,
+                  paymentIntentId,
+                  amount: amountInDollars,
+                  eventsReceived: result.response?.events_received
+                });
+              } else {
+                console.error(`[Stripe Webhook] Async payment Purchase to Meta failed:`, result.error);
+              }
+            }
+          } catch (fbError: any) {
+            console.error('[Stripe Webhook] Error sending async payment Purchase:', fbError.message);
+          }
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle checkout.session.async_payment_failed - For failed async payments (DO NOT send as Purchase)
+    if (event.type === 'checkout.session.async_payment_failed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      console.log('[Stripe Webhook] Async payment FAILED (NOT sending to Meta as Purchase):', {
+        sessionId: session.id,
+        paymentIntentId: session.payment_intent,
+        customerEmail: session.customer_email
+      });
+
+      // Log the failure but do NOT send as Purchase event to Meta
+      // This is intentional as per requirements - failed payments should not be tracked as purchases
+      return res.json({ received: true });
     }
 
     res.json({ received: true });
