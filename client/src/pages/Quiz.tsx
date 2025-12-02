@@ -377,7 +377,7 @@ export default function Quiz() {
     setLocation('/signup');
   };
 
-  if (state === 'payment') {
+  if (state === 'payment' || state === 'upsell') {
     return <UpsellPage onAccept={handlePaymentComplete} onSkip={handlePaymentSkip} />;
   }
 
