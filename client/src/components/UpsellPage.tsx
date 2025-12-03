@@ -162,12 +162,59 @@ export default function UpsellPage({ onAccept, onSkip }: UpsellPageProps) {
           </div>
         </div>
 
-        {/* CTAs */}
-        <div className="space-y-4">
+        {/* First CTA */}
+        <div className="mb-6">
           <button
             onClick={onAccept}
             className="w-full bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
             data-testid="button-get-now"
+          >
+            Get Now
+          </button>
+        </div>
+
+        {/* Guide Benefits Section */}
+        <div className="bg-card/40 backdrop-blur-sm rounded-2xl p-5 border border-card-border/20 mb-6">
+          <p className="text-foreground/90 text-sm sm:text-base text-center mb-4 font-medium">
+            Inside, you'll discover:
+          </p>
+          <ul className="space-y-3 mb-4">
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Check className="w-3 h-3 text-primary" />
+              </div>
+              <span className="text-foreground/80 text-sm leading-relaxed">
+                Why certain triggers keep repeating in your life
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Check className="w-3 h-3 text-primary" />
+              </div>
+              <span className="text-foreground/80 text-sm leading-relaxed">
+                How childhood patterns shape adult behavior
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Check className="w-3 h-3 text-primary" />
+              </div>
+              <span className="text-foreground/80 text-sm leading-relaxed">
+                Simple exercises to start healing today
+              </span>
+            </li>
+          </ul>
+          <p className="text-foreground/60 text-xs sm:text-sm text-center italic">
+            It's the exact roadmap most people wish they had years earlier.
+          </p>
+        </div>
+
+        {/* Second CTAs */}
+        <div className="space-y-4">
+          <button
+            onClick={onAccept}
+            className="w-full bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
+            data-testid="button-get-now-bottom"
           >
             Get Now
           </button>
