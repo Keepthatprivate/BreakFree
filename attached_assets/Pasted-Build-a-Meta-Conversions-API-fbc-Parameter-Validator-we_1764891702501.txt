@@ -1,0 +1,65 @@
+Build a Meta Conversions API fbc Parameter Validator web app with the following features:
+
+## Core Functionality
+1. **fbc Format Validator**
+   - Validate that fbc follows the format: `fb.1.[13-digit-timestamp].[fbclid-value]`
+   - Use regex: `^fb\.1\.\d{13}\.[a-zA-Z0-9_-]+$`
+   - Check that the timestamp is a valid 13-digit Unix timestamp in milliseconds
+   - Check that the timestamp is not in the future and not older than 90 days
+
+2. **fbp Format Validator** (bonus)
+   - Validate fbp format: `fb.1.[13-digit-timestamp].[random-number]`
+   - Regex: `^fb\.1\.\d{13}\.\d+$`
+
+3. **fbc Generator from fbclid**
+   - Input field for raw fbclid from URL
+   - Generate properly formatted fbc: `fb.1.[current-timestamp].[fbclid]`
+   - Copy-to-clipboard button
+
+4. **Test Event Sender**
+   - Input fields for: Pixel ID, Access Token, fbc, fbp (optional)
+   - Send a test PageView event to Meta's Conversions API
+   - Display the API response with success/error details
+   - Use test_event_code for testing
+
+## UI Requirements
+- Clean, modern interface
+- Real-time validation feedback (green checkmark / red X)
+- Detailed error messages explaining what's wrong
+- Example values shown as placeholders
+- Dark mode support
+
+## Tech Stack
+- React or vanilla JS frontend
+- Node.js/Express backend for API calls (to avoid CORS)
+- Display the exact payload being sent in JSON format
+
+## Example Payload Preview
+Show users the exact JSON that will be sent:
+```json
+{
+  "data": [{
+    "event_name": "PageView",
+    "event_time": 1234567890,
+    "action_source": "website",
+    "event_source_url": "https://example.com",
+    "user_data": {
+      "fbc": "fb.1.1554763741205.AbCdEfGhIjKlMnOpQrStUvWxYz",
+      "fbp": "fb.1.1558571054389.1098115397",
+      "client_ip_address": "0.0.0.0",
+      "client_user_agent": "Mozilla/5.0..."
+    }
+  }],
+  "test_event_code": "TEST12345"
+}
+```
+
+## Validation Checklist Display
+Show a checklist:
+- [ ] Starts with "fb.1."
+- [ ] Contains valid 13-digit timestamp
+- [ ] Timestamp is within valid range (not future, not >90 days old)
+- [ ] Contains fbclid value after timestamp
+- [ ] Not hashed (fbc should never be hashed)
+
+Include helpful tooltips explaining each validation rule.
