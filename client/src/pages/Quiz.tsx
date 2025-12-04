@@ -21,6 +21,7 @@ import UpsellPage from '@/components/UpsellPage';
 import MasterclassBundlePage from '@/components/MasterclassBundlePage';
 import HealingJournalPage from '@/components/HealingJournalPage';
 import CheckoutPage from '@/components/CheckoutPage';
+import SubscriptionCheckoutPage from '@/components/SubscriptionCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
 import { trackViewContent, trackLead } from '@/lib/facebook-tracking';
@@ -28,7 +29,7 @@ import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-25
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
-type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'masterclass' | 'journal';
+type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'subscription-checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'masterclass' | 'journal';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -38,7 +39,7 @@ interface QuizAnswers {
 const getInitialState = (): QuizState => {
   const urlParams = new URLSearchParams(window.location.search);
   const stateParam = urlParams.get('state');
-  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
+  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'subscription-checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
   if (stateParam && validStates.includes(stateParam as QuizState)) {
     return stateParam as QuizState;
   }
@@ -333,11 +334,8 @@ export default function Quiz() {
   };
 
   const handleStartTrial = () => {
-    // User wants to start trial, go to checkout
-    setCheckoutAmount(100); // €1.00 trial price in cents
-    setCheckoutType('trial');
-    setCheckoutProductName('7-Day Trial Subscription');
-    setState('checkout');
+    // User wants to start trial, redirect to Stripe Checkout
+    setState('subscription-checkout');
   };
 
   const handleBenefitsContinue = () => {
@@ -399,6 +397,16 @@ export default function Quiz() {
         name={userName}
         answers={checkoutType === 'trial' ? answers : undefined}
         onComplete={handleCheckoutComplete}
+      />
+    );
+  }
+
+  if (state === 'subscription-checkout') {
+    return (
+      <SubscriptionCheckoutPage
+        email={userEmail}
+        name={userName}
+        quizAnalysis={undefined}
       />
     );
   }
