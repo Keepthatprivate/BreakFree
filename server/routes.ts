@@ -2385,7 +2385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     // AUTOMATIC RECOVERY: Run every 5 minutes to catch missed webhooks
-    async function runAutoRecovery() {
+    const runAutoRecovery = async () => {
       try {
         console.log('[AutoRecovery] Starting automatic purchase recovery check...');
         
