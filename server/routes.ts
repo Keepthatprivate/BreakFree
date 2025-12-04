@@ -1275,6 +1275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fbp = session.metadata?.fbp;
       const clientUserAgent = session.metadata?.client_user_agent;
       const clientIp = session.metadata?.client_ip;
+      const sourceUrl = session.metadata?.source_url;
 
       if (fbCAPI && email && eventIdForDedup) {
         try {
@@ -1291,10 +1292,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (dedupResult.isDuplicate) {
             console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${eventIdForDedup}`);
           } else {
-            // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+            // Use source URL from checkout if available, otherwise fallback to production domain
             const baseUrl = process.env.PRODUCTION_DOMAIN 
               ? `https://${process.env.PRODUCTION_DOMAIN}` 
               : 'https://break-free-app.com';
+            const eventSourceUrl = sourceUrl || `${baseUrl}/checkout`;
 
             const nameParts = (name || '').trim().split(' ');
             const firstName = nameParts[0] || undefined;
@@ -1306,7 +1308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               : session.metadata?.product_name || 'BreakFree Purchase';
 
             const result = await fbCAPI.sendPurchase(
-              `${baseUrl}/checkout`,
+              eventSourceUrl,
               {
                 email,
                 firstName,
@@ -1379,6 +1381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fbp = session.metadata?.fbp;
         const clientUserAgent = session.metadata?.client_user_agent;
         const clientIp = session.metadata?.client_ip;
+        const sourceUrl = session.metadata?.source_url;
 
         if (fbCAPI && email) {
           try {
@@ -1394,17 +1397,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (dedupResult.isDuplicate) {
               console.log(`[Stripe Webhook] Skipping duplicate async_payment Purchase for ${paymentIntentId}`);
             } else {
-              // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+              // Use source URL from checkout if available, otherwise fallback to production domain
               const baseUrl = process.env.PRODUCTION_DOMAIN 
                 ? `https://${process.env.PRODUCTION_DOMAIN}` 
                 : 'https://break-free-app.com';
+              const eventSourceUrl = sourceUrl || `${baseUrl}/checkout`;
 
               const nameParts = (name || '').trim().split(' ');
               const firstName = nameParts[0] || undefined;
               const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
 
               const result = await fbCAPI.sendPurchase(
-                `${baseUrl}/checkout`,
+                eventSourceUrl,
                 {
                   email,
                   firstName,
