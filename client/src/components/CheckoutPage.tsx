@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
-import { trackInitiateCheckout, trackAddPaymentInfo, getFbc, getFbp } from '@/lib/facebook-tracking';
+import { trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -159,8 +159,8 @@ export default function CheckoutPage({ amount, productType, productName, email, 
     const endpoint = getEndpoint();
 
     // Capture Facebook tracking data for attribution
-    const fbc = getFbc();
-    const fbp = getFbp();
+    const { fbc, fbp } = getFacebookCookies();
+    const clientUserAgent = navigator.userAgent;
 
     // Build payload based on product type
     const getBasePayload = () => {
@@ -183,6 +183,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
       ...getBasePayload(),
       fbc,
       fbp,
+      clientUserAgent,
     };
 
     apiRequest("POST", endpoint, payload)

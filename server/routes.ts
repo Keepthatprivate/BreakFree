@@ -519,7 +519,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: Collect $1 via PaymentIntent -> Webhook creates subscription with trial
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, answers } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, answers } = req.body;
+      
+      // Capture client IP for Facebook CAPI attribution
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
+                       req.socket?.remoteAddress || '';
       
       // Analyze quiz answers if provided
       let quizAnalysis = null;
@@ -548,6 +552,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ...customer.metadata,
             fbc: fbc || customer.metadata?.fbc || '',
             fbp: fbp || customer.metadata?.fbp || '',
+            client_user_agent: clientUserAgent || customer.metadata?.client_user_agent || '',
+            client_ip: clientIp || customer.metadata?.client_ip || '',
           },
         });
       } else {
@@ -558,6 +564,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           metadata: {
             fbc: fbc || '',
             fbp: fbp || '',
+            client_user_agent: clientUserAgent || '',
+            client_ip: clientIp || '',
             source: 'breakfree-quiz',
           },
         });
@@ -581,6 +589,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: 'trial',
           fbc: fbc || '',
           fbp: fbp || '',
+          client_user_agent: clientUserAgent || '',
+          client_ip: clientIp || '',
           create_subscription: 'true', // Flag for webhook to create subscription
           // Store quiz analysis for results email
           traumaScore: quizAnalysis?.traumaScore?.toString() || '',
@@ -605,7 +615,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for upsell products (guides, masterclass, journal)
   app.post("/api/create-upsell-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, amount, productName } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, amount, productName } = req.body;
+      
+      // Capture client IP for Facebook CAPI attribution
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
+                       req.socket?.remoteAddress || '';
       
       // Support custom amounts for masterclass ($69) and journal ($14.99)
       // Default to $14.99 (guides) if no amount specified
@@ -625,6 +639,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           productName: productType,
           fbc: fbc || '',
           fbp: fbp || '',
+          client_user_agent: clientUserAgent || '',
+          client_ip: clientIp || '',
         },
       });
 
@@ -638,7 +654,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for donation
   app.post("/api/create-donation-payment", async (req, res) => {
     try {
-      const { amount, email, name, fbc, fbp } = req.body;
+      const { amount, email, name, fbc, fbp, clientUserAgent } = req.body;
+      
+      // Capture client IP for Facebook CAPI attribution
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
+                       req.socket?.remoteAddress || '';
       
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: "Invalid amount" });
@@ -656,6 +676,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "donation",
           fbc: fbc || '',
           fbp: fbp || '',
+          client_user_agent: clientUserAgent || '',
+          client_ip: clientIp || '',
         },
       });
 
@@ -670,7 +692,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: $1 trial fee + 7-day trial, then $29.99/month
   app.post("/api/create-subscription-checkout", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, answers } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, answers } = req.body;
+      
+      // Capture client IP for Facebook CAPI attribution
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
+                       req.socket?.remoteAddress || '';
       
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
@@ -702,6 +728,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ...customer.metadata,
             fbc: fbc || customer.metadata?.fbc || '',
             fbp: fbp || customer.metadata?.fbp || '',
+            client_user_agent: clientUserAgent || customer.metadata?.client_user_agent || '',
+            client_ip: clientIp || customer.metadata?.client_ip || '',
           },
         });
       } else {
@@ -711,6 +739,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           metadata: {
             fbc: fbc || '',
             fbp: fbp || '',
+            client_user_agent: clientUserAgent || '',
+            client_ip: clientIp || '',
             source: 'breakfree-quiz',
           },
         });
@@ -749,6 +779,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: name || '',
             fbc: fbc || '',
             fbp: fbp || '',
+            client_user_agent: clientUserAgent || '',
+            client_ip: clientIp || '',
             traumaScore: quizAnalysis?.traumaScore?.toString() || '',
             primaryPattern: quizAnalysis?.primaryPattern || '',
           },
@@ -761,6 +793,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: name || '',
           fbc: fbc || '',
           fbp: fbp || '',
+          client_user_agent: clientUserAgent || '',
+          client_ip: clientIp || '',
           product_name: '7-Day Trial Subscription',
         },
       });
@@ -1231,9 +1265,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const name = session.customer_details?.name;
       const currency = (session.currency || 'usd').toUpperCase();
 
-      // Extract fbc/fbp from metadata if available
+      // Extract fbc/fbp and client tracking data from metadata
       const fbc = session.metadata?.fbc;
       const fbp = session.metadata?.fbp;
+      const clientUserAgent = session.metadata?.client_user_agent;
+      const clientIp = session.metadata?.client_ip;
 
       if (fbCAPI && email && eventIdForDedup) {
         try {
@@ -1272,6 +1308,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 lastName,
                 fbc: fbc || undefined,
                 fbp: fbp || undefined,
+                ip: clientIp || undefined,
+                userAgent: clientUserAgent || undefined,
               },
               {
                 value: amountInDollars,
@@ -1334,6 +1372,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const currency = (session.currency || 'usd').toUpperCase();
         const fbc = session.metadata?.fbc;
         const fbp = session.metadata?.fbp;
+        const clientUserAgent = session.metadata?.client_user_agent;
+        const clientIp = session.metadata?.client_ip;
 
         if (fbCAPI && email) {
           try {
@@ -1366,6 +1406,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   lastName,
                   fbc: fbc || undefined,
                   fbp: fbp || undefined,
+                  ip: clientIp || undefined,
+                  userAgent: clientUserAgent || undefined,
                 },
                 {
                   value: amountInDollars,
@@ -1624,6 +1666,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     lastName,
                     fbc: customerMetadata.fbc || undefined,
                     fbp: customerMetadata.fbp || undefined,
+                    ip: customerMetadata.client_ip || undefined,
+                    userAgent: customerMetadata.client_user_agent || undefined,
                   },
                   {
                     value: amountInDollars,
@@ -1711,7 +1755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('║  TEST WEBHOOK ENDPOINT - Development Only                  ║');
       console.log('╚════════════════════════════════════════════════════════════╝\n');
 
-      const { eventType, paymentIntentId, amount, email, name, productName } = req.body;
+      const { eventType, paymentIntentId, amount, email, name, productName, fbc, fbp, clientUserAgent, clientIp } = req.body;
 
       if (!eventType) {
         return res.status(400).json({ error: 'Missing eventType' });
@@ -1722,6 +1766,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const testEmail = email || 'test@example.com';
       const testName = name || 'Test User';
       const testProductName = productName || 'Test Purchase';
+      const testFbc = fbc || undefined;
+      const testFbp = fbp || undefined;
+      const testUserAgent = clientUserAgent || 'Test User Agent';
+      const testClientIp = clientIp || '127.0.0.1';
 
       console.log(`[Test Webhook] Simulating ${eventType}:`, {
         paymentIntentId: testPaymentIntentId,
@@ -1754,8 +1802,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
 
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+          const baseUrl = process.env.PRODUCTION_DOMAIN 
+            ? `https://${process.env.PRODUCTION_DOMAIN}` 
             : 'https://break-free-app.com';
 
           const nameParts = testName.trim().split(' ');
@@ -1768,6 +1817,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               email: testEmail,
               firstName,
               lastName,
+              fbc: testFbc,
+              fbp: testFbp,
+              ip: testClientIp,
+              userAgent: testUserAgent,
             },
             {
               value: testAmount,
@@ -1808,8 +1861,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         try {
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          // ALWAYS use production domain for Facebook CAPI
+          const baseUrl = process.env.PRODUCTION_DOMAIN 
+            ? `https://${process.env.PRODUCTION_DOMAIN}` 
             : 'https://break-free-app.com';
 
           const nameParts = testName.trim().split(' ');
@@ -1822,6 +1876,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               email: testEmail,
               firstName,
               lastName,
+              fbc: testFbc,
+              fbp: testFbp,
+              ip: testClientIp,
+              userAgent: testUserAgent,
             },
             {
               value: testAmount,

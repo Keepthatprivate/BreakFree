@@ -1,0 +1,189 @@
+Fix my Facebook Conversions API fbc parameter issue. I'm getting an error that the fbc cookie creationTime is wrong.
+
+**PART 1: Frontend - Capture fbclid and store _fbc cookie**
+
+Add this script to run on EVERY page load (in my main layout/index file):
+```javascript
+// Add to your frontend - runs on page load
+function captureFacebookClickId() {
+  // Get fbclid from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const fbclid = urlParams.get('fbclid');
+  
+  if (fbclid) {
+    // Create _fbc cookie in correct format: fb.1.{timestamp}.{fbclid}
+    const timestamp = Date.now();
+    const fbcValue = `fb.1.${timestamp}.${fbclid}`;
+    
+    // Store in cookie for 90 days
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 90);
+    document.cookie = `_fbc=${fbcValue}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+    
+    // Also store in localStorage as backup
+    localStorage.setItem('_fbc', fbcValue);
+    localStorage.setItem('_fbc_timestamp', timestamp.toString());
+  }
+}
+
+// Also capture _fbp (browser ID) if it exists
+function getFacebookCookies() {
+  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    acc[key] = value;
+    return acc;
+  }, {});
+  
+  return {
+    fbc: cookies['_fbc'] || localStorage.getItem('_fbc') || null,
+    fbp: cookies['_fbp'] || null
+  };
+}
+
+// Run on page load
+captureFacebookClickId();
+```
+
+**PART 2: Pass fbc/fbp to backend during checkout**
+
+When user starts checkout, send the Facebook cookies:
+```javascript
+// When creating checkout session, include Facebook data
+async function createCheckout() {
+  const { fbc, fbp } = getFacebookCookies();
+  
+  const response = await fetch('/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      // ... your existing data
+      fbc: fbc,
+      fbp: fbp,
+      clientUserAgent: navigator.userAgent,
+    })
+  });
+  
+  // ... handle response
+}
+```
+
+**PART 3: Store Facebook data with the checkout session**
+
+In your create-checkout-session endpoint, store fbc/fbp in Stripe metadata:
+```javascript
+const session = await stripe.checkout.sessions.create({
+  // ... your existing config
+  metadata: {
+    fbc: req.body.fbc || '',
+    fbp: req.body.fbp || '',
+    client_user_agent: req.body.clientUserAgent || '',
+    client_ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+  }
+});
+```
+
+**PART 4: Update the Facebook CAPI function to use fbc/fbp**
+
+Update my sendFacebookPurchaseEvent function:
+```javascript
+async function sendFacebookPurchaseEvent({ 
+  email, 
+  value, 
+  currency, 
+  eventId, 
+  clientIpAddress, 
+  clientUserAgent,
+  fbc,  // ADD THIS
+  fbp   // ADD THIS
+}) {
+  const PIXEL_ID = process.env.FACEBOOK_PIXEL_ID;
+  const ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN;
+  
+  // Hash email
+  const hashedEmail = crypto
+    .createHash('sha256')
+    .update(email.toLowerCase().trim())
+    .digest('hex');
+
+  // Build user_data object
+  const userData = {
+    em: [hashedEmail],
+    client_ip_address: clientIpAddress,
+    client_user_agent: clientUserAgent,
+  };
+  
+  // Add fbc if available (IMPORTANT - send as-is, don't modify!)
+  if (fbc) {
+    userData.fbc = fbc;
+  }
+  
+  // Add fbp if available
+  if (fbp) {
+    userData.fbp = fbp;
+  }
+
+  const eventData = {
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: eventId,
+        event_source_url: 'https://YOUR_DOMAIN.com/checkout/success', // Add your actual URL
+        action_source: 'website',
+        user_data: userData,
+        custom_data: {
+          currency: currency,
+          value: value,
+        },
+      },
+    ],
+    access_token: ACCESS_TOKEN,
+  };
+
+  const response = await fetch(
+    `https://graph.facebook.com/v18.0/${PIXEL_ID}/events`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(eventData),
+    }
+  );
+  
+  const result = await response.json();
+  console.log('Facebook CAPI Response:', JSON.stringify(result, null, 2));
+  
+  if (result.error) {
+    console.error('Facebook CAPI Error:', result.error);
+  }
+  
+  return result;
+}
+```
+
+**PART 5: Update Stripe webhook to pass fbc/fbp**
+
+In the webhook handler for checkout.session.completed:
+```javascript
+if (event.type === 'checkout.session.completed') {
+  const session = event.data.object;
+  
+  await sendFacebookPurchaseEvent({
+    email: session.customer_details?.email,
+    value: session.amount_total / 100,
+    currency: session.currency.toUpperCase(),
+    eventId: session.id,
+    clientIpAddress: session.metadata?.client_ip || req.headers['x-forwarded-for'],
+    clientUserAgent: session.metadata?.client_user_agent || req.headers['user-agent'],
+    fbc: session.metadata?.fbc || null,  // ADD THIS
+    fbp: session.metadata?.fbp || null,  // ADD THIS
+  });
+}
+```
+
+**IMPORTANT RULES:**
+1. Never modify the _fbc value - send it exactly as stored
+2. The _fbc format MUST be: fb.1.{timestamp_in_milliseconds}.{fbclid}
+3. Always capture fbclid on first page load, not just checkout page
+4. Store in both cookie AND localStorage for reliability
+
+Please implement all 5 parts and show me the updated files.

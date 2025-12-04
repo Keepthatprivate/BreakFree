@@ -3,44 +3,94 @@
  * Handles client-side event tracking with server-side CAPI integration
  * 
  * IMPORTANT: fbclid must be captured on landing and persisted through the entire journey
+ * The _fbc format MUST be: fb.1.{timestamp_in_milliseconds}.{fbclid}
  */
 
 const FBCLID_STORAGE_KEY = 'fb_click_id';
 const FBC_STORAGE_KEY = 'fb_fbc';
+const FBC_TIMESTAMP_KEY = 'fb_fbc_timestamp';
 const FBP_STORAGE_KEY = 'fb_fbp';
 
 /**
  * Initialize Facebook tracking - call this on app load
  * Captures fbclid from URL and stores it for the entire session
+ * CRITICAL: Uses milliseconds for timestamp (not seconds!)
  */
 export function initFacebookTracking(): void {
-  const params = new URLSearchParams(window.location.search);
-  const fbclid = params.get('fbclid');
+  captureFacebookClickId();
+  ensureFbpExists();
+}
+
+/**
+ * Capture fbclid from URL and create _fbc cookie
+ * This should run on EVERY page load
+ */
+function captureFacebookClickId(): void {
+  const urlParams = new URLSearchParams(window.location.search);
+  const fbclid = urlParams.get('fbclid');
   
   if (fbclid) {
+    // Store raw fbclid
     localStorage.setItem(FBCLID_STORAGE_KEY, fbclid);
     
-    const timestamp = Math.floor(Date.now() / 1000);
-    const fbc = `fb.1.${timestamp}.${fbclid}`;
-    localStorage.setItem(FBC_STORAGE_KEY, fbc);
+    // Create _fbc cookie in correct format: fb.1.{timestamp_in_milliseconds}.{fbclid}
+    // CRITICAL: Use Date.now() directly for milliseconds, NOT divided by 1000
+    const timestamp = Date.now();
+    const fbcValue = `fb.1.${timestamp}.${fbclid}`;
     
-    document.cookie = `_fbc=${fbc}; max-age=7776000; path=/; SameSite=Lax`;
+    // Store in localStorage
+    localStorage.setItem(FBC_STORAGE_KEY, fbcValue);
+    localStorage.setItem(FBC_TIMESTAMP_KEY, timestamp.toString());
+    
+    // Store in cookie for 90 days
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 90);
+    document.cookie = `_fbc=${fbcValue}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
     
     console.log('[FB Tracking] Captured fbclid:', fbclid);
-    console.log('[FB Tracking] Created fbc:', fbc);
+    console.log('[FB Tracking] Created fbc with milliseconds:', fbcValue);
   }
-  
+}
+
+/**
+ * Ensure _fbp (browser ID) exists
+ */
+function ensureFbpExists(): void {
   let fbp = getFbpFromCookie();
   if (!fbp) {
-    const timestamp = Math.floor(Date.now() / 1000);
+    // Create _fbp in correct format: fb.1.{timestamp_in_milliseconds}.{random}
+    const timestamp = Date.now();
     const random = Math.floor(Math.random() * 2147483647);
     fbp = `fb.1.${timestamp}.${random}`;
-    document.cookie = `_fbp=${fbp}; max-age=7776000; path=/; SameSite=Lax`;
+    
+    // Store in cookie for 90 days
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 90);
+    document.cookie = `_fbp=${fbp}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+    
     localStorage.setItem(FBP_STORAGE_KEY, fbp);
     console.log('[FB Tracking] Created fbp:', fbp);
   } else {
     localStorage.setItem(FBP_STORAGE_KEY, fbp);
   }
+}
+
+/**
+ * Get all Facebook cookies - checks both cookie and localStorage
+ */
+export function getFacebookCookies(): { fbc: string | null; fbp: string | null } {
+  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    if (key && value) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, string>);
+  
+  return {
+    fbc: cookies['_fbc'] || localStorage.getItem(FBC_STORAGE_KEY) || null,
+    fbp: cookies['_fbp'] || localStorage.getItem(FBP_STORAGE_KEY) || null
+  };
 }
 
 /**
@@ -69,6 +119,7 @@ function getFbpFromCookie(): string | null {
 }
 
 export function getFbp(): string | null {
+  // Check localStorage first (more reliable)
   const stored = localStorage.getItem(FBP_STORAGE_KEY);
   if (stored) return stored;
   return getFbpFromCookie();
@@ -89,6 +140,7 @@ function getFbcFromCookie(): string | null {
 }
 
 export function getFbc(): string | null {
+  // Check localStorage first (more reliable)
   const stored = localStorage.getItem(FBC_STORAGE_KEY);
   if (stored) return stored;
   return getFbcFromCookie();
@@ -106,15 +158,21 @@ interface FacebookEventData {
 
 /**
  * Get all tracking parameters for API calls
+ * Includes client user agent for better matching
  */
 function getTrackingParams() {
+  const { fbc, fbp } = getFacebookCookies();
   const fbclid = getFbclid();
-  const fbp = getFbp();
-  const fbc = getFbc();
+  const clientUserAgent = navigator.userAgent;
   
-  console.log('[FB Tracking] Sending params:', { fbclid, fbp, fbc: fbc ? 'present' : 'null' });
+  console.log('[FB Tracking] Sending params:', { 
+    fbclid, 
+    fbp: fbp ? 'present' : 'null', 
+    fbc: fbc ? 'present' : 'null',
+    hasUserAgent: !!clientUserAgent
+  });
   
-  return { fbclid, fbp, fbc };
+  return { fbclid, fbp, fbc, clientUserAgent };
 }
 
 /**
@@ -207,8 +265,3 @@ export async function trackAddPaymentInfo(data: FacebookEventData): Promise<void
     console.error('Failed to track AddPaymentInfo:', error);
   }
 }
-
-// REMOVED: trackPurchase function
-// Purchase events should ONLY be sent from server-side Stripe webhooks (payment_intent.succeeded)
-// This prevents incorrect Purchase events from being tracked before payment is confirmed
-// See: server/routes.ts - Stripe webhook handler

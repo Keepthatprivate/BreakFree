@@ -3,7 +3,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle, Shield, Clock, Zap, Heart } from 'lucide-react';
-import { trackInitiateCheckout, getFbc, getFbp } from '@/lib/facebook-tracking';
+import { trackInitiateCheckout, getFbc, getFbp, getFacebookCookies } from '@/lib/facebook-tracking';
 
 interface SubscriptionCheckoutPageProps {
   email: string;
@@ -37,14 +37,16 @@ export default function SubscriptionCheckoutPage({
         contentName: '7-Day Trial Subscription',
       });
 
-      const fbc = getFbc();
-      const fbp = getFbp();
+      // Get Facebook tracking cookies using the consolidated function
+      const { fbc, fbp } = getFacebookCookies();
+      const clientUserAgent = navigator.userAgent;
 
       const response = await apiRequest("POST", "/api/create-subscription-checkout", {
         email,
         name,
         fbc,
         fbp,
+        clientUserAgent,
         quizAnalysis,
       });
 
