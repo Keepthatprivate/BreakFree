@@ -10,7 +10,7 @@ import facebookCapiRoutes from "./facebook-capi-routes";
 import FacebookCAPI from "./facebook-capi";
 import { db } from "./db";
 import { conversionEvents, subscriptions } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -1938,6 +1938,321 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     console.log('[Dev] Test webhook endpoint available at POST /api/test-webhook/stripe');
+
+    // Recovery endpoint: Manually send missed purchase events to Facebook
+    app.post("/api/debug/recover-purchase", async (req, res) => {
+      const { paymentIntentId, invoiceId, sessionId } = req.body;
+
+      if (!fbCAPI) {
+        return res.status(500).json({ error: 'Facebook CAPI not configured' });
+      }
+
+      try {
+        let eventId: string;
+        let amount: number;
+        let email: string | undefined;
+        let name: string | undefined;
+        let currency = 'USD';
+        let contentName = 'BreakFree Purchase';
+        let fbc: string | undefined;
+        let fbp: string | undefined;
+
+        if (sessionId) {
+          // Recover from Checkout Session
+          const session = await stripe.checkout.sessions.retrieve(sessionId);
+          const sessionData = session as any;
+          
+          if (session.payment_status !== 'paid') {
+            return res.status(400).json({ error: 'Session payment not completed', paymentStatus: session.payment_status });
+          }
+
+          eventId = session.payment_intent 
+            ? (typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent.id)
+            : sessionData.subscription 
+              ? (typeof sessionData.subscription === 'string' ? sessionData.subscription : sessionData.subscription.id)
+              : session.id;
+          
+          amount = (session.amount_total || 0) / 100;
+          email = session.customer_email || session.customer_details?.email || undefined;
+          name = session.customer_details?.name || undefined;
+          currency = (session.currency || 'usd').toUpperCase();
+          contentName = session.metadata?.product_name || (sessionData.mode === 'subscription' ? 'Subscription' : 'BreakFree Purchase');
+          fbc = session.metadata?.fbc;
+          fbp = session.metadata?.fbp;
+          
+        } else if (invoiceId) {
+          // Recover from Invoice (subscription)
+          const invoice = await stripe.invoices.retrieve(invoiceId);
+          const invoiceData = invoice as any;
+          
+          if (invoice.status !== 'paid') {
+            return res.status(400).json({ error: 'Invoice not paid', status: invoice.status });
+          }
+
+          eventId = invoice.id;
+          amount = (invoiceData.amount_paid || 0) / 100;
+          currency = (invoice.currency || 'usd').toUpperCase();
+          contentName = invoiceData.billing_reason === 'subscription_create' ? 'Trial Subscription' : 'Monthly Subscription';
+
+          // Get customer details
+          const customerId = typeof invoice.customer === 'string' ? invoice.customer : (invoice.customer as any)?.id;
+          if (customerId) {
+            const customer = await stripe.customers.retrieve(customerId);
+            email = (customer as Stripe.Customer).email || undefined;
+            name = (customer as Stripe.Customer).name || undefined;
+            fbc = (customer as Stripe.Customer).metadata?.fbc;
+            fbp = (customer as Stripe.Customer).metadata?.fbp;
+          }
+
+        } else if (paymentIntentId) {
+          // Recover from PaymentIntent
+          const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          
+          if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).json({ error: 'Payment not succeeded', status: paymentIntent.status });
+          }
+
+          eventId = paymentIntent.id;
+          amount = paymentIntent.amount / 100;
+          currency = (paymentIntent.currency || 'usd').toUpperCase();
+          email = paymentIntent.metadata?.email;
+          name = paymentIntent.metadata?.name;
+          contentName = paymentIntent.metadata?.type || 'BreakFree Purchase';
+          fbc = paymentIntent.metadata?.fbc;
+          fbp = paymentIntent.metadata?.fbp;
+
+        } else {
+          return res.status(400).json({ error: 'Provide paymentIntentId, invoiceId, or sessionId' });
+        }
+
+        // Check if already processed
+        const existing = await db.select()
+          .from(conversionEvents)
+          .where(eq(conversionEvents.eventId, eventId))
+          .limit(1);
+
+        if (existing.length > 0) {
+          return res.json({
+            success: true,
+            message: 'Event already sent to Facebook previously',
+            eventId,
+            alreadySent: true,
+            originalSentAt: existing[0].metaSentAt
+          });
+        }
+
+        // Record the event
+        await db.insert(conversionEvents).values({
+          eventId,
+          stripeEventId: `recovery_${Date.now()}`,
+          eventType: 'Purchase',
+          amount: amount.toFixed(2),
+          currency,
+          customerEmail: email,
+        });
+
+        // Send to Facebook
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          : 'https://break-free-app.com';
+
+        const nameParts = (name || '').trim().split(' ');
+        const firstName = nameParts[0] || undefined;
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+        const result = await fbCAPI.sendPurchase(
+          `${baseUrl}/checkout`,
+          {
+            email,
+            firstName,
+            lastName,
+            fbc,
+            fbp,
+          },
+          {
+            value: amount,
+            currency,
+            content_name: contentName,
+          },
+          {
+            eventId,
+            eventTime: Math.floor(Date.now() / 1000),
+          }
+        );
+
+        // Update with Meta response
+        await db.update(conversionEvents)
+          .set({
+            metaSentAt: new Date(),
+            metaResponse: JSON.stringify(result),
+          })
+          .where(eq(conversionEvents.eventId, eventId));
+
+        console.log(`[Recovery] Purchase event sent to Meta:`, {
+          eventId,
+          amount,
+          email: email ? `${email.substring(0, 3)}***` : 'none',
+          success: result.success
+        });
+
+        return res.json({
+          success: result.success,
+          message: result.success ? 'Purchase event recovered and sent to Facebook' : 'Failed to send event',
+          eventId,
+          amount,
+          currency,
+          metaResponse: result.response,
+          error: result.error
+        });
+
+      } catch (error: any) {
+        console.error('[Recovery] Error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // List recent Stripe checkout sessions and invoices that might be missing
+    app.get("/api/debug/recent-stripe-events", async (req, res) => {
+      try {
+        // Get recent successful checkout sessions
+        const sessions = await stripe.checkout.sessions.list({
+          limit: 20,
+          expand: ['data.payment_intent']
+        });
+
+        // Get recent paid invoices (for subscriptions)
+        const invoices = await stripe.invoices.list({
+          limit: 20,
+          status: 'paid'
+        });
+
+        // Get recorded events from our database
+        const recordedEvents = await db.select()
+          .from(conversionEvents)
+          .orderBy(desc(conversionEvents.createdAt))
+          .limit(50);
+
+        const recordedEventIds = new Set(recordedEvents.map(e => e.eventId));
+
+        // Find missing events
+        const missingSessions = sessions.data
+          .filter(s => s.payment_status === 'paid')
+          .filter(s => {
+            const sessionData = s as any;
+            const eventId = s.payment_intent 
+              ? (typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent.id)
+              : sessionData.subscription 
+                ? (typeof sessionData.subscription === 'string' ? sessionData.subscription : sessionData.subscription.id)
+                : s.id;
+            return !recordedEventIds.has(eventId);
+          })
+          .map(s => {
+            const sessionData = s as any;
+            return {
+              type: 'session',
+              id: s.id,
+              amount: (s.amount_total || 0) / 100,
+              email: s.customer_email,
+              mode: sessionData.mode,
+              created: new Date(s.created * 1000).toISOString()
+            };
+          });
+
+        const missingInvoices = invoices.data
+          .filter(i => {
+            const invoiceData = i as any;
+            return invoiceData.subscription && !recordedEventIds.has(i.id);
+          })
+          .map(i => {
+            const invoiceData = i as any;
+            return {
+              type: 'invoice',
+              id: i.id,
+              amount: (invoiceData.amount_paid || 0) / 100,
+              billingReason: invoiceData.billing_reason,
+              created: new Date(invoiceData.created * 1000).toISOString()
+            };
+          });
+
+        res.json({
+          summary: {
+            totalMissingSessions: missingSessions.length,
+            totalMissingInvoices: missingInvoices.length,
+            totalRecorded: recordedEvents.length
+          },
+          missingSessions,
+          missingInvoices,
+          recentRecorded: recordedEvents.slice(0, 10).map(e => ({
+            eventId: e.eventId,
+            type: e.eventType,
+            amount: e.amount,
+            sentToMeta: !!e.metaSentAt,
+            createdAt: e.createdAt
+          }))
+        });
+
+      } catch (error: any) {
+        console.error('[Debug] Error fetching Stripe events:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Diagnostic endpoint for webhook setup
+    app.get("/api/debug/webhook-status", async (req, res) => {
+      const webhookUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/webhook/stripe`
+        : 'https://your-domain.com/api/webhook/stripe';
+
+      const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
+      const hasFbPixel = !!process.env.FB_PIXEL_ID;
+      const hasFbToken = !!process.env.FB_ACCESS_TOKEN;
+      
+      // Check if using test or live Stripe keys
+      const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+      const isTestMode = stripeKey.startsWith('sk_test_');
+      const isLiveMode = stripeKey.startsWith('sk_live_');
+
+      // Get recent conversion events
+      const recentEvents = await db.select()
+        .from(conversionEvents)
+        .orderBy(desc(conversionEvents.createdAt))
+        .limit(10);
+
+      const realEvents = recentEvents.filter(e => !e.eventId.startsWith('pi_test_') && !e.eventId.startsWith('in_test_'));
+      const testEvents = recentEvents.filter(e => e.eventId.startsWith('pi_test_') || e.eventId.startsWith('in_test_'));
+
+      res.json({
+        status: {
+          stripeMode: isLiveMode ? 'LIVE (Production)' : isTestMode ? 'TEST (Development)' : 'UNKNOWN',
+          stripeWebhookSecret: hasWebhookSecret ? 'CONFIGURED' : 'MISSING - Webhook will fail in production!',
+          facebookPixel: hasFbPixel ? 'CONFIGURED' : 'MISSING',
+          facebookAccessToken: hasFbToken ? 'CONFIGURED' : 'MISSING',
+          facebookCAPI: fbCAPI ? 'CONNECTED' : 'NOT CONNECTED'
+        },
+        warning: isTestMode ? 'Using TEST mode Stripe keys - purchases will not appear in live Stripe account!' : null,
+        webhookUrl: webhookUrl,
+        instructions: hasWebhookSecret ? null : {
+          step1: 'Go to Stripe Dashboard → Developers → Webhooks',
+          step2: `Add endpoint: ${webhookUrl}`,
+          step3: 'Select events: checkout.session.completed, invoice.paid, customer.subscription.created, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed',
+          step4: 'Copy the webhook signing secret (starts with whsec_)',
+          step5: 'Add it as STRIPE_WEBHOOK_SECRET in your Replit Secrets'
+        },
+        recentEvents: {
+          realPurchases: realEvents.length,
+          testPurchases: testEvents.length,
+          events: recentEvents.map(e => ({
+            eventId: e.eventId,
+            type: e.eventType,
+            amount: e.amount,
+            email: e.customerEmail ? `${e.customerEmail.substring(0, 3)}***` : null,
+            isTest: e.eventId.startsWith('pi_test_') || e.eventId.startsWith('in_test_'),
+            metaSent: !!e.metaSentAt,
+            createdAt: e.createdAt
+          }))
+        }
+      });
+    });
   }
 
   // Send quiz results via email
