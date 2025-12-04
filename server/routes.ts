@@ -9,7 +9,7 @@ import { analyzeQuizAnswers } from "./quiz-analyzer";
 import facebookCapiRoutes from "./facebook-capi-routes";
 import FacebookCAPI from "./facebook-capi";
 import { db } from "./db";
-import { conversionEvents } from "@shared/schema";
+import { conversionEvents, subscriptions } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -665,6 +665,219 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create Stripe Checkout Session for subscription with trial
+  // Flow: $1 trial fee + 7-day trial, then $29.99/month
+  app.post("/api/create-subscription-checkout", async (req, res) => {
+    try {
+      const { email, name, fbc, fbp, answers } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : 'http://localhost:5000';
+
+      // Analyze quiz answers if provided
+      let quizAnalysis = null;
+      if (answers) {
+        quizAnalysis = analyzeQuizAnswers(answers);
+      }
+
+      // Check if customer already exists
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1,
+      });
+
+      let customer: Stripe.Customer;
+      
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+        await stripe.customers.update(customer.id, {
+          name: name || customer.name,
+          metadata: {
+            ...customer.metadata,
+            fbc: fbc || customer.metadata?.fbc || '',
+            fbp: fbp || customer.metadata?.fbp || '',
+          },
+        });
+      } else {
+        customer = await stripe.customers.create({
+          email,
+          name: name || 'Trial User',
+          metadata: {
+            fbc: fbc || '',
+            fbp: fbp || '',
+            source: 'breakfree-quiz',
+          },
+        });
+      }
+
+      console.log(`[Subscription Checkout] Customer ${customer.id} for ${email}`);
+
+      // BreakFree App Monthly Subscription - $29.99/month
+      const MONTHLY_PRICE_ID = 'price_1SXgKrFmbb3h0dKoBmtSeD96';
+
+      // First, create a pending invoice item for the $1 trial fee
+      // This will be included in the first invoice when subscription is created
+      await stripe.invoiceItems.create({
+        customer: customer.id,
+        amount: 100, // $1 in cents
+        currency: 'usd',
+        description: 'Trial activation fee',
+      });
+
+      // Create Checkout Session for subscription with trial
+      const session = await stripe.checkout.sessions.create({
+        customer: customer.id,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: MONTHLY_PRICE_ID,
+            quantity: 1,
+          },
+        ],
+        subscription_data: {
+          trial_period_days: 7,
+          metadata: {
+            type: 'trial_subscription',
+            email: email || '',
+            name: name || '',
+            fbc: fbc || '',
+            fbp: fbp || '',
+            traumaScore: quizAnalysis?.traumaScore?.toString() || '',
+            primaryPattern: quizAnalysis?.primaryPattern || '',
+          },
+        },
+        success_url: `${baseUrl}/quiz?state=upsell&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/quiz?state=timeline`,
+        metadata: {
+          type: 'subscription',
+          email: email || '',
+          name: name || '',
+          fbc: fbc || '',
+          fbp: fbp || '',
+          product_name: '7-Day Trial Subscription',
+        },
+      });
+
+      // Save subscription record to database (pending status until webhook confirms)
+      try {
+        await db.insert(subscriptions).values({
+          email,
+          name: name || null,
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: null,
+          subscriptionStatus: 'incomplete',
+          trialEndDate: null,
+          currentPeriodEnd: null,
+        });
+      } catch (dbError: any) {
+        console.log('[Subscription Checkout] DB insert note:', dbError.message);
+      }
+
+      console.log(`[Subscription Checkout] Session created: ${session.id}`);
+      
+      res.json({ 
+        sessionId: session.id, 
+        url: session.url,
+        customerId: customer.id,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription checkout:", error);
+      res.status(500).json({ message: "Error creating checkout session: " + error.message });
+    }
+  });
+
+  // Check subscription status for a user
+  app.post("/api/check-subscription", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check database for subscription
+      const existingSubscription = await db.select()
+        .from(subscriptions)
+        .where(eq(subscriptions.email, email))
+        .limit(1);
+
+      if (existingSubscription.length === 0) {
+        return res.json({ 
+          hasAccess: false, 
+          status: 'none',
+          message: 'No subscription found' 
+        });
+      }
+
+      const sub = existingSubscription[0];
+      const activeStatuses = ['trialing', 'active'];
+      const hasAccess = activeStatuses.includes(sub.subscriptionStatus);
+
+      res.json({
+        hasAccess,
+        status: sub.subscriptionStatus,
+        trialEndDate: sub.trialEndDate,
+        currentPeriodEnd: sub.currentPeriodEnd,
+        stripeSubscriptionId: sub.stripeSubscriptionId,
+      });
+    } catch (error: any) {
+      console.error("Error checking subscription:", error);
+      res.status(500).json({ message: "Error checking subscription: " + error.message });
+    }
+  });
+
+  // Get subscription details from Stripe
+  app.post("/api/get-subscription-details", async (req, res) => {
+    try {
+      const { subscriptionId, email } = req.body;
+      
+      if (!subscriptionId && !email) {
+        return res.status(400).json({ message: "Subscription ID or email is required" });
+      }
+
+      let subscription: Stripe.Subscription | null = null;
+
+      if (subscriptionId) {
+        subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      } else if (email) {
+        // Find customer by email and get their subscription
+        const customers = await stripe.customers.list({ email, limit: 1 });
+        if (customers.data.length > 0) {
+          const subs = await stripe.subscriptions.list({
+            customer: customers.data[0].id,
+            limit: 1,
+          });
+          if (subs.data.length > 0) {
+            subscription = subs.data[0];
+          }
+        }
+      }
+
+      if (!subscription) {
+        return res.json({ found: false });
+      }
+
+      const subData = subscription as any;
+      res.json({
+        found: true,
+        id: subscription.id,
+        status: subscription.status,
+        trialEnd: subData.trial_end ? new Date(subData.trial_end * 1000) : null,
+        currentPeriodEnd: subData.current_period_end ? new Date(subData.current_period_end * 1000) : null,
+        canceledAt: subData.canceled_at ? new Date(subData.canceled_at * 1000) : null,
+      });
+    } catch (error: any) {
+      console.error("Error getting subscription details:", error);
+      res.status(500).json({ message: "Error getting subscription: " + error.message });
+    }
+  });
+
   // Stripe webhook endpoint for payment events
   app.post("/api/webhook/stripe", async (req: any, res) => {
     const sig = req.headers['stripe-signature'];
@@ -1169,6 +1382,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Log the failure but do NOT send as Purchase event to Meta
       // This is intentional as per requirements - failed payments should not be tracked as purchases
+      return res.json({ received: true });
+    }
+
+    // Handle customer.subscription.created - New subscription created
+    if (event.type === 'customer.subscription.created') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const subData = subscription as any;
+      
+      console.log('[Stripe Webhook] Subscription created:', {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        customerId: subscription.customer,
+        trialEnd: subData.trial_end
+      });
+
+      try {
+        const customerId = typeof subscription.customer === 'string' 
+          ? subscription.customer 
+          : subscription.customer.id;
+
+        // Get customer email
+        const customer = await stripe.customers.retrieve(customerId);
+        const email = (customer as Stripe.Customer).email;
+
+        if (email) {
+          // Update or insert subscription record
+          const existingSubscription = await db.select()
+            .from(subscriptions)
+            .where(eq(subscriptions.email, email))
+            .limit(1);
+
+          if (existingSubscription.length > 0) {
+            await db.update(subscriptions)
+              .set({
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: subscription.status,
+                trialEndDate: subData.trial_end ? new Date(subData.trial_end * 1000) : null,
+                currentPeriodEnd: subData.current_period_end ? new Date(subData.current_period_end * 1000) : null,
+                updatedAt: new Date(),
+              })
+              .where(eq(subscriptions.email, email));
+          } else {
+            await db.insert(subscriptions).values({
+              email,
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subscription.id,
+              subscriptionStatus: subscription.status,
+              trialEndDate: subData.trial_end ? new Date(subData.trial_end * 1000) : null,
+              currentPeriodEnd: subData.current_period_end ? new Date(subData.current_period_end * 1000) : null,
+            });
+          }
+
+          console.log(`[Subscription] Database updated for ${email}: ${subscription.status}`);
+        }
+      } catch (dbError: any) {
+        console.error('[Subscription] Database error:', dbError.message);
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle customer.subscription.updated - Subscription status changed
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const subData = subscription as any;
+      
+      console.log('[Stripe Webhook] Subscription updated:', {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        customerId: subscription.customer,
+        trialEnd: subData.trial_end,
+        currentPeriodEnd: subData.current_period_end
+      });
+
+      try {
+        const customerId = typeof subscription.customer === 'string' 
+          ? subscription.customer 
+          : subscription.customer.id;
+
+        // Get customer email
+        const customer = await stripe.customers.retrieve(customerId);
+        const email = (customer as Stripe.Customer).email;
+
+        if (email) {
+          // Update subscription record
+          await db.update(subscriptions)
+            .set({
+              subscriptionStatus: subscription.status,
+              trialEndDate: subData.trial_end ? new Date(subData.trial_end * 1000) : null,
+              currentPeriodEnd: subData.current_period_end ? new Date(subData.current_period_end * 1000) : null,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.email, email));
+
+          console.log(`[Subscription] Updated for ${email}: ${subscription.status}`);
+
+          // If subscription became active (trial ended, payment succeeded)
+          if (subscription.status === 'active') {
+            console.log(`[Subscription] Trial converted to active for ${email}`);
+          }
+        }
+      } catch (dbError: any) {
+        console.error('[Subscription] Database error:', dbError.message);
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle customer.subscription.deleted - Subscription canceled
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const subData = subscription as any;
+      
+      console.log('[Stripe Webhook] Subscription deleted:', {
+        subscriptionId: subscription.id,
+        customerId: subscription.customer
+      });
+
+      try {
+        const customerId = typeof subscription.customer === 'string' 
+          ? subscription.customer 
+          : subscription.customer.id;
+
+        // Get customer email
+        const customer = await stripe.customers.retrieve(customerId);
+        const email = (customer as Stripe.Customer).email;
+
+        if (email) {
+          // Update subscription record
+          await db.update(subscriptions)
+            .set({
+              subscriptionStatus: 'canceled',
+              canceledAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.email, email));
+
+          console.log(`[Subscription] Canceled for ${email}`);
+        }
+      } catch (dbError: any) {
+        console.error('[Subscription] Database error:', dbError.message);
+      }
+
+      return res.json({ received: true });
+    }
+
+    // Handle invoice.payment_failed - Subscription payment failed
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      
+      console.log('[Stripe Webhook] Invoice payment failed:', {
+        invoiceId: invoice.id,
+        customerId: invoice.customer,
+        subscriptionId: invoice.subscription,
+        attemptCount: invoice.attempt_count
+      });
+
+      try {
+        const customerId = typeof invoice.customer === 'string' 
+          ? invoice.customer 
+          : (invoice.customer as any)?.id;
+
+        if (customerId) {
+          // Get customer email
+          const customer = await stripe.customers.retrieve(customerId);
+          const email = (customer as Stripe.Customer).email;
+
+          if (email) {
+            // Update subscription status to past_due
+            await db.update(subscriptions)
+              .set({
+                subscriptionStatus: 'past_due',
+                updatedAt: new Date(),
+              })
+              .where(eq(subscriptions.email, email));
+
+            console.log(`[Subscription] Marked as past_due for ${email}`);
+          }
+        }
+      } catch (dbError: any) {
+        console.error('[Subscription] Database error:', dbError.message);
+      }
+
       return res.json({ received: true });
     }
 
