@@ -1,0 +1,247 @@
+Fix my Facebook Conversions API implementation. It's missing required parameters and the fbc cookie. Here's everything that needs to be fixed:
+
+**PROBLEM:** My current Facebook CAPI payload is missing:
+- client_ip_address (REQUIRED for website events)
+- client_user_agent (REQUIRED for website events)
+- event_source_url (REQUIRED for website events)
+- event_id (REQUIRED for deduplication)
+- fbc (click ID - needed for attribution)
+- fbp (browser ID - needed for attribution)
+
+**COMPLETE FIX - 3 PARTS:**
+
+---
+
+**PART 1: FRONTEND - Add this script to capture Facebook cookies on EVERY page load**
+
+Add this to my main HTML/layout file (in the <head> or before </body>):
+```javascript
+<script>
+// Capture Facebook Click ID from URL and store as _fbc cookie
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const fbclid = urlParams.get('fbclid');
+  
+  if (fbclid) {
+    const timestamp = Date.now();
+    const fbcValue = 'fb.1.' + timestamp + '.' + fbclid;
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 90);
+    document.cookie = '_fbc=' + fbcValue + '; expires=' + expiryDate.toUTCString() + '; path=/; SameSite=Lax';
+    localStorage.setItem('_fbc', fbcValue);
+  }
+})();
+
+// Function to get Facebook cookies - call this before checkout
+function getFacebookData() {
+  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    if (key && value) acc[key] = value;
+    return acc;
+  }, {});
+  
+  return {
+    fbc: cookies['_fbc'] || localStorage.getItem('_fbc') || null,
+    fbp: cookies['_fbp'] || null,
+    userAgent: navigator.userAgent,
+    sourceUrl: window.location.href
+  };
+}
+</script>
+```
+
+---
+
+**PART 2: CHECKOUT - When creating Stripe checkout session, pass Facebook data**
+
+Update the frontend code that calls create-checkout-session:
+```javascript
+// When user clicks checkout button
+async function startCheckout() {
+  const fbData = getFacebookData();
+  
+  const response = await fetch('/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      // ... your existing checkout data (priceId, etc.)
+      fbc: fbData.fbc,
+      fbp: fbData.fbp,
+      userAgent: fbData.userAgent,
+      sourceUrl: fbData.sourceUrl
+    })
+  });
+  
+  const data = await response.json();
+  window.location.href = data.url; // Redirect to Stripe
+}
+```
+
+Update the create-checkout-session API to store this in Stripe metadata:
+```javascript
+// In /api/create-checkout-session
+const session = await stripe.checkout.sessions.create({
+  // ... your existing config
+  metadata: {
+    fbc: req.body.fbc || '',
+    fbp: req.body.fbp || '',
+    userAgent: req.body.userAgent || '',
+    sourceUrl: req.body.sourceUrl || '',
+    clientIp: req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.connection?.remoteAddress || ''
+  }
+});
+```
+
+---
+
+**PART 3: WEBHOOK - Update the Facebook CAPI function with ALL required parameters**
+
+Replace my entire sendFacebookPurchaseEvent function with this complete version:
+```javascript
+const crypto = require('crypto');
+
+async function sendFacebookPurchaseEvent(eventData) {
+  const {
+    email,
+    phone,
+    value,
+    currency,
+    eventId,
+    clientIpAddress,
+    clientUserAgent,
+    eventSourceUrl,
+    fbc,
+    fbp
+  } = eventData;
+
+  const PIXEL_ID = process.env.FACEBOOK_PIXEL_ID;
+  const ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN;
+
+  if (!PIXEL_ID || !ACCESS_TOKEN) {
+    console.error('Missing Facebook credentials');
+    return { error: 'Missing credentials' };
+  }
+
+  // Hash email (required)
+  const hashedEmail = email 
+    ? crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
+    : null;
+
+  // Hash phone if provided
+  const hashedPhone = phone
+    ? crypto.createHash('sha256').update(phone.replace(/\D/g, '')).digest('hex')
+    : null;
+
+  // Build user_data object with ALL parameters
+  const userData = {};
+  
+  // Customer identifiers (at least one required)
+  if (hashedEmail) userData.em = [hashedEmail];
+  if (hashedPhone) userData.ph = [hashedPhone];
+  
+  // REQUIRED for website events
+  if (clientIpAddress) userData.client_ip_address = clientIpAddress;
+  if (clientUserAgent) userData.client_user_agent = clientUserAgent;
+  
+  // Facebook click/browser IDs (critical for attribution!)
+  if (fbc) userData.fbc = fbc;
+  if (fbp) userData.fbp = fbp;
+
+  // Build the complete payload
+  const payload = {
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: eventId, // REQUIRED for deduplication
+        event_source_url: eventSourceUrl || 'https://YOUR_DOMAIN.com/checkout/success', // REQUIRED
+        action_source: 'website',
+        user_data: userData,
+        custom_data: {
+          currency: currency || 'USD',
+          value: parseFloat(value) || 0
+        }
+      }
+    ],
+    access_token: ACCESS_TOKEN
+  };
+
+  // Log for debugging
+  console.log('Sending to Facebook CAPI:', JSON.stringify(payload, null, 2));
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${PIXEL_ID}/events`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json();
+    console.log('Facebook CAPI Response:', JSON.stringify(result, null, 2));
+    
+    if (result.error) {
+      console.error('Facebook CAPI Error:', result.error);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Facebook CAPI Request Failed:', error);
+    return { error: error.message };
+  }
+}
+```
+
+---
+
+**PART 4: WEBHOOK HANDLER - Call the function with all data from Stripe**
+
+Update the Stripe webhook to pass all the metadata:
+```javascript
+// In your Stripe webhook handler for checkout.session.completed
+if (event.type === 'checkout.session.completed') {
+  const session = event.data.object;
+  
+  // Send to Facebook with ALL required data
+  await sendFacebookPurchaseEvent({
+    email: session.customer_details?.email,
+    phone: session.customer_details?.phone,
+    value: (session.amount_total / 100).toFixed(2),
+    currency: session.currency?.toUpperCase() || 'USD',
+    eventId: session.id, // Use Stripe session ID for deduplication
+    clientIpAddress: session.metadata?.clientIp || req.headers['x-forwarded-for']?.split(',')[0] || '',
+    clientUserAgent: session.metadata?.userAgent || req.headers['user-agent'] || '',
+    eventSourceUrl: session.metadata?.sourceUrl || 'https://YOUR_DOMAIN.com/success',
+    fbc: session.metadata?.fbc || null,
+    fbp: session.metadata?.fbp || null
+  });
+}
+```
+
+---
+
+**IMPORTANT:** Replace YOUR_DOMAIN.com with my actual domain in all places.
+
+**CHECKLIST - Make sure I have these environment variables:**
+- STRIPE_SECRET_KEY
+- STRIPE_WEBHOOK_SECRET  
+- FACEBOOK_PIXEL_ID
+- FACEBOOK_ACCESS_TOKEN
+
+After implementing, my Facebook payload will include ALL required fields:
+✅ event_name
+✅ event_time
+✅ event_id (for deduplication)
+✅ event_source_url
+✅ action_source
+✅ client_ip_address
+✅ client_user_agent
+✅ fbc (click ID)
+✅ fbp (browser ID)
+✅ em (hashed email)
+✅ currency
+✅ value
+
+Please implement all 4 parts and show me the changes.
