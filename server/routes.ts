@@ -2197,6 +2197,283 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
+    // RECOVERY ENDPOINT: Fetch all missed purchases from Stripe and send to Facebook
+    app.post("/api/debug/recover-purchases", async (req, res) => {
+      try {
+        console.log('[Recovery] Starting purchase recovery from Stripe...');
+        
+        const recovered: any[] = [];
+        const errors: any[] = [];
+        const alreadyRecorded: any[] = [];
+
+        // Get ALL paid checkout sessions (up to 100)
+        const sessions = await stripe.checkout.sessions.list({
+          limit: 100,
+          expand: ['data.payment_intent', 'data.customer']
+        });
+
+        // Get ALL paid invoices (for subscriptions)
+        const invoices = await stripe.invoices.list({
+          limit: 100,
+          status: 'paid'
+        });
+
+        // Get recorded events from our database
+        const recordedEvents = await db.select()
+          .from(conversionEvents)
+          .limit(500);
+        const recordedEventIds = new Set(recordedEvents.map(e => e.eventId));
+
+        // Process checkout sessions
+        for (const session of sessions.data) {
+          if (session.payment_status !== 'paid') continue;
+          
+          const sessionData = session as any;
+          const eventId = session.payment_intent 
+            ? (typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent.id)
+            : sessionData.subscription 
+              ? (typeof sessionData.subscription === 'string' ? sessionData.subscription : sessionData.subscription.id)
+              : session.id;
+
+          // Skip if already recorded
+          if (recordedEventIds.has(eventId) || recordedEventIds.has(session.id)) {
+            alreadyRecorded.push({ type: 'session', id: session.id, eventId });
+            continue;
+          }
+
+          const amount = (session.amount_total || 0) / 100;
+          if (amount <= 0) continue;
+
+          try {
+            // Record in database first
+            await db.insert(conversionEvents).values({
+              eventId: eventId,
+              stripeEventId: `recovered_session_${session.id}`,
+              eventType: 'Purchase',
+              amount: amount.toString(),
+              currency: session.currency?.toUpperCase() || 'USD',
+              customerEmail: session.customer_email || undefined
+            }).onConflictDoNothing();
+
+            // Send to Facebook
+            if (fbCAPI) {
+              const eventTime = Math.floor(session.created);
+              const result = await fbCAPI.sendEvent({
+                eventName: 'Purchase',
+                eventTime: eventTime,
+                eventId: eventId,
+                eventSourceUrl: 'https://break-free-app.com/checkout',
+                userData: {
+                  email: session.customer_email || undefined,
+                  ip: '0.0.0.0',
+                  userAgent: 'Stripe-Webhook-Recovery'
+                },
+                customData: {
+                  currency: session.currency?.toUpperCase() || 'USD',
+                  value: amount
+                }
+              });
+
+              // Mark as sent
+              if (result.success) {
+                await db.update(conversionEvents)
+                  .set({ metaSentAt: new Date() })
+                  .where(eq(conversionEvents.eventId, eventId));
+              }
+
+              recovered.push({
+                type: 'session',
+                id: session.id,
+                eventId,
+                amount,
+                email: session.customer_email,
+                sentToMeta: result.success
+              });
+              console.log(`[Recovery] ✅ Recovered session ${session.id} - $${amount}`);
+            }
+          } catch (err: any) {
+            errors.push({ type: 'session', id: session.id, error: err.message });
+            console.error(`[Recovery] ❌ Failed session ${session.id}:`, err.message);
+          }
+        }
+
+        // Process invoices (subscription payments)
+        for (const invoice of invoices.data) {
+          const invoiceData = invoice as any;
+          if (!invoiceData.subscription) continue;
+          
+          // Skip if already recorded
+          if (recordedEventIds.has(invoice.id)) {
+            alreadyRecorded.push({ type: 'invoice', id: invoice.id });
+            continue;
+          }
+
+          const amount = (invoiceData.amount_paid || 0) / 100;
+          if (amount <= 0) continue;
+
+          try {
+            // Record in database first
+            await db.insert(conversionEvents).values({
+              eventId: invoice.id,
+              stripeEventId: `recovered_invoice_${invoice.id}`,
+              eventType: 'Purchase',
+              amount: amount.toString(),
+              currency: invoiceData.currency?.toUpperCase() || 'USD',
+              customerEmail: invoiceData.customer_email || undefined
+            }).onConflictDoNothing();
+
+            // Send to Facebook
+            if (fbCAPI) {
+              const eventTime = Math.floor(invoiceData.created);
+              const result = await fbCAPI.sendEvent({
+                eventName: 'Purchase',
+                eventTime: eventTime,
+                eventId: invoice.id,
+                eventSourceUrl: 'https://break-free-app.com/checkout',
+                userData: {
+                  email: invoiceData.customer_email || undefined,
+                  ip: '0.0.0.0',
+                  userAgent: 'Stripe-Webhook-Recovery'
+                },
+                customData: {
+                  currency: invoiceData.currency?.toUpperCase() || 'USD',
+                  value: amount
+                }
+              });
+
+              // Mark as sent
+              if (result.success) {
+                await db.update(conversionEvents)
+                  .set({ metaSentAt: new Date() })
+                  .where(eq(conversionEvents.eventId, invoice.id));
+              }
+
+              recovered.push({
+                type: 'invoice',
+                id: invoice.id,
+                amount,
+                billingReason: invoiceData.billing_reason,
+                sentToMeta: result.success
+              });
+              console.log(`[Recovery] ✅ Recovered invoice ${invoice.id} - $${amount}`);
+            }
+          } catch (err: any) {
+            errors.push({ type: 'invoice', id: invoice.id, error: err.message });
+            console.error(`[Recovery] ❌ Failed invoice ${invoice.id}:`, err.message);
+          }
+        }
+
+        console.log(`[Recovery] Complete: ${recovered.length} recovered, ${alreadyRecorded.length} already recorded, ${errors.length} errors`);
+
+        res.json({
+          success: true,
+          summary: {
+            recovered: recovered.length,
+            alreadyRecorded: alreadyRecorded.length,
+            errors: errors.length,
+            totalSessionsChecked: sessions.data.length,
+            totalInvoicesChecked: invoices.data.length
+          },
+          recovered,
+          errors: errors.length > 0 ? errors : undefined
+        });
+
+      } catch (error: any) {
+        console.error('[Recovery] Error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // AUTOMATIC RECOVERY: Run every 5 minutes to catch missed webhooks
+    async function runAutoRecovery() {
+      try {
+        console.log('[AutoRecovery] Starting automatic purchase recovery check...');
+        
+        let recovered = 0;
+        let alreadyRecorded = 0;
+
+        // Get recent paid invoices from last 24 hours (for subscriptions)
+        const invoices = await stripe.invoices.list({
+          limit: 50,
+          status: 'paid',
+          created: { gte: Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000) }
+        });
+
+        // Get recorded events from our database
+        const recordedEvents = await db.select()
+          .from(conversionEvents)
+          .limit(500);
+        const recordedEventIds = new Set(recordedEvents.map(e => e.eventId));
+
+        // Process invoices
+        for (const invoice of invoices.data) {
+          const invoiceData = invoice as any;
+          if (!invoiceData.subscription) continue;
+          
+          if (recordedEventIds.has(invoice.id)) {
+            alreadyRecorded++;
+            continue;
+          }
+
+          const amount = (invoiceData.amount_paid || 0) / 100;
+          if (amount <= 0) continue;
+
+          try {
+            await db.insert(conversionEvents).values({
+              eventId: invoice.id,
+              stripeEventId: `auto_recovery_${invoice.id}`,
+              eventType: 'Purchase',
+              amount: amount.toString(),
+              currency: invoiceData.currency?.toUpperCase() || 'USD',
+              customerEmail: invoiceData.customer_email || undefined
+            }).onConflictDoNothing();
+
+            if (fbCAPI) {
+              const eventTime = Math.floor(invoiceData.created);
+              const result = await fbCAPI.sendEvent({
+                eventName: 'Purchase',
+                eventTime: eventTime,
+                eventId: invoice.id,
+                eventSourceUrl: 'https://break-free-app.com/checkout',
+                userData: {
+                  email: invoiceData.customer_email || undefined,
+                  ip: '0.0.0.0',
+                  userAgent: 'Stripe-Auto-Recovery'
+                },
+                customData: {
+                  currency: invoiceData.currency?.toUpperCase() || 'USD',
+                  value: amount
+                }
+              });
+
+              if (result.success) {
+                await db.update(conversionEvents)
+                  .set({ metaSentAt: new Date() })
+                  .where(eq(conversionEvents.eventId, invoice.id));
+                recovered++;
+                console.log(`[AutoRecovery] ✅ Recovered invoice ${invoice.id} - $${amount}`);
+              }
+            }
+          } catch (err: any) {
+            console.error(`[AutoRecovery] ❌ Failed ${invoice.id}:`, err.message);
+          }
+        }
+
+        if (recovered > 0) {
+          console.log(`[AutoRecovery] Complete: ${recovered} purchases recovered, ${alreadyRecorded} already tracked`);
+        }
+      } catch (error: any) {
+        console.error('[AutoRecovery] Error:', error.message);
+      }
+    }
+
+    // Run auto-recovery every 5 minutes
+    setInterval(runAutoRecovery, 5 * 60 * 1000);
+    
+    // Also run once at startup after a short delay
+    setTimeout(runAutoRecovery, 30000);
+    console.log('[AutoRecovery] Automatic purchase recovery enabled - runs every 5 minutes');
+
     // Diagnostic endpoint for webhook setup
     app.get("/api/debug/webhook-status", async (req, res) => {
       const webhookUrl = process.env.REPLIT_DEV_DOMAIN 
