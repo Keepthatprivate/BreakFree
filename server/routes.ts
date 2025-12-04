@@ -1843,9 +1843,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Simulate invoice.paid (for subscription payments)
+      if (eventType === 'invoice.paid') {
+        if (!fbCAPI) {
+          return res.status(500).json({ error: 'Facebook CAPI not configured' });
+        }
+
+        const { invoiceId, billingReason } = req.body;
+        const testInvoiceId = invoiceId || `in_test_${Date.now()}`;
+        const testBillingReason = billingReason || 'subscription_create';
+
+        console.log(`[Test Webhook] Simulating invoice.paid:`, {
+          invoiceId: testInvoiceId,
+          billingReason: testBillingReason,
+          amount: testAmount,
+          email: testEmail
+        });
+
+        try {
+          // Check for duplicate
+          const dedupResult = await checkAndRecordConversionEvent(
+            testInvoiceId,
+            `evt_test_${Date.now()}`,
+            'Purchase',
+            testAmount,
+            'USD',
+            testEmail
+          );
+
+          if (dedupResult.isDuplicate) {
+            return res.json({
+              success: true,
+              message: 'Duplicate prevented - event already processed',
+              invoiceId: testInvoiceId
+            });
+          }
+
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            : 'https://break-free-app.com';
+
+          const nameParts = testName.trim().split(' ');
+          const firstName = nameParts[0] || undefined;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+          const contentName = testBillingReason === 'subscription_create' 
+            ? 'Trial Subscription' 
+            : 'Monthly Subscription';
+
+          const result = await fbCAPI.sendPurchase(
+            `${baseUrl}/checkout`,
+            {
+              email: testEmail,
+              firstName,
+              lastName,
+            },
+            {
+              value: testAmount,
+              currency: 'USD',
+              content_name: contentName,
+            },
+            {
+              eventId: testInvoiceId,
+              eventTime: Math.floor(Date.now() / 1000),
+            }
+          );
+
+          await updateConversionEventMetaResponse(testInvoiceId, JSON.stringify(result));
+
+          console.log(`[Test Webhook] Invoice paid Purchase event sent to Meta:`, {
+            success: result.success,
+            eventsReceived: result.response?.events_received,
+            error: result.error
+          });
+
+          return res.json({
+            success: result.success,
+            message: result.success ? 'Invoice paid Purchase event sent to Meta' : 'Failed to send event',
+            invoiceId: testInvoiceId,
+            billingReason: testBillingReason,
+            metaResponse: result.response,
+            error: result.error
+          });
+        } catch (error: any) {
+          console.error('[Test Webhook] Error:', error.message);
+          return res.status(500).json({ error: error.message });
+        }
+      }
+
       return res.status(400).json({ 
         error: 'Unsupported eventType',
-        supportedTypes: ['checkout.session.completed', 'payment_intent.payment_failed']
+        supportedTypes: ['checkout.session.completed', 'payment_intent.payment_failed', 'invoice.paid']
       });
     });
 
