@@ -84,3 +84,27 @@ export const insertConversionEventSchema = createInsertSchema(conversionEvents).
 
 export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
 export type ConversionEvent = typeof conversionEvents.$inferSelect;
+
+// Subscription tracking for Stripe subscriptions
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }).notNull(),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }).unique(),
+  subscriptionStatus: varchar("subscription_status", { length: 50 }).notNull().default("incomplete"),
+  trialEndDate: timestamp("trial_end_date"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  canceledAt: timestamp("canceled_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
