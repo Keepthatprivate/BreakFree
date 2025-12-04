@@ -40,6 +40,7 @@ export default function SubscriptionCheckoutPage({
       // Get Facebook tracking cookies using the consolidated function
       const { fbc, fbp } = getFacebookCookies();
       const clientUserAgent = navigator.userAgent;
+      const sourceUrl = window.location.href;
 
       const response = await apiRequest("POST", "/api/create-subscription-checkout", {
         email,
@@ -47,6 +48,7 @@ export default function SubscriptionCheckoutPage({
         fbc,
         fbp,
         clientUserAgent,
+        sourceUrl,
         quizAnalysis,
       });
 

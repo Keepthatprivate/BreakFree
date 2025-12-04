@@ -161,6 +161,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
     // Capture Facebook tracking data for attribution
     const { fbc, fbp } = getFacebookCookies();
     const clientUserAgent = navigator.userAgent;
+    const sourceUrl = window.location.href;
 
     // Build payload based on product type
     const getBasePayload = () => {
@@ -184,6 +185,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
       fbc,
       fbp,
       clientUserAgent,
+      sourceUrl,
     };
 
     apiRequest("POST", endpoint, payload)
