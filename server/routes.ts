@@ -519,7 +519,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: Collect $1 via PaymentIntent -> Webhook creates subscription with trial
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, clientUserAgent, answers } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, answers } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -591,6 +591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fbp: fbp || '',
           client_user_agent: clientUserAgent || '',
           client_ip: clientIp || '',
+          source_url: sourceUrl || '',
           create_subscription: 'true', // Flag for webhook to create subscription
           // Store quiz analysis for results email
           traumaScore: quizAnalysis?.traumaScore?.toString() || '',
@@ -615,7 +616,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for upsell products (guides, masterclass, journal)
   app.post("/api/create-upsell-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, clientUserAgent, amount, productName } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, amount, productName } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -641,6 +642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fbp: fbp || '',
           client_user_agent: clientUserAgent || '',
           client_ip: clientIp || '',
+          source_url: sourceUrl || '',
         },
       });
 
@@ -654,7 +656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for donation
   app.post("/api/create-donation-payment", async (req, res) => {
     try {
-      const { amount, email, name, fbc, fbp, clientUserAgent } = req.body;
+      const { amount, email, name, fbc, fbp, clientUserAgent, sourceUrl } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -678,6 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fbp: fbp || '',
           client_user_agent: clientUserAgent || '',
           client_ip: clientIp || '',
+          source_url: sourceUrl || '',
         },
       });
 
@@ -692,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: $1 trial fee + 7-day trial, then $29.99/month
   app.post("/api/create-subscription-checkout", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, clientUserAgent, answers } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, answers } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -781,6 +784,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fbp: fbp || '',
             client_user_agent: clientUserAgent || '',
             client_ip: clientIp || '',
+            source_url: sourceUrl || '',
             traumaScore: quizAnalysis?.traumaScore?.toString() || '',
             primaryPattern: quizAnalysis?.primaryPattern || '',
           },
@@ -795,6 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fbp: fbp || '',
           client_user_agent: clientUserAgent || '',
           client_ip: clientIp || '',
+          source_url: sourceUrl || '',
           product_name: '7-Day Trial Subscription',
         },
       });
