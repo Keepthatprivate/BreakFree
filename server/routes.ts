@@ -2713,6 +2713,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test CAPI event endpoint for the fbc validator tool
+  app.post("/api/test-capi-event", async (req, res) => {
+    try {
+      const { pixelId, accessToken, fbc, fbp, testEventCode, eventSourceUrl } = req.body;
+
+      if (!pixelId || !accessToken) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: pixelId and accessToken" 
+        });
+      }
+
+      const eventTime = Math.floor(Date.now() / 1000);
+      
+      const payload = {
+        data: [{
+          event_name: "PageView",
+          event_time: eventTime,
+          action_source: "website",
+          event_source_url: eventSourceUrl || "https://example.com",
+          user_data: {
+            ...(fbc && { fbc }),
+            ...(fbp && { fbp }),
+            client_ip_address: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress || "0.0.0.0",
+            client_user_agent: req.headers['user-agent'] || "Mozilla/5.0"
+          }
+        }],
+        ...(testEventCode && { test_event_code: testEventCode })
+      };
+
+      console.log('[Test CAPI] Sending test event:', JSON.stringify(payload, null, 2));
+
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('[Test CAPI] Error response:', data);
+        return res.json({
+          success: false,
+          error: data.error?.message || "API request failed",
+          errorCode: data.error?.code,
+          errorType: data.error?.type,
+          response: data,
+          sentPayload: payload
+        });
+      }
+
+      console.log('[Test CAPI] Success:', data);
+      res.json({
+        success: true,
+        response: data,
+        sentPayload: payload
+      });
+    } catch (error: any) {
+      console.error("[Test CAPI] Error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
