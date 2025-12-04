@@ -190,8 +190,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentFailed: { sent: 0, failed: 0 },
       };
 
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+      // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+      const baseUrl = process.env.PRODUCTION_DOMAIN 
+        ? `https://${process.env.PRODUCTION_DOMAIN}` 
         : 'https://break-free-app.com';
 
       // Helper function to parse user data
@@ -926,8 +927,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send InitiateCheckout event to Facebook CAPI
       if (fbCAPI && email) {
         try {
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          // ALWAYS use production domain for Facebook CAPI
+          const baseUrl = process.env.PRODUCTION_DOMAIN 
+            ? `https://${process.env.PRODUCTION_DOMAIN}` 
             : 'https://break-free-app.com';
           
           const nameParts = (name || '').trim().split(' ');
@@ -987,8 +989,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send PaymentFailed event to Facebook CAPI
       if (fbCAPI && email) {
         try {
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          // ALWAYS use production domain for Facebook CAPI
+          const baseUrl = process.env.PRODUCTION_DOMAIN 
+            ? `https://${process.env.PRODUCTION_DOMAIN}` 
             : 'https://break-free-app.com';
           
           const nameParts = (name || '').trim().split(' ');
@@ -1247,8 +1250,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (dedupResult.isDuplicate) {
             console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${eventIdForDedup}`);
           } else {
-            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+            // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+            const baseUrl = process.env.PRODUCTION_DOMAIN 
+              ? `https://${process.env.PRODUCTION_DOMAIN}` 
               : 'https://break-free-app.com';
 
             const nameParts = (name || '').trim().split(' ');
@@ -1345,8 +1349,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (dedupResult.isDuplicate) {
               console.log(`[Stripe Webhook] Skipping duplicate async_payment Purchase for ${paymentIntentId}`);
             } else {
-              const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-                ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+              // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+              const baseUrl = process.env.PRODUCTION_DOMAIN 
+                ? `https://${process.env.PRODUCTION_DOMAIN}` 
                 : 'https://break-free-app.com';
 
               const nameParts = (name || '').trim().split(' ');
@@ -1595,8 +1600,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (dedupResult.isDuplicate) {
                 console.log(`[Stripe Webhook] Skipping duplicate invoice.paid Purchase for ${invoice.id}`);
               } else {
-                const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-                  ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+                // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
+                const baseUrl = process.env.PRODUCTION_DOMAIN 
+                  ? `https://${process.env.PRODUCTION_DOMAIN}`
                   : 'https://break-free-app.com';
 
                 const nameParts = (name || '').trim().split(' ');
@@ -1879,8 +1885,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
 
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          // ALWAYS use production domain for Facebook CAPI
+          const baseUrl = process.env.PRODUCTION_DOMAIN 
+            ? `https://${process.env.PRODUCTION_DOMAIN}` 
             : 'https://break-free-app.com';
 
           const nameParts = testName.trim().split(' ');
@@ -2052,8 +2059,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         // Send to Facebook
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        // ALWAYS use production domain for Facebook CAPI
+        const baseUrl = process.env.PRODUCTION_DOMAIN 
+          ? `https://${process.env.PRODUCTION_DOMAIN}` 
           : 'https://break-free-app.com';
 
         const nameParts = (name || '').trim().split(' ');

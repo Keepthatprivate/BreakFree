@@ -48,7 +48,7 @@ localPort = 42685
 externalPort = 5000
 
 [[ports]]
-localPort = 42947
+localPort = 43229
 externalPort = 8008
 
 [[ports]]
@@ -85,3 +85,8 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_stripe:1.0.0", "resend:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+PRODUCTION_DOMAIN = "break-free-app.com"
