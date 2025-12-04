@@ -1187,10 +1187,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Handle checkout.session.completed - Primary event for successful Checkout Sessions
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
+      const sessionData = session as any;
       
       console.log('[Stripe Webhook] Checkout session completed:', {
         sessionId: session.id,
+        mode: sessionData.mode,
         paymentIntentId: session.payment_intent,
+        subscriptionId: sessionData.subscription,
         paymentStatus: session.payment_status,
         customerEmail: session.customer_email,
         amountTotal: session.amount_total
@@ -1203,82 +1206,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ received: true });
       }
 
-      // Only process if we have a payment_intent
+      // Determine the event ID for deduplication
+      // For payment mode: use payment_intent
+      // For subscription mode: use subscription ID or session ID
+      let eventIdForDedup: string | null = null;
+      
       if (session.payment_intent) {
-        const paymentIntentId = typeof session.payment_intent === 'string' 
+        eventIdForDedup = typeof session.payment_intent === 'string' 
           ? session.payment_intent 
           : session.payment_intent.id;
-        
-        const amountInDollars = (session.amount_total || 0) / 100;
-        const email = session.customer_email || session.customer_details?.email;
-        const name = session.customer_details?.name;
-        const currency = (session.currency || 'usd').toUpperCase();
+      } else if (sessionData.subscription) {
+        eventIdForDedup = typeof sessionData.subscription === 'string'
+          ? sessionData.subscription
+          : sessionData.subscription.id;
+      } else {
+        eventIdForDedup = session.id;
+      }
+      
+      const amountInDollars = (session.amount_total || 0) / 100;
+      const email = session.customer_email || session.customer_details?.email;
+      const name = session.customer_details?.name;
+      const currency = (session.currency || 'usd').toUpperCase();
 
-        // Extract fbc/fbp from metadata if available
-        const fbc = session.metadata?.fbc;
-        const fbp = session.metadata?.fbp;
+      // Extract fbc/fbp from metadata if available
+      const fbc = session.metadata?.fbc;
+      const fbp = session.metadata?.fbp;
 
-        if (fbCAPI && email) {
-          try {
-            // Check for duplicate using PaymentIntent ID
-            const dedupResult = await checkAndRecordConversionEvent(
-              paymentIntentId,
-              event.id,
-              'Purchase',
-              amountInDollars,
-              currency,
-              email
+      if (fbCAPI && email && eventIdForDedup) {
+        try {
+          // Check for duplicate
+          const dedupResult = await checkAndRecordConversionEvent(
+            eventIdForDedup,
+            event.id,
+            'Purchase',
+            amountInDollars,
+            currency,
+            email
+          );
+
+          if (dedupResult.isDuplicate) {
+            console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${eventIdForDedup}`);
+          } else {
+            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+              : 'https://break-free-app.com';
+
+            const nameParts = (name || '').trim().split(' ');
+            const firstName = nameParts[0] || undefined;
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+            // Determine content name based on mode
+            const contentName = sessionData.mode === 'subscription' 
+              ? session.metadata?.product_name || '7-Day Trial Subscription'
+              : session.metadata?.product_name || 'BreakFree Purchase';
+
+            const result = await fbCAPI.sendPurchase(
+              `${baseUrl}/checkout`,
+              {
+                email,
+                firstName,
+                lastName,
+                fbc: fbc || undefined,
+                fbp: fbp || undefined,
+              },
+              {
+                value: amountInDollars,
+                currency,
+                content_name: contentName,
+              },
+              {
+                eventId: eventIdForDedup,
+                eventTime: session.created,
+              }
             );
 
-            if (dedupResult.isDuplicate) {
-              console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${paymentIntentId}`);
+            await updateConversionEventMetaResponse(eventIdForDedup, JSON.stringify(result));
+
+            if (result.success) {
+              console.log(`[Stripe Webhook] Checkout session Purchase sent to Meta:`, {
+                sessionId: session.id,
+                mode: sessionData.mode,
+                eventId: eventIdForDedup,
+                amount: amountInDollars,
+                currency,
+                eventsReceived: result.response?.events_received
+              });
             } else {
-              const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-                ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-                : 'https://break-free-app.com';
-
-              const nameParts = (name || '').trim().split(' ');
-              const firstName = nameParts[0] || undefined;
-              const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
-
-              const result = await fbCAPI.sendPurchase(
-                `${baseUrl}/checkout`,
-                {
-                  email,
-                  firstName,
-                  lastName,
-                  fbc: fbc || undefined,
-                  fbp: fbp || undefined,
-                },
-                {
-                  value: amountInDollars,
-                  currency,
-                  content_name: session.metadata?.product_name || 'BreakFree Purchase',
-                },
-                {
-                  eventId: paymentIntentId,
-                  eventTime: session.created,
-                }
-              );
-
-              await updateConversionEventMetaResponse(paymentIntentId, JSON.stringify(result));
-
-              if (result.success) {
-                console.log(`[Stripe Webhook] Checkout session Purchase sent to Meta:`, {
-                  sessionId: session.id,
-                  paymentIntentId,
-                  amount: amountInDollars,
-                  currency,
-                  eventsReceived: result.response?.events_received
-                });
-              } else {
-                console.error(`[Stripe Webhook] Checkout session Purchase to Meta failed:`, result.error);
-              }
+              console.error(`[Stripe Webhook] Checkout session Purchase to Meta failed:`, result.error);
             }
-          } catch (fbError: any) {
-            console.error('[Stripe Webhook] Error sending checkout session Purchase:', fbError.message);
           }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending checkout session Purchase:', fbError.message);
         }
+      } else {
+        console.log('[Stripe Webhook] Skipping Purchase event:', {
+          hasFbCAPI: !!fbCAPI,
+          hasEmail: !!email,
+          hasEventId: !!eventIdForDedup
+        });
       }
 
       return res.json({ received: true });
@@ -1528,15 +1553,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ received: true });
     }
 
+    // Handle invoice.paid - For subscription payments (initial and recurring)
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const invoiceData = invoice as any;
+      
+      console.log('[Stripe Webhook] Invoice paid:', {
+        invoiceId: invoice.id,
+        customerId: invoice.customer,
+        subscriptionId: invoiceData.subscription,
+        amountPaid: invoiceData.amount_paid,
+        billingReason: invoiceData.billing_reason
+      });
+
+      // Only send Purchase to Meta for subscription invoices
+      if (invoiceData.subscription && fbCAPI) {
+        try {
+          const customerId = typeof invoice.customer === 'string' 
+            ? invoice.customer 
+            : (invoice.customer as any)?.id;
+
+          if (customerId) {
+            const customer = await stripe.customers.retrieve(customerId);
+            const email = (customer as Stripe.Customer).email;
+            const name = (customer as Stripe.Customer).name;
+
+            if (email) {
+              const amountInDollars = (invoiceData.amount_paid || 0) / 100;
+              const currency = (invoice.currency || 'usd').toUpperCase();
+              
+              // Use invoice ID for deduplication
+              const dedupResult = await checkAndRecordConversionEvent(
+                invoice.id,
+                event.id,
+                'Purchase',
+                amountInDollars,
+                currency,
+                email
+              );
+
+              if (dedupResult.isDuplicate) {
+                console.log(`[Stripe Webhook] Skipping duplicate invoice.paid Purchase for ${invoice.id}`);
+              } else {
+                const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+                  ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+                  : 'https://break-free-app.com';
+
+                const nameParts = (name || '').trim().split(' ');
+                const firstName = nameParts[0] || undefined;
+                const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+                // Get tracking data from customer metadata
+                const customerMetadata = (customer as Stripe.Customer).metadata || {};
+
+                const contentName = invoiceData.billing_reason === 'subscription_create' 
+                  ? 'Trial Subscription' 
+                  : 'Monthly Subscription';
+
+                const result = await fbCAPI.sendPurchase(
+                  `${baseUrl}/checkout`,
+                  {
+                    email,
+                    firstName,
+                    lastName,
+                    fbc: customerMetadata.fbc || undefined,
+                    fbp: customerMetadata.fbp || undefined,
+                  },
+                  {
+                    value: amountInDollars,
+                    currency,
+                    content_name: contentName,
+                  },
+                  {
+                    eventId: invoice.id,
+                    eventTime: invoiceData.created || Math.floor(Date.now() / 1000),
+                  }
+                );
+
+                await updateConversionEventMetaResponse(invoice.id, JSON.stringify(result));
+
+                if (result.success) {
+                  console.log(`[Stripe Webhook] Invoice paid Purchase sent to Meta:`, {
+                    invoiceId: invoice.id,
+                    billingReason: invoiceData.billing_reason,
+                    amount: amountInDollars,
+                    currency,
+                    eventsReceived: result.response?.events_received
+                  });
+                } else {
+                  console.error(`[Stripe Webhook] Invoice paid Purchase to Meta failed:`, result.error);
+                }
+              }
+            }
+          }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending invoice.paid Purchase:', fbError.message);
+        }
+      }
+
+      return res.json({ received: true });
+    }
+
     // Handle invoice.payment_failed - Subscription payment failed
     if (event.type === 'invoice.payment_failed') {
       const invoice = event.data.object as Stripe.Invoice;
+      const invoiceData = invoice as any;
       
       console.log('[Stripe Webhook] Invoice payment failed:', {
         invoiceId: invoice.id,
         customerId: invoice.customer,
-        subscriptionId: invoice.subscription,
-        attemptCount: invoice.attempt_count
+        subscriptionId: invoiceData.subscription,
+        attemptCount: invoiceData.attempt_count
       });
 
       try {

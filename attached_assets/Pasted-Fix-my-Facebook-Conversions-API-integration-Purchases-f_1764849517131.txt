@@ -1,0 +1,128 @@
+Fix my Facebook Conversions API integration. Purchases from Stripe are not being sent to Facebook.
+
+**Current Problem:**
+Stripe is recording successful payments, but Facebook Ads shows 0 purchases. The Conversions API is not triggering on successful payments.
+
+**What I Need:**
+
+1. **Stripe Webhook to Facebook CAPI Integration:**
+
+When Stripe fires `checkout.session.completed` or `payment_intent.succeeded`, immediately send a Purchase event to Facebook Conversions API.
+
+2. **Create/Update the Stripe Webhook Handler:**
+```javascript
+// Endpoint: /api/webhooks/stripe
+
+import Stripe from 'stripe';
+import crypto from 'crypto';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export default async function handler(req, res) {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  let event;
+  
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    
+    // Send Purchase event to Facebook CAPI
+    await sendFacebookPurchaseEvent({
+      email: session.customer_details?.email,
+      value: session.amount_total / 100,
+      currency: session.currency.toUpperCase(),
+      eventId: session.id, // For deduplication
+      clientIpAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      clientUserAgent: req.headers['user-agent'],
+    });
+  }
+
+  res.status(200).json({ received: true });
+}
+```
+
+3. **Create the Facebook CAPI Function:**
+```javascript
+// Function: sendFacebookPurchaseEvent
+
+async function sendFacebookPurchaseEvent({ email, value, currency, eventId, clientIpAddress, clientUserAgent }) {
+  const PIXEL_ID = process.env.FACEBOOK_PIXEL_ID;
+  const ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN;
+  
+  // Hash email for Facebook (required)
+  const hashedEmail = crypto
+    .createHash('sha256')
+    .update(email.toLowerCase().trim())
+    .digest('hex');
+
+  const eventData = {
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: eventId, // For deduplication with browser pixel
+        action_source: 'website',
+        user_data: {
+          em: [hashedEmail],
+          client_ip_address: clientIpAddress,
+          client_user_agent: clientUserAgent,
+        },
+        custom_data: {
+          currency: currency,
+          value: value,
+        },
+      },
+    ],
+    access_token: ACCESS_TOKEN,
+  };
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${PIXEL_ID}/events`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      }
+    );
+    
+    const result = await response.json();
+    console.log('Facebook CAPI Response:', result);
+    return result;
+  } catch (error) {
+    console.error('Facebook CAPI Error:', error);
+    throw error;
+  }
+}
+```
+
+4. **Also send InitiateCheckout event when checkout starts:**
+
+When creating the Stripe checkout session, also fire an InitiateCheckout event to Facebook CAPI.
+
+5. **Environment Variables Needed:**
+- STRIPE_SECRET_KEY (already have)
+- STRIPE_WEBHOOK_SECRET (already have)  
+- FACEBOOK_PIXEL_ID (my pixel ID)
+- FACEBOOK_ACCESS_TOKEN (from Facebook Events Manager > Settings > Generate Access Token)
+
+6. **Testing:**
+Add console.log statements to verify:
+- Webhook is receiving Stripe events
+- Facebook API is responding with success
+- Log the full response from Facebook
+
+7. **Make sure the webhook endpoint:**
+- Receives raw body (not parsed JSON) for Stripe signature verification
+- Is registered in Stripe Dashboard under Webhooks
+- Is listening for `checkout.session.completed` event
+
+Please implement this and show me where to add my Facebook Pixel ID and Access Token.
