@@ -147,18 +147,32 @@ class FacebookCAPI {
   private buildUserData(userData: UserData): any {
     const hashed: any = {};
 
+    // Meta expects em and ph as arrays (even for single values)
     if (userData.email) {
-      hashed.em = this.hashSHA256(userData.email);
+      const hashedEmail = this.hashSHA256(userData.email);
+      if (hashedEmail) {
+        hashed.em = [hashedEmail];
+      }
     }
     if (userData.phone) {
       const normalized = this.normalizePhone(userData.phone);
-      hashed.ph = this.hashSHA256(normalized);
+      const hashedPhone = this.hashSHA256(normalized);
+      if (hashedPhone) {
+        hashed.ph = [hashedPhone];
+      }
     }
+    // First and last name also as arrays per Meta's format
     if (userData.firstName) {
-      hashed.fn = this.hashSHA256(userData.firstName);
+      const hashedFn = this.hashSHA256(userData.firstName);
+      if (hashedFn) {
+        hashed.fn = [hashedFn];
+      }
     }
     if (userData.lastName) {
-      hashed.ln = this.hashSHA256(userData.lastName);
+      const hashedLn = this.hashSHA256(userData.lastName);
+      if (hashedLn) {
+        hashed.ln = [hashedLn];
+      }
     }
     if (userData.ip) {
       hashed.client_ip_address = userData.ip;
@@ -189,18 +203,23 @@ class FacebookCAPI {
 
       const userData = this.buildUserData(eventData.userData);
 
+      const eventPayload: any = {
+        event_name: eventData.eventName,
+        event_time: eventTime,
+        event_id: eventId,
+        event_source_url: eventData.eventSourceUrl,
+        action_source: 'website',
+        user_data: userData,
+        custom_data: eventData.customData || {},
+        // Add original_event_data for better deduplication with browser pixel
+        original_event_data: {
+          event_name: eventData.eventName,
+          event_time: eventTime
+        }
+      };
+
       const payload = {
-        data: [
-          {
-            event_name: eventData.eventName,
-            event_time: eventTime,
-            event_id: eventId,
-            event_source_url: eventData.eventSourceUrl,
-            action_source: 'website',
-            user_data: userData,
-            custom_data: eventData.customData || {}
-          }
-        ],
+        data: [eventPayload],
         test_event_code: process.env.FB_TEST_EVENT_CODE || undefined
       };
 
@@ -213,10 +232,11 @@ class FacebookCAPI {
         console.log('  Source URL:', eventData.eventSourceUrl);
         console.log('  Event Time:', new Date(eventTime * 1000).toISOString());
         console.log('  User Data Present:');
-        console.log('    - Email:', userData.em ? `Yes (${userData.em.substring(0, 8)}...)` : 'No');
-        console.log('    - Phone:', userData.ph ? `Yes (${userData.ph.substring(0, 8)}...)` : 'No');
-        console.log('    - First Name:', userData.fn ? 'Yes' : 'No');
-        console.log('    - Last Name:', userData.ln ? 'Yes' : 'No');
+        // Handle array format for em, ph, fn, ln
+        console.log('    - Email:', userData.em?.length ? `Yes (${userData.em[0].substring(0, 8)}...)` : 'No');
+        console.log('    - Phone:', userData.ph?.length ? `Yes (${userData.ph[0].substring(0, 8)}...)` : 'No');
+        console.log('    - First Name:', userData.fn?.length ? 'Yes' : 'No');
+        console.log('    - Last Name:', userData.ln?.length ? 'Yes' : 'No');
         console.log('    - IP Address:', userData.client_ip_address || 'No');
         console.log('    - User Agent:', userData.client_user_agent ? `Yes (${userData.client_user_agent.length} chars)` : 'No');
         console.log('    - FBC:', userData.fbc || 'No');
@@ -224,6 +244,7 @@ class FacebookCAPI {
         if (eventData.customData && Object.keys(eventData.customData).length > 0) {
           console.log('  Custom Data:', JSON.stringify(eventData.customData, null, 2));
         }
+        console.log('  Original Event Data: Included for deduplication');
         if (payload.test_event_code) {
           console.log('  🧪 Test Event Code:', payload.test_event_code);
         }
