@@ -30,11 +30,10 @@ function captureFacebookClickId(): void {
   const fbclid = urlParams.get('fbclid');
   
   if (fbclid) {
-    // Store raw fbclid
+    // New fbclid in URL - always create fresh fbc
     localStorage.setItem(FBCLID_STORAGE_KEY, fbclid);
     
     // Create _fbc cookie in correct format: fb.1.{timestamp_in_milliseconds}.{fbclid}
-    // CRITICAL: Use Date.now() directly for milliseconds, NOT divided by 1000
     const timestamp = Date.now();
     const fbcValue = `fb.1.${timestamp}.${fbclid}`;
     
@@ -49,6 +48,37 @@ function captureFacebookClickId(): void {
     
     console.log('[FB Tracking] Captured fbclid:', fbclid);
     console.log('[FB Tracking] Created fbc with milliseconds:', fbcValue);
+  } else {
+    // No fbclid - validate existing fbc is not stale
+    validateStoredFbc();
+  }
+}
+
+/**
+ * Validate stored fbc is not stale (>7 days old)
+ * Clear it if too old to prevent sending invalid attribution data
+ */
+function validateStoredFbc(): void {
+  try {
+    const existingFbc = localStorage.getItem(FBC_STORAGE_KEY);
+    if (existingFbc) {
+      const parts = existingFbc.split('.');
+      if (parts.length >= 3) {
+        const fbcTimestamp = parseInt(parts[2], 10);
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        
+        // If fbc is older than 7 days without a new fbclid, clear it
+        if (Date.now() - fbcTimestamp > sevenDaysMs) {
+          console.log('[FB Tracking] Clearing stale fbc (>7 days old)');
+          localStorage.removeItem(FBC_STORAGE_KEY);
+          localStorage.removeItem(FBCLID_STORAGE_KEY);
+          localStorage.removeItem(FBC_TIMESTAMP_KEY);
+          document.cookie = '_fbc=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[FB Tracking] Error validating fbc:', e);
   }
 }
 

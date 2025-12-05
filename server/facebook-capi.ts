@@ -71,6 +71,79 @@ class FacebookCAPI {
     return phone.replace(/\D/g, '');
   }
 
+  /**
+   * Validate fbc parameter format and timestamp
+   * Format: fb.1.[13-digit-timestamp].[fbclid]
+   * Returns validated fbc or null if invalid
+   */
+  private validateFbc(fbc: string | undefined): string | null {
+    if (!fbc) return null;
+    
+    // Check format: fb.1.[timestamp].[fbclid]
+    const fbcRegex = /^fb\.1\.(\d{13})\.(.+)$/;
+    const match = fbc.match(fbcRegex);
+    
+    if (!match) {
+      console.warn('[Facebook CAPI] Invalid fbc format:', fbc.substring(0, 30) + '...');
+      return null;
+    }
+    
+    const timestamp = parseInt(match[1], 10);
+    const now = Date.now();
+    const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    // Check if timestamp is in the future (with 1 day tolerance for clock skew)
+    if (timestamp > now + oneDayMs) {
+      console.warn('[Facebook CAPI] fbc timestamp is in the future, excluding:', {
+        fbcTimestamp: new Date(timestamp).toISOString(),
+        currentTime: new Date(now).toISOString()
+      });
+      return null;
+    }
+    
+    // Check if timestamp is older than 90 days
+    if (timestamp < now - ninetyDaysMs) {
+      console.warn('[Facebook CAPI] fbc timestamp is older than 90 days, excluding:', {
+        fbcTimestamp: new Date(timestamp).toISOString(),
+        age: Math.floor((now - timestamp) / (24 * 60 * 60 * 1000)) + ' days'
+      });
+      return null;
+    }
+    
+    return fbc;
+  }
+
+  /**
+   * Validate fbp parameter format and timestamp
+   * Format: fb.1.[13-digit-timestamp].[random]
+   * Returns validated fbp or null if invalid
+   */
+  private validateFbp(fbp: string | undefined): string | null {
+    if (!fbp) return null;
+    
+    // Check format: fb.1.[timestamp].[random]
+    const fbpRegex = /^fb\.1\.(\d{13})\.(\d+)$/;
+    const match = fbp.match(fbpRegex);
+    
+    if (!match) {
+      console.warn('[Facebook CAPI] Invalid fbp format:', fbp.substring(0, 30) + '...');
+      return null;
+    }
+    
+    const timestamp = parseInt(match[1], 10);
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    // Check if timestamp is in the future (with 1 day tolerance)
+    if (timestamp > now + oneDayMs) {
+      console.warn('[Facebook CAPI] fbp timestamp is in the future, excluding');
+      return null;
+    }
+    
+    return fbp;
+  }
+
   private buildUserData(userData: UserData): any {
     const hashed: any = {};
 
@@ -93,11 +166,17 @@ class FacebookCAPI {
     if (userData.userAgent) {
       hashed.client_user_agent = userData.userAgent;
     }
-    if (userData.fbc) {
-      hashed.fbc = userData.fbc;
+    
+    // Validate fbc before including - Meta rejects events with invalid creation times
+    const validatedFbc = this.validateFbc(userData.fbc);
+    if (validatedFbc) {
+      hashed.fbc = validatedFbc;
     }
-    if (userData.fbp) {
-      hashed.fbp = userData.fbp;
+    
+    // Validate fbp before including
+    const validatedFbp = this.validateFbp(userData.fbp);
+    if (validatedFbp) {
+      hashed.fbp = validatedFbp;
     }
 
     return hashed;
