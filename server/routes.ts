@@ -1425,7 +1425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 },
                 {
                   eventId: paymentIntentId,
-                  eventTime: Math.floor(Date.now() / 1000),
+                  // Use session created timestamp, or current time as fallback
+                  // The sendEvent method will validate this against fbc timestamp
+                  eventTime: session.created || Math.floor(Date.now() / 1000),
                 }
               );
 

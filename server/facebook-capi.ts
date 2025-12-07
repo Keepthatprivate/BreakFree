@@ -198,10 +198,30 @@ class FacebookCAPI {
 
   async sendEvent(eventData: EventData): Promise<{ success: boolean; error?: string; response?: any }> {
     try {
-      const eventTime = eventData.eventTime || Math.floor(Date.now() / 1000);
+      let eventTime = eventData.eventTime || Math.floor(Date.now() / 1000);
       const eventId = eventData.eventId || `${eventTime}-${Math.random().toString(36).substring(7)}`;
 
       const userData = this.buildUserData(eventData.userData);
+
+      // CRITICAL FIX: Validate event_time against fbc timestamp
+      // Meta requires that event_time (creationTime) must be AFTER the fbc click timestamp
+      if (userData.fbc) {
+        const fbcRegex = /^fb\.1\.(\d{13})\.(.+)$/;
+        const fbcMatch = userData.fbc.match(fbcRegex);
+        
+        if (fbcMatch) {
+          const fbcTimestampMs = parseInt(fbcMatch[1], 10);
+          const fbcTimestampSec = Math.floor(fbcTimestampMs / 1000);
+          
+          // If event_time is before or equal to fbc timestamp, adjust it
+          // Meta requires event_time to be at least 1 second after fbc timestamp
+          if (eventTime <= fbcTimestampSec) {
+            const adjustedTime = fbcTimestampSec + 1;
+            console.warn(`[Facebook CAPI] Adjusted event_time from ${eventTime} to ${adjustedTime} (must be after fbc timestamp ${fbcTimestampSec})`);
+            eventTime = adjustedTime;
+          }
+        }
+      }
 
       const eventPayload: any = {
         event_name: eventData.eventName,

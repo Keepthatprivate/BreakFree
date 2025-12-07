@@ -40,8 +40,15 @@ function extractUserData(req: Request, body: any) {
   const userAgent = req.get('user-agent') || '';
   
   let fbc = body.fbc;
+  // CRITICAL FIX: Do NOT create fbc from fbclid with current timestamp
+  // This causes "invalid creationTime" errors because the fbc timestamp
+  // would be in the future relative to when the event actually occurred.
+  // Only use fbc if it's already properly formatted with the actual click timestamp.
+  // If we only have fbclid without the proper fbc format, we cannot reconstruct
+  // the correct timestamp, so we skip it to avoid validation errors.
   if (!fbc && body.fbclid) {
-    fbc = `fb.1.${Date.now()}.${body.fbclid}`;
+    console.warn('[Facebook CAPI] Received fbclid but no fbc - cannot reconstruct fbc without click timestamp. Skipping fbc to avoid creationTime errors.');
+    // Do not create fbc - Meta will reject events with incorrectly timestamped fbc
   }
 
   return {
