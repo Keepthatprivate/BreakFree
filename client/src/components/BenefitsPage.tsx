@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
+
 interface BenefitsPageProps {
   onContinue: () => void;
 }
 
 export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 07 - Benefits' });
+  }, []);
   const benefits = [
     {
       emoji: '🧠',

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface ContactFormProps {
   onSubmit: (data: { name: string; email: string }) => void;
@@ -11,6 +12,10 @@ export default function ContactForm({ onSubmit }: ContactFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 02 - Contact Form' });
+  }, []);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

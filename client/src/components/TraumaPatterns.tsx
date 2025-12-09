@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Heart, Bird, Users, Moon } from 'lucide-react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface TraumaPatternsProps {
   onContinue: () => void;
@@ -7,6 +8,10 @@ interface TraumaPatternsProps {
 
 export default function TraumaPatterns({ onContinue }: TraumaPatternsProps) {
   const [timeLeft, setTimeLeft] = useState({ minutes: 12, seconds: 43 });
+
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 04 - Trauma Patterns' });
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {

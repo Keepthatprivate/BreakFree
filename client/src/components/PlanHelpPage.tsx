@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
+
 interface PlanHelpPageProps {
   onContinue: () => void;
 }
 
 export default function PlanHelpPage({ onContinue }: PlanHelpPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 09 - Plan Help' });
+  }, []);
   const experiences = [
     { emoji: '😰', text: 'Anxiety and panic attacks' },
     { emoji: '💔', text: 'Abandonment and trust issues' },

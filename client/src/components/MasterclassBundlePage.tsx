@@ -1,4 +1,6 @@
 import { Check, Shield, Heart, Brain, Users, BookOpen, Star, ArrowRight } from 'lucide-react';
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface MasterclassBundlePageProps {
   onAccept: () => void;
@@ -6,6 +8,10 @@ interface MasterclassBundlePageProps {
 }
 
 export default function MasterclassBundlePage({ onAccept, onDecline }: MasterclassBundlePageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 16 - Masterclass Bundle' });
+  }, []);
+
   const masterclasses = [
     { icon: Heart, title: 'Inner Child Healing' },
     { icon: Users, title: 'Attachment Style Deep-Dive' },

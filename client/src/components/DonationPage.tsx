@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface DonationPageProps {
   userName: string;
@@ -8,6 +9,10 @@ interface DonationPageProps {
 }
 
 export default function DonationPage({ userName, onContinue }: DonationPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 05 - Donation' });
+  }, []);
+
   const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
 
   const donationAmounts = [

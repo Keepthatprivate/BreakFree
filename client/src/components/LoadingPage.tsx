@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 // Import profile images
 import profile1 from '@assets/stock_images/professional_headsho_9f3936ae.jpg';
@@ -103,6 +104,10 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [shuffledTestimonials, setShuffledTestimonials] = useState<typeof testimonials>([]);
+
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 03 - Loading Analysis' });
+  }, []);
 
   const totalDuration = 60000; // 60 seconds
   const progress = getProgressForTime(elapsedTime, totalDuration);

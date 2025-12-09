@@ -1,5 +1,7 @@
 import { Star } from 'lucide-react';
+import { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { trackViewContent } from '@/lib/facebook-tracking';
 import jamesImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761862009838.jpg';
 import sarahImage from '@assets/stock_images/professional_woman_s_42c21774.jpg';
 import michaelImage from '@assets/stock_images/professional_man_smi_9cfe1802.jpg';
@@ -20,6 +22,10 @@ interface Testimonial {
 }
 
 export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 11 - Testimonials' });
+  }, []);
+
   const testimonials: Testimonial[] = [
     {
       name: 'Sarah M.',

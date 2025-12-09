@@ -1,4 +1,6 @@
 import { ArrowRight, Check, X } from 'lucide-react';
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface UpsellPageProps {
   onAccept: () => void;
@@ -6,6 +8,10 @@ interface UpsellPageProps {
 }
 
 export default function UpsellPage({ onAccept, onSkip }: UpsellPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 15 - Upsell Guides' });
+  }, []);
+
   const beforeItems = [
     'Unsure why your mood changes',
     'Overthinking or feeling stuck',
