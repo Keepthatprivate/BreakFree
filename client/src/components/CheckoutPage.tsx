@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
-import { trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
+import { trackViewContent, trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -121,6 +121,10 @@ export default function CheckoutPage({ amount, productType, productName, email, 
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackViewContent({ contentName: `Funnel Step - Checkout ${productName}` });
+  }, [productName]);
 
   // Check if Stripe is properly configured
   if (!stripePublicKey) {
