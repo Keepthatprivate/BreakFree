@@ -334,11 +334,12 @@ class FacebookCAPI {
     }
   }
 
-  async sendViewContent(eventSourceUrl: string, userData: UserData): Promise<any> {
+  async sendViewContent(eventSourceUrl: string, userData: UserData, customData?: { content_name?: string }): Promise<any> {
     return this.sendEvent({
       eventName: 'ViewContent',
       eventSourceUrl,
-      userData
+      userData,
+      customData
     });
   }
 
