@@ -34,7 +34,7 @@ import girlAnim3Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_50_17_1765692
 
 import girlAnim4Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_50_17_1765692217896.png';
 import girlAnim4Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_55_23_1765692234194.png';
-import girlAnim4Img3 from '@assets/ChatGPT Image 4 nov. 2025, 00_34_35_1762213117495.png';
+import girlAnim4Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_51_50_1765692261574.png';
 
 export type AnimationSequence = {
   images: [string, string, string];
