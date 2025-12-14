@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
 
-// Import profile images
-import profile1 from '@assets/stock_images/professional_headsho_9f3936ae.jpg';
-import profile2 from '@assets/stock_images/professional_headsho_34fce9db.jpg';
-import profile3 from '@assets/stock_images/professional_headsho_d53920cc.jpg';
-import profile4 from '@assets/stock_images/professional_headsho_dd8bf494.jpg';
-import profile5 from '@assets/stock_images/professional_headsho_9ebfa56d.jpg';
-import profile6 from '@assets/stock_images/professional_headsho_05ec7d78.jpg';
-import profile7 from '@assets/stock_images/professional_headsho_5d9d8553.jpg';
-import profile8 from '@assets/stock_images/professional_headsho_1406407a.jpg';
+// Import casual social-style profile images
+import asianWoman from '@assets/stock_images/casual_candid_photo__21abfcc4.jpg';
+import casualWoman1 from '@assets/stock_images/casual_photo_young_w_c4fd0758.jpg';
+import casualWoman2 from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
+import casualMan1 from '@assets/stock_images/casual_photo_young_m_c492381e.jpg';
+import casualMan2 from '@assets/stock_images/casual_photo_young_m_5efeca9f.jpg';
+import casualMan3 from '@assets/stock_images/casual_photo_young_m_cbd93010.jpg';
+import casualWoman3 from '@assets/stock_images/casual_candid_photo__204d5464.jpg';
+import casualWoman4 from '@assets/stock_images/casual_candid_photo__e88ab59e.jpg';
 
 interface LoadingPageProps {
   onComplete: () => void;
@@ -21,42 +21,42 @@ const testimonials = [
   { 
     quote: "It helped me save 10 years of therapy", 
     name: "Sarah M.",
-    image: profile1
+    image: casualWoman1
   },
   { 
     quote: "My mental fog finally disappeared, such a relief", 
     name: "James R.",
-    image: profile5
+    image: casualMan1
   },
   { 
     quote: "I finally understand why I react the way I do", 
     name: "Emily K.",
-    image: profile2
+    image: casualWoman2
   },
   { 
     quote: "This clarity changed everything for me", 
     name: "Michael T.",
-    image: profile6
+    image: casualMan2
   },
   { 
     quote: "The patterns suddenly made sense", 
     name: "Lisa Chen",
-    image: profile3
+    image: asianWoman
   },
   { 
     quote: "I wish I had found this sooner", 
     name: "David P.",
-    image: profile7
+    image: casualMan3
   },
   { 
     quote: "Finally feeling like myself again", 
     name: "Anna B.",
-    image: profile4
+    image: casualWoman3
   },
   { 
     quote: "This explained so much about my relationships", 
-    name: "Chris W.",
-    image: profile8
+    name: "Rachel W.",
+    image: casualWoman4
   }
 ];
 
