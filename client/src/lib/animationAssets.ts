@@ -22,7 +22,7 @@ import boyAnim4Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_56_17656907
 // Girl Animations
 import girlAnim1Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_43_47_1765691050277.png';
 import girlAnim1Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_19_08_1765691067705.png';
-import girlAnim1Img3 from '@assets/ChatGPT Image 3 nov. 2025, 23_58_06_1762221503587.png';
+import girlAnim1Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_59_25_1765691974697.png';
 
 import girlAnim2Img1 from '@assets/ChatGPT Image 3 nov. 2025, 23_58_06_1762210700504.png';
 import girlAnim2Img2 from '@assets/ChatGPT Image 4 nov. 2025, 00_01_56_1762210925157.png';
