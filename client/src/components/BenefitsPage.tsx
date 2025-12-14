@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { trackViewContent } from '@/lib/facebook-tracking';
+import { Brain, Heart, Sparkles } from 'lucide-react';
 
 interface BenefitsPageProps {
   onContinue: () => void;
@@ -9,67 +10,69 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
   useEffect(() => {
     trackViewContent({ contentName: 'Funnel Step 07 - Benefits' });
   }, []);
+
   const benefits = [
     {
-      emoji: '🧠',
-      title: 'Improved Emotional Well-being:',
-      description: 'Experience significant improvements in your emotional well-being. Gain tools and strategies to manage triggers, regulate emotions, and foster resilience, leading to greater peace and happiness.',
-      mobileDescription: 'Manage triggers, regulate emotions, and build resilience for lasting peace.',
-      iconBg: 'bg-gradient-to-br from-pink-400 to-purple-400'
+      icon: Brain,
+      title: 'Emotional Balance',
+      description: 'Learn to manage triggers, regulate emotions, and build lasting resilience.',
+      iconBg: 'bg-blue-500/15',
+      iconColor: 'text-blue-400'
     },
     {
-      emoji: '💑',
-      title: 'Enhanced Relationships:',
-      description: 'Heal childhood trauma to deepen understanding of your emotions and behaviors. Improve communication and empathy, fostering healthier connections with loved ones and greater intimacy.',
-      mobileDescription: 'Deepen emotional understanding. Improve communication and build healthier connections.',
-      iconBg: 'bg-gradient-to-br from-pink-400 to-fuchsia-500'
+      icon: Heart,
+      title: 'Deeper Connections',
+      description: 'Improve communication and build healthier, more fulfilling relationships.',
+      iconBg: 'bg-rose-500/15',
+      iconColor: 'text-rose-400'
     },
     {
-      emoji: '🌸',
-      title: 'Increased Self-Empowerment:',
-      description: 'Reclaim your life and foster personal growth. Gain control over experiences, break free from limiting beliefs, and cultivate self-worth and empowerment for a more fulfilling, trauma-free life.',
-      mobileDescription: 'Break free from limiting beliefs and cultivate self-worth for a fulfilling life.',
-      iconBg: 'bg-gradient-to-br from-blue-400 to-purple-400'
+      icon: Sparkles,
+      title: 'Personal Freedom',
+      description: 'Break free from limiting beliefs and reclaim control over your life.',
+      iconBg: 'bg-amber-500/15',
+      iconColor: 'text-amber-400'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background py-4 sm:py-6 flex items-center justify-center">
-      <div className="max-w-3xl mx-auto px-5 sm:px-6 w-full">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
-            How can 28-day Childhood Trauma healing plan help you:
+    <div className="min-h-screen bg-background py-6 sm:py-8 flex items-center justify-center">
+      <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+            Your 28-Day Healing Plan
           </h1>
+          <p className="text-muted-foreground text-base">
+            Here's what you'll experience
+          </p>
         </div>
 
-        <div className="space-y-3 mb-6">
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="bg-card/80 backdrop-blur-sm rounded-3xl p-5 border border-card-border/20 animate-in fade-in slide-in-from-bottom-4"
-              style={{ animationDelay: `${index * 100}ms` }}
-              data-testid={`benefit-card-${index}`}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`${benefit.iconBg} rounded-2xl p-3 flex-shrink-0 shadow-lg`}>
-                  <div className="text-3xl">{benefit.emoji}</div>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold text-foreground mb-2">
-                    {benefit.title}
-                  </h2>
-                  {/* Mobile version - shorter text */}
-                  <p className="text-foreground/70 text-sm leading-snug sm:hidden">
-                    {benefit.mobileDescription}
-                  </p>
-                  {/* Desktop version - full text */}
-                  <p className="text-foreground/70 text-sm leading-snug hidden sm:block">
-                    {benefit.description}
-                  </p>
+        <div className="space-y-4 mb-8">
+          {benefits.map((benefit, index) => {
+            const IconComponent = benefit.icon;
+            return (
+              <div
+                key={index}
+                className="bg-card rounded-2xl p-5 border border-card-border/30 animate-in fade-in slide-in-from-bottom-4"
+                style={{ animationDelay: `${index * 100}ms` }}
+                data-testid={`benefit-card-${index}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`${benefit.iconBg} rounded-xl p-3 flex-shrink-0`}>
+                    <IconComponent className={`w-6 h-6 ${benefit.iconColor}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold text-foreground mb-1">
+                      {benefit.title}
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {benefit.description}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="text-center">
