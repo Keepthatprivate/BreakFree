@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
 
-// Import casual social-style profile images - clearly gendered
+// Import diverse profile images from different photo batches to ensure visual variety
 import womanImage1 from '@assets/stock_images/young_woman_smiling__c268d950.jpg';
-import womanImage2 from '@assets/stock_images/young_woman_casual_s_6c4fccfc.jpg';
-import womanImage3 from '@assets/stock_images/young_woman_casual_s_cab6f0c8.jpg';
-import womanImage4 from '@assets/stock_images/young_woman_casual_s_b2572404.jpg';
-import womanImage5 from '@assets/stock_images/young_woman_casual_s_cb2bd61f.jpg';
+import womanImage2 from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
+import womanImage3 from '@assets/stock_images/casual_photo_young_w_c4fd0758.jpg';
+import womanImage4 from '@assets/stock_images/young_woman_casual_s_6c4fccfc.jpg';
+import womanImage5 from '@assets/stock_images/young_woman_casual_s_f587a3a2.jpg';
 import manImage1 from '@assets/stock_images/young_man_smiling_po_52800bb4.jpg';
-import manImage2 from '@assets/stock_images/young_man_smiling_po_6c867f21.jpg';
-import manImage3 from '@assets/stock_images/young_man_casual_sel_fecd2253.jpg';
+import manImage2 from '@assets/stock_images/casual_photo_young_m_5efeca9f.jpg';
+import manImage3 from '@assets/stock_images/young_man_casual_sel_4d7d31ee.jpg';
 
 interface LoadingPageProps {
   onComplete: () => void;
