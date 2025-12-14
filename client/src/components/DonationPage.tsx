@@ -13,7 +13,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
     trackViewContent({ contentName: 'Funnel Step 05 - Donation' });
   }, []);
 
-  const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
+  const [selectedDonation, setSelectedDonation] = useState<number>(24.99);
 
   const donationAmounts = [
     { amount: 3, label: '$3' },
@@ -70,15 +70,12 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
           <div className="grid grid-cols-4 gap-2.5 sm:gap-3 mb-1.5">
             {donationAmounts.map((option) => {
               const isSelected = selectedDonation === option.amount;
-              const isHighlighted = option.amount === 9.99;
               return (
                 <button
                   key={option.amount}
                   onClick={() => handleDonationClick(option.amount)}
                   className={`py-3.5 px-2 rounded-2xl transition-all duration-200 font-bold text-base sm:text-lg ${
-                    isSelected && isHighlighted
-                      ? 'bg-foreground text-background border-2 border-foreground scale-105'
-                      : isSelected
+                    isSelected
                       ? 'bg-card border-2 border-primary text-foreground'
                       : 'bg-card border-2 border-card-border/50 text-foreground hover:border-muted'
                   }`}
