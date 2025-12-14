@@ -303,8 +303,8 @@ export default function Quiz() {
       setCheckoutProductName(`Contribution - €${donationAmount.toFixed(2)}`);
       setState('checkout');
     } else {
-      // Skip donation, go to seven-days page (pre-trial flow)
-      setState('seven-days');
+      // Skip donation, go to plan-help page
+      setState('plan-help');
     }
   };
 
@@ -314,10 +314,10 @@ export default function Quiz() {
     localStorage.setItem('hasPaid', 'true');
     
     // Determine next step based on checkout type
-    // Flow: Donation → Seven Days → Plan Help → Testimonials → Timeline → Trial → Guides → Masterclass → Results
+    // Flow: Donation → Plan Help → Testimonials → Seven Days → Timeline → Trial → Guides → Masterclass → Results
     if (checkoutType === 'donation') {
-      // After donation checkout, go to seven-days page (pre-trial flow)
-      setState('seven-days');
+      // After donation checkout, go to plan-help page
+      setState('plan-help');
     } else if (checkoutType === 'trial') {
       // After trial/membership checkout, go to guide upsell page
       setState('payment');
@@ -344,8 +344,8 @@ export default function Quiz() {
   };
 
   const handleSevenDaysContinue = () => {
-    // After seven days page, show plan help page
-    setState('plan-help');
+    // After seven days page, go to timeline (trial page)
+    setState('timeline');
   };
 
   const handlePlanHelpContinue = () => {
@@ -367,8 +367,8 @@ export default function Quiz() {
   };
 
   const handleTestimonialsContinue = () => {
-    // After testimonials, go to timeline (trial page)
-    setState('timeline');
+    // After testimonials, go to seven-days page (just before trial)
+    setState('seven-days');
   };
 
   const handleFAQContinue = () => {
