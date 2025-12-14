@@ -8,7 +8,7 @@ import boyAnim1Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_37_20_17656875
 import boyAnim1Img3 from '@assets/ChatGPT_Image_14_déc._2025,_05_39_29_1765687684108.png';
 
 import boyAnim2Img1 from '@assets/ChatGPT_Image_14_déc._2025,_05_39_29_1765687832136.png';
-import boyAnim2Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_42_11_1765687848739.png';
+import boyAnim2Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_59_1765690460088.png';
 import boyAnim2Img3 from '@assets/ChatGPT_Image_14_déc._2025,_05_45_03_1765688083377.png';
 
 import boyAnim3Img1 from '@assets/ChatGPT Image 3 nov. 2025, 23_00_18_1762209169225.png';
