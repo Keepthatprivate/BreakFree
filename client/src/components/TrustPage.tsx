@@ -1,10 +1,15 @@
 import { Star, Users, Shield, Heart } from 'lucide-react';
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface TrustPageProps {
   onContinue: () => void;
 }
 
 export default function TrustPage({ onContinue }: TrustPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 10 - Trust & Stats' });
+  }, []);
   const trustStats = [
     {
       icon: Users,

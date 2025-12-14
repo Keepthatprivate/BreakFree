@@ -241,6 +241,7 @@ function getTrackingParams() {
 
 /**
  * Track ViewContent event (page view)
+ * @param data.contentName - Unique page identifier for funnel analysis (e.g., "Quiz Step 1", "Results Page")
  */
 export async function trackViewContent(data: FacebookEventData = {}): Promise<void> {
   try {
@@ -267,6 +268,9 @@ export async function trackViewContent(data: FacebookEventData = {}): Promise<vo
         ...params,
       }),
     });
+    if (data.contentName) {
+      console.log('[FB Tracking] ViewContent:', data.contentName);
+    }
   } catch (error) {
     console.error('Failed to track ViewContent:', error);
   }

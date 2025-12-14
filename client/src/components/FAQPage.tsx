@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface FAQPageProps {
   onContinue: () => void;
 }
 
 export default function FAQPage({ onContinue }: FAQPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 13 - FAQ' });
+  }, []);
+
   const [openIndex, setOpenIndex] = useState<number>(0);
 
   const faqs = [

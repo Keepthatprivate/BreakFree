@@ -1,10 +1,16 @@
 import { Check, Lock, Bell, Shield } from 'lucide-react';
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface TrialTimelineProps {
   onStartTrial: () => void;
 }
 
 export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 12 - Trial Timeline' });
+  }, []);
+
   const steps = [
     {
       icon: Check,

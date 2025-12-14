@@ -1,4 +1,6 @@
 import { BookOpen, Heart, Feather, Calendar, BarChart3, Shield, FileText, Download, Check } from 'lucide-react';
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface HealingJournalPageProps {
   onAccept: () => void;
@@ -6,6 +8,10 @@ interface HealingJournalPageProps {
 }
 
 export default function HealingJournalPage({ onAccept, onSkip }: HealingJournalPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 17 - Healing Journal' });
+  }, []);
+
   const journalContents = [
     { icon: Feather, text: '30 Guided Prompts' },
     { icon: Heart, text: 'Grounding Pages' },

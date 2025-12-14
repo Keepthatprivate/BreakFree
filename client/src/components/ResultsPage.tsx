@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -13,6 +14,10 @@ interface ResultsPageProps {
 }
 
 export default function ResultsPage({ userName, answers, onContinue }: ResultsPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 06 - Results' });
+  }, []);
+
   const handleGetNow = () => {
     onContinue();
   };

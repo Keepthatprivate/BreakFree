@@ -49,6 +49,22 @@ Preferred communication style: Simple, everyday language.
 **Email Integration**: Resend connector for transactional emails, with `email-templates.ts` for personalized results and purchase confirmations.
 **Payment Processing**: Stripe Elements for unified checkout (upsell guides, donations, trials) with Apple Pay and Google Pay integration.
 **Facebook Conversions API (CAPI)**: Server-side event tracking with strict environment validation, comprehensive diagnostic tools (`/debug/test-capi`, `/debug/health`, `/fbc-validator`), automatic retry queue for failed events, SHA256 hashing for PII, and enhanced development logging. Tracks ViewContent, Lead, InitiateCheckout, AddPaymentInfo, and Purchase events.
+- **Comprehensive Funnel Tracking**: Every step in the funnel sends a ViewContent event with unique `content_name` for drop-off analysis. Steps tracked:
+  - Step 01: Quiz Start
+  - Step 02: Contact Form
+  - Step 03: Loading Analysis
+  - Step 04: Trauma Patterns
+  - Step 05: Donation
+  - Step 06: Results
+  - Step 07: Benefits
+  - Step 08: Seven Days Preview
+  - Step 09: Plan Help
+  - Step 10: Trust & Stats
+  - Step 11: Testimonials
+  - Step 12: Trial Timeline
+  - Step 13: FAQ
+  - Step 14: Subscription Checkout
+  - Steps 15-17: Upsell pages (Guides, Masterclass Bundle, Healing Journal)
 - **fbc/fbp Timestamp Validation**: Server-side validation ensures fbc timestamps are valid (not future-dated, not older than 90 days) before sending to Meta, preventing "invalid creationTime" errors.
 - **Stale Cookie Cleanup**: Frontend clears fbc cookies older than 7 days on return visits without fbclid, ensuring fresh attribution data.
 **Stripe Webhook + Meta CAPI Integration**: Robust webhook handler at `/api/webhook/stripe` that processes:

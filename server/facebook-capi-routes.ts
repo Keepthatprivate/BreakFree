@@ -125,10 +125,11 @@ router.post('/view', async (req: Request, res: Response) => {
   try {
     const userData = extractUserData(req, req.body);
     const eventSourceUrl = req.body.url || 'https://break-free-app.com/quiz';
+    const customData = req.body.contentName ? { content_name: req.body.contentName } : undefined;
 
     const result = await sendWithRetry(
-      () => fbCAPI.sendViewContent(eventSourceUrl, userData),
-      { eventName: 'ViewContent', eventSourceUrl, userData }
+      () => fbCAPI.sendViewContent(eventSourceUrl, userData, customData),
+      { eventName: 'ViewContent', eventSourceUrl, userData, customData }
     );
 
     res.json({ success: result.success, message: 'ViewContent event tracked' });

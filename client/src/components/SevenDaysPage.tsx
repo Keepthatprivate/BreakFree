@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
+import { trackViewContent } from '@/lib/facebook-tracking';
+
 interface SevenDaysPageProps {
   onContinue: () => void;
 }
 
 export default function SevenDaysPage({ onContinue }: SevenDaysPageProps) {
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 08 - Seven Days Preview' });
+  }, []);
   return (
     <div className="min-h-screen bg-background py-4 sm:py-6 flex items-center justify-center">
       <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">

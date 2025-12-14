@@ -122,9 +122,9 @@ export default function Quiz() {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
   }, [answers]);
 
-  // Track quiz page view on mount
+  // Track quiz page view on mount with funnel step identification
   useEffect(() => {
-    trackViewContent();
+    trackViewContent({ contentName: 'Funnel Step 01 - Quiz Start' });
   }, []);
 
   // Scroll to top whenever state or question changes

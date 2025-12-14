@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle, Shield, Clock, Zap, Heart } from 'lucide-react';
-import { trackInitiateCheckout, getFbc, getFbp, getFacebookCookies } from '@/lib/facebook-tracking';
+import { trackViewContent, trackInitiateCheckout, getFbc, getFbp, getFacebookCookies } from '@/lib/facebook-tracking';
 
 interface SubscriptionCheckoutPageProps {
   email: string;
@@ -23,6 +23,10 @@ export default function SubscriptionCheckoutPage({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackViewContent({ contentName: 'Funnel Step 14 - Subscription Checkout' });
+  }, []);
 
   const handleStartTrial = async () => {
     setIsProcessing(true);
