@@ -3,7 +3,7 @@
 // Each of 4 animations has 3 images showing emotional arc: distress → crying → healing → hope
 
 // Boy Animations
-import boyAnim1Img1 from '@assets/ChatGPT Image 3 nov. 2025, 17_43_30_1762207670426.png';
+import boyAnim1Img1 from '@assets/ChatGPT_Image_14_déc._2025,_05_34_06_1765687552867.png';
 import boyAnim1Img2 from '@assets/ChatGPT Image 3 nov. 2025, 23_07_27_1762207697459.png';
 import boyAnim1Img3 from '@assets/ChatGPT Image 3 nov. 2025, 23_08_52_1762207742718.png';
 
