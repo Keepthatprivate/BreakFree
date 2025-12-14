@@ -1268,7 +1268,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const amountInDollars = (session.amount_total || 0) / 100;
       const email = session.customer_email || session.customer_details?.email;
       const name = session.customer_details?.name;
+      const phone = session.customer_details?.phone;
       const currency = (session.currency || 'usd').toUpperCase();
+
+      // Extract billing address from customer_details (Meta recommended for better matching)
+      const billingAddress = session.customer_details?.address;
+      const city = billingAddress?.city;
+      const state = billingAddress?.state;
+      const zipCode = billingAddress?.postal_code;
+      const country = billingAddress?.country; // 2-letter ISO code
 
       // Extract fbc/fbp and client tracking data from metadata
       const fbc = session.metadata?.fbc;
@@ -1276,6 +1284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clientUserAgent = session.metadata?.client_user_agent;
       const clientIp = session.metadata?.client_ip;
       const sourceUrl = session.metadata?.source_url;
+
+      // Get customer ID for external_id (Meta recommended)
+      const customerId = typeof session.customer === 'string'
+        ? session.customer
+        : (session.customer as any)?.id;
 
       if (fbCAPI && email && eventIdForDedup) {
         try {
@@ -1293,8 +1306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`[Stripe Webhook] Skipping duplicate checkout.session Purchase for ${eventIdForDedup}`);
           } else {
             // Use source URL from checkout if available, otherwise fallback to production domain
-            const baseUrl = process.env.PRODUCTION_DOMAIN 
-              ? `https://${process.env.PRODUCTION_DOMAIN}` 
+            const baseUrl = process.env.PRODUCTION_DOMAIN
+              ? `https://${process.env.PRODUCTION_DOMAIN}`
               : 'https://break-free-app.com';
             const eventSourceUrl = sourceUrl || `${baseUrl}/checkout`;
 
@@ -1303,7 +1316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
 
             // Determine content name based on mode
-            const contentName = sessionData.mode === 'subscription' 
+            const contentName = sessionData.mode === 'subscription'
               ? session.metadata?.product_name || '7-Day Trial Subscription'
               : session.metadata?.product_name || 'BreakFree Purchase';
 
@@ -1311,8 +1324,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               eventSourceUrl,
               {
                 email,
+                phone: phone || undefined,
                 firstName,
                 lastName,
+                // Location data (Meta recommended for better matching)
+                city: city || undefined,
+                state: state || undefined,
+                zipCode: zipCode || undefined,
+                country: country || undefined,
+                // External ID for better matching
+                externalId: customerId || undefined,
+                // Browser/device data
                 fbc: fbc || undefined,
                 fbp: fbp || undefined,
                 ip: clientIp || undefined,
@@ -1376,12 +1398,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const amountInDollars = (session.amount_total || 0) / 100;
         const email = session.customer_email || session.customer_details?.email;
         const name = session.customer_details?.name;
+        const phone = session.customer_details?.phone;
         const currency = (session.currency || 'usd').toUpperCase();
+
+        // Extract billing address (Meta recommended)
+        const billingAddress = session.customer_details?.address;
+        const city = billingAddress?.city;
+        const state = billingAddress?.state;
+        const zipCode = billingAddress?.postal_code;
+        const country = billingAddress?.country;
+
         const fbc = session.metadata?.fbc;
         const fbp = session.metadata?.fbp;
         const clientUserAgent = session.metadata?.client_user_agent;
         const clientIp = session.metadata?.client_ip;
         const sourceUrl = session.metadata?.source_url;
+
+        // Get customer ID for external_id
+        const customerId = typeof session.customer === 'string'
+          ? session.customer
+          : (session.customer as any)?.id;
 
         if (fbCAPI && email) {
           try {
@@ -1398,8 +1434,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`[Stripe Webhook] Skipping duplicate async_payment Purchase for ${paymentIntentId}`);
             } else {
               // Use source URL from checkout if available, otherwise fallback to production domain
-              const baseUrl = process.env.PRODUCTION_DOMAIN 
-                ? `https://${process.env.PRODUCTION_DOMAIN}` 
+              const baseUrl = process.env.PRODUCTION_DOMAIN
+                ? `https://${process.env.PRODUCTION_DOMAIN}`
                 : 'https://break-free-app.com';
               const eventSourceUrl = sourceUrl || `${baseUrl}/checkout`;
 
@@ -1411,8 +1447,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 eventSourceUrl,
                 {
                   email,
+                  phone: phone || undefined,
                   firstName,
                   lastName,
+                  city: city || undefined,
+                  state: state || undefined,
+                  zipCode: zipCode || undefined,
+                  country: country || undefined,
+                  externalId: customerId || undefined,
                   fbc: fbc || undefined,
                   fbp: fbp || undefined,
                   ip: clientIp || undefined,
@@ -1627,19 +1669,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only send Purchase to Meta for subscription invoices
       if (invoiceData.subscription && fbCAPI) {
         try {
-          const customerId = typeof invoice.customer === 'string' 
-            ? invoice.customer 
+          const customerId = typeof invoice.customer === 'string'
+            ? invoice.customer
             : (invoice.customer as any)?.id;
 
           if (customerId) {
-            const customer = await stripe.customers.retrieve(customerId);
-            const email = (customer as Stripe.Customer).email;
-            const name = (customer as Stripe.Customer).name;
+            const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+            const email = customer.email;
+            const name = customer.name;
+            const phone = customer.phone;
+
+            // Extract billing address from customer (Meta recommended)
+            const billingAddress = customer.address;
+            const city = billingAddress?.city;
+            const state = billingAddress?.state;
+            const zipCode = billingAddress?.postal_code;
+            const country = billingAddress?.country;
 
             if (email) {
               const amountInDollars = (invoiceData.amount_paid || 0) / 100;
               const currency = (invoice.currency || 'usd').toUpperCase();
-              
+
               // Use invoice ID for deduplication
               const dedupResult = await checkAndRecordConversionEvent(
                 invoice.id,
@@ -1654,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log(`[Stripe Webhook] Skipping duplicate invoice.paid Purchase for ${invoice.id}`);
               } else {
                 // ALWAYS use production domain for Facebook CAPI - critical for ad attribution
-                const baseUrl = process.env.PRODUCTION_DOMAIN 
+                const baseUrl = process.env.PRODUCTION_DOMAIN
                   ? `https://${process.env.PRODUCTION_DOMAIN}`
                   : 'https://break-free-app.com';
 
@@ -1663,18 +1713,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
 
                 // Get tracking data from customer metadata
-                const customerMetadata = (customer as Stripe.Customer).metadata || {};
+                const customerMetadata = customer.metadata || {};
 
-                const contentName = invoiceData.billing_reason === 'subscription_create' 
-                  ? 'Trial Subscription' 
+                const contentName = invoiceData.billing_reason === 'subscription_create'
+                  ? 'Trial Subscription'
                   : 'Monthly Subscription';
 
                 const result = await fbCAPI.sendPurchase(
                   `${baseUrl}/checkout`,
                   {
                     email,
+                    phone: phone || undefined,
                     firstName,
                     lastName,
+                    // Location data (Meta recommended)
+                    city: city || undefined,
+                    state: state || undefined,
+                    zipCode: zipCode || undefined,
+                    country: country || undefined,
+                    // External ID for better matching
+                    externalId: customerId,
+                    // Browser/device data
                     fbc: customerMetadata.fbc || undefined,
                     fbp: customerMetadata.fbp || undefined,
                     ip: customerMetadata.client_ip || undefined,
@@ -2748,7 +2807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[Test CAPI] Sending test event:', JSON.stringify(payload, null, 2));
 
       const response = await fetch(
-        `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+        `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${accessToken}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

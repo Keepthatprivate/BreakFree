@@ -2,14 +2,31 @@ import crypto from 'crypto';
 import axios from 'axios';
 
 interface UserData {
+  // Core identifiers
   email?: string;
   phone?: string;
   firstName?: string;
   lastName?: string;
+
+  // Location data (Meta recommended for better matching)
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+
+  // Additional identifiers (Meta recommended)
+  dateOfBirth?: string; // Format: YYYYMMDD
+  gender?: 'm' | 'f'; // 'm' for male, 'f' for female
+  externalId?: string; // Your unique customer/user ID
+
+  // Browser/device data
   ip?: string;
   userAgent?: string;
   fbc?: string;
   fbp?: string;
+
+  // Facebook Login (if user logged in via FB)
+  fbLoginId?: string;
 }
 
 interface EventData {
@@ -24,7 +41,7 @@ interface EventData {
 class FacebookCAPI {
   private pixelId: string;
   private accessToken: string;
-  private apiVersion = 'v18.0'; // Using v18.0 for stability - widely supported
+  private apiVersion = 'v21.0'; // Using v21.0 for latest features and better matching
   private baseUrl = 'https://graph.facebook.com';
   private isValidated = false;
   private validationError: string | null = null;
@@ -174,19 +191,89 @@ class FacebookCAPI {
         hashed.ln = [hashedLn];
       }
     }
+
+    // Location data (Meta recommended for better matching)
+    if (userData.city) {
+      // Cities should be lowercase, no spaces, no special characters
+      const normalizedCity = userData.city.toLowerCase().replace(/[^a-z]/g, '');
+      const hashedCity = this.hashSHA256(normalizedCity);
+      if (hashedCity) {
+        hashed.ct = [hashedCity];
+      }
+    }
+    if (userData.state) {
+      // States should be 2-letter code, lowercase
+      const normalizedState = userData.state.toLowerCase().replace(/[^a-z]/g, '').substring(0, 2);
+      const hashedState = this.hashSHA256(normalizedState);
+      if (hashedState) {
+        hashed.st = [hashedState];
+      }
+    }
+    if (userData.zipCode) {
+      // Zip codes - US format: first 5 digits only
+      const normalizedZip = userData.zipCode.replace(/[^0-9]/g, '').substring(0, 5);
+      if (normalizedZip.length >= 5) {
+        const hashedZip = this.hashSHA256(normalizedZip);
+        if (hashedZip) {
+          hashed.zp = [hashedZip];
+        }
+      }
+    }
+    if (userData.country) {
+      // Country should be 2-letter ISO code, lowercase
+      const normalizedCountry = userData.country.toLowerCase().substring(0, 2);
+      const hashedCountry = this.hashSHA256(normalizedCountry);
+      if (hashedCountry) {
+        hashed.country = [hashedCountry];
+      }
+    }
+
+    // Additional identifiers (Meta recommended)
+    if (userData.dateOfBirth) {
+      // Date of birth should be YYYYMMDD format
+      const normalizedDob = userData.dateOfBirth.replace(/[^0-9]/g, '');
+      if (normalizedDob.length === 8) {
+        const hashedDob = this.hashSHA256(normalizedDob);
+        if (hashedDob) {
+          hashed.db = [hashedDob];
+        }
+      }
+    }
+    if (userData.gender) {
+      // Gender should be 'm' or 'f', lowercase
+      const hashedGender = this.hashSHA256(userData.gender.toLowerCase());
+      if (hashedGender) {
+        hashed.ge = [hashedGender];
+      }
+    }
+    if (userData.externalId) {
+      // External ID - your unique customer identifier (hashed)
+      const hashedExternalId = this.hashSHA256(userData.externalId);
+      if (hashedExternalId) {
+        hashed.external_id = [hashedExternalId];
+      }
+    }
+
+    // Facebook Login ID (if user logged in via Facebook)
+    if (userData.fbLoginId) {
+      // FB Login ID is NOT hashed - sent as-is
+      hashed.fb_login_id = userData.fbLoginId;
+    }
+
+    // Browser/device data (not hashed)
     if (userData.ip) {
       hashed.client_ip_address = userData.ip;
     }
     if (userData.userAgent) {
       hashed.client_user_agent = userData.userAgent;
     }
-    
+
     // Validate fbc before including - Meta rejects events with invalid creation times
     const validatedFbc = this.validateFbc(userData.fbc);
     if (validatedFbc) {
       hashed.fbc = validatedFbc;
     }
-    
+
     // Validate fbp before including
     const validatedFbp = this.validateFbp(userData.fbp);
     if (validatedFbp) {
@@ -252,11 +339,22 @@ class FacebookCAPI {
         console.log('  Source URL:', eventData.eventSourceUrl);
         console.log('  Event Time:', new Date(eventTime * 1000).toISOString());
         console.log('  User Data Present:');
-        // Handle array format for em, ph, fn, ln
+        // Core identifiers
         console.log('    - Email:', userData.em?.length ? `Yes (${userData.em[0].substring(0, 8)}...)` : 'No');
         console.log('    - Phone:', userData.ph?.length ? `Yes (${userData.ph[0].substring(0, 8)}...)` : 'No');
         console.log('    - First Name:', userData.fn?.length ? 'Yes' : 'No');
         console.log('    - Last Name:', userData.ln?.length ? 'Yes' : 'No');
+        // Location data (Meta recommended)
+        console.log('    - City:', userData.ct?.length ? 'Yes' : 'No');
+        console.log('    - State:', userData.st?.length ? 'Yes' : 'No');
+        console.log('    - Zip Code:', userData.zp?.length ? 'Yes' : 'No');
+        console.log('    - Country:', userData.country?.length ? 'Yes' : 'No');
+        // Additional identifiers
+        console.log('    - Date of Birth:', userData.db?.length ? 'Yes' : 'No');
+        console.log('    - Gender:', userData.ge?.length ? 'Yes' : 'No');
+        console.log('    - External ID:', userData.external_id?.length ? 'Yes' : 'No');
+        console.log('    - FB Login ID:', userData.fb_login_id ? 'Yes' : 'No');
+        // Browser/device data
         console.log('    - IP Address:', userData.client_ip_address || 'No');
         console.log('    - User Agent:', userData.client_user_agent ? `Yes (${userData.client_user_agent.length} chars)` : 'No');
         console.log('    - FBC:', userData.fbc || 'No');

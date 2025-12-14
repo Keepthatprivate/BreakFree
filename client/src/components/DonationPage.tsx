@@ -16,7 +16,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
   const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
 
   const donationAmounts = [
-    { amount: 4.99, label: '$4.99' },
+    { amount: 3, label: '$3' },
     { amount: 9.99, label: '$9.99' },
     { amount: 24.99, label: '$24.99' },
   ];
@@ -90,6 +90,12 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
             })}
           </div>
           
+          {selectedDonation === 3 && (
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mb-2">
+              It's less than a Starbucks coffee
+            </p>
+          )}
+
           <div className="text-right mb-5">
             <span className="text-xs sm:text-sm text-primary">Cost to cover our team's effort</span>
           </div>

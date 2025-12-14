@@ -38,7 +38,7 @@ const MAX_RETRY_ATTEMPTS = 3;
 function extractUserData(req: Request, body: any) {
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.get('user-agent') || '';
-  
+
   let fbc = body.fbc;
   // CRITICAL FIX: Do NOT create fbc from fbclid with current timestamp
   // This causes "invalid creationTime" errors because the fbc timestamp
@@ -52,10 +52,27 @@ function extractUserData(req: Request, body: any) {
   }
 
   return {
+    // Core identifiers
     email: body.email,
     phone: body.phone,
     firstName: body.firstName,
     lastName: body.lastName,
+
+    // Location data (Meta recommended for better matching)
+    city: body.city,
+    state: body.state,
+    zipCode: body.zipCode || body.zip || body.postalCode,
+    country: body.country,
+
+    // Additional identifiers
+    dateOfBirth: body.dateOfBirth || body.dob,
+    gender: body.gender,
+    externalId: body.externalId || body.customerId || body.userId,
+
+    // Facebook Login ID (if available)
+    fbLoginId: body.fbLoginId,
+
+    // Browser/device data
     ip,
     userAgent,
     fbc,
@@ -329,7 +346,7 @@ router.get('/debug/health', async (req: Request, res: Response) => {
   if (pixelId && accessToken) {
     try {
       const permissionCheck = await axios.get(
-        `https://graph.facebook.com/v18.0/${pixelId}`,
+        `https://graph.facebook.com/v21.0/${pixelId}`,
         {
           params: {
             fields: 'name,is_unavailable',
@@ -394,7 +411,7 @@ router.post('/debug/validate-token', async (req: Request, res: Response) => {
     
     // Test 2: Pixel access
     const pixelResponse = await axios.get(
-      `https://graph.facebook.com/v18.0/${pixelId}`,
+      `https://graph.facebook.com/v21.0/${pixelId}`,
       {
         params: {
           fields: 'name,id',
@@ -424,7 +441,7 @@ router.post('/debug/validate-token', async (req: Request, res: Response) => {
     }
     
     const eventResponse = await axios.post(
-      `https://graph.facebook.com/v18.0/${pixelId}/events`,
+      `https://graph.facebook.com/v21.0/${pixelId}/events`,
       testPayload,
       { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
     );
