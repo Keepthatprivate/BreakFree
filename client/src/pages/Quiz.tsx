@@ -359,7 +359,8 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    setState('patterns');
+    // After results, go to seven-days page (just before trial)
+    setState('seven-days');
   };
 
   const handlePatternsContinue = () => {
@@ -367,8 +368,8 @@ export default function Quiz() {
   };
 
   const handleTestimonialsContinue = () => {
-    // After testimonials, go to seven-days page (just before trial)
-    setState('seven-days');
+    // After testimonials, go to results page
+    setState('results');
   };
 
   const handleFAQContinue = () => {
