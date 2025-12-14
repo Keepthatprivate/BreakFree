@@ -226,19 +226,6 @@ export default function IntroScene() {
         )}
       </AnimatePresence>
 
-      {/* Skip Intro Button */}
-      {!isZooming && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          onClick={handleSkipIntro}
-          data-testid="button-skip-intro"
-          className="absolute bottom-6 right-6 text-white/60 hover:text-white/90 text-sm font-inter transition-colors duration-200 px-4 py-2 rounded-lg bg-black/20 backdrop-blur-sm hover:bg-black/40"
-        >
-          Skip Intro →
-        </motion.button>
-      )}
     </motion.div>
   );
 }
