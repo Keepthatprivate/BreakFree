@@ -4,7 +4,7 @@
 
 // Boy Animations
 import boyAnim1Img1 from '@assets/ChatGPT_Image_14_déc._2025,_05_34_06_1765687552867.png';
-import boyAnim1Img2 from '@assets/ChatGPT Image 3 nov. 2025, 23_07_27_1762207697459.png';
+import boyAnim1Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_37_20_1765687591926.png';
 import boyAnim1Img3 from '@assets/ChatGPT Image 3 nov. 2025, 23_08_52_1762207742718.png';
 
 import boyAnim2Img1 from '@assets/ChatGPT Image 3 nov. 2025, 23_08_52_1762216711000.png';
