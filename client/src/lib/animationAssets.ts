@@ -17,7 +17,7 @@ import boyAnim3Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_28_31_17656906
 
 import boyAnim4Img1 from '@assets/ChatGPTImage3nov.202523_39_37_1765690683401.png';
 import boyAnim4Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_00_32_1765690703534.png';
-import boyAnim4Img3 from '@assets/ChatGPT Image 4 nov. 2025, 00_36_58_1762213042349.png';
+import boyAnim4Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_56_1765690722405.png';
 
 // Girl Animations
 import girlAnim1Img1 from '@assets/ChatGPT Image 3 nov. 2025, 17_45_30_1762221432155.png';
