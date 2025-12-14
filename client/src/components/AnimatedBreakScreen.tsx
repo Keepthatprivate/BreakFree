@@ -91,7 +91,7 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
         <div className="text-muted-foreground animate-pulse">Loading...</div>
       ) : (
         <div
-          className={`relative w-[90vw] h-[90vw] sm:w-[80vw] sm:h-[80vw] max-w-xl max-h-xl transition-opacity duration-300 ${
+          className={`relative w-[85vw] max-w-md aspect-[3/4] transition-opacity duration-300 ${
             isVisible ? 'opacity-100' : 'opacity-0'
           }`}
           data-testid="animated-break-screen"
@@ -101,7 +101,7 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
               key={index}
               src={imageSrc}
               alt={`Animation frame ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-100 ${
+              className={`absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-100 ${
                 currentImageIndex === index ? 'opacity-100' : 'opacity-0'
               }`}
               data-testid={`animation-image-${index}`}
