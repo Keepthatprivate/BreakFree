@@ -178,31 +178,65 @@ export function getFbc(): string | null {
 
 interface FacebookEventData {
   url?: string;
+  // Core identifiers
   email?: string;
+  phone?: string;
   firstName?: string;
   lastName?: string;
+  // Location data (Meta recommended for better matching)
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  // Additional identifiers (Meta recommended)
+  dateOfBirth?: string; // Format: YYYYMMDD
+  gender?: 'm' | 'f';
+  externalId?: string; // Your unique user/customer ID
+  // Event data
   value?: number;
   currency?: string;
   contentName?: string;
 }
 
 /**
+ * Get browser locale country code (2-letter ISO)
+ * Falls back to null if not available
+ */
+function getBrowserCountry(): string | null {
+  try {
+    // Try to get country from navigator.language (e.g., 'en-US' -> 'US')
+    const locale = navigator.language || (navigator as any).userLanguage;
+    if (locale && locale.includes('-')) {
+      const country = locale.split('-')[1]?.toUpperCase();
+      if (country && country.length === 2) {
+        return country;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Get all tracking parameters for API calls
- * Includes client user agent for better matching
+ * Includes client user agent and browser country for better matching
  */
 function getTrackingParams() {
   const { fbc, fbp } = getFacebookCookies();
   const fbclid = getFbclid();
   const clientUserAgent = navigator.userAgent;
-  
-  console.log('[FB Tracking] Sending params:', { 
-    fbclid, 
-    fbp: fbp ? 'present' : 'null', 
+  const browserCountry = getBrowserCountry();
+
+  console.log('[FB Tracking] Sending params:', {
+    fbclid,
+    fbp: fbp ? 'present' : 'null',
     fbc: fbc ? 'present' : 'null',
-    hasUserAgent: !!clientUserAgent
+    hasUserAgent: !!clientUserAgent,
+    browserCountry
   });
-  
-  return { fbclid, fbp, fbc, clientUserAgent };
+
+  return { fbclid, fbp, fbc, clientUserAgent, browserCountry };
 }
 
 /**
@@ -216,9 +250,20 @@ export async function trackViewContent(data: FacebookEventData = {}): Promise<vo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url: data.url || window.location.href,
+        // Core identifiers
         email: data.email,
+        phone: data.phone,
         firstName: data.firstName,
         lastName: data.lastName,
+        // Location data (use browser country as fallback)
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        country: data.country || params.browserCountry,
+        // Additional identifiers
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        externalId: data.externalId,
         ...params,
       }),
     });
@@ -238,9 +283,20 @@ export async function trackLead(data: FacebookEventData): Promise<void> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url: data.url || window.location.href,
+        // Core identifiers
         email: data.email,
+        phone: data.phone,
         firstName: data.firstName,
         lastName: data.lastName,
+        // Location data
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        country: data.country || params.browserCountry,
+        // Additional identifiers
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        externalId: data.externalId,
         ...params,
       }),
     });
@@ -260,9 +316,21 @@ export async function trackInitiateCheckout(data: FacebookEventData): Promise<vo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url: data.url || window.location.href,
+        // Core identifiers
         email: data.email,
+        phone: data.phone,
         firstName: data.firstName,
         lastName: data.lastName,
+        // Location data
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        country: data.country || params.browserCountry,
+        // Additional identifiers
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        externalId: data.externalId,
+        // Event data
         value: data.value,
         currency: data.currency || 'USD',
         contentName: data.contentName,
@@ -285,9 +353,20 @@ export async function trackAddPaymentInfo(data: FacebookEventData): Promise<void
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url: data.url || window.location.href,
+        // Core identifiers
         email: data.email,
+        phone: data.phone,
         firstName: data.firstName,
         lastName: data.lastName,
+        // Location data
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        country: data.country || params.browserCountry,
+        // Additional identifiers
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        externalId: data.externalId,
         ...params,
       }),
     });
