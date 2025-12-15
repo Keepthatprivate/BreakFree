@@ -2,13 +2,13 @@ import { Star } from 'lucide-react';
 import { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
-import jamesImage from '@assets/454999ec56229c3ff192fccf33fccb62_1761862009838.jpg';
+// Import diverse profile images from different photo batches to ensure visual variety
 import sarahImage from '@assets/stock_images/professional_woman_s_42c21774.jpg';
-import michaelImage from '@assets/stock_images/professional_man_smi_9cfe1802.jpg';
-import emilyImage from '@assets/stock_images/professional_woman_s_d4fbbe22.jpg';
-import davidImage from '@assets/stock_images/professional_man_smi_e2a3db08.jpg';
-import rachelImage from '@assets/stock_images/professional_woman_s_535cd02e.jpg';
-import johnImage from '@assets/stock_images/professional_man_smi_25966cd2.jpg';
+import michaelImage from '@assets/stock_images/casual_photo_young_m_c492381e.jpg';
+import emilyImage from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
+import davidImage from '@assets/stock_images/young_man_casual_sel_6b0d184e.jpg';
+import rachelImage from '@assets/stock_images/young_woman_casual_s_cab6f0c8.jpg';
+import johnImage from '@assets/stock_images/professional_headsho_9ebfa56d.jpg';
 
 interface TestimonialsPageProps {
   onContinue: () => void;
