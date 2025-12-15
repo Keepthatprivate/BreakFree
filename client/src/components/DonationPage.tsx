@@ -16,7 +16,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
   const [selectedDonation, setSelectedDonation] = useState<number>(24.99);
 
   const donationAmounts = [
-    { amount: 3, label: '$3' },
+    { amount: 2.99, label: '$2.99' },
     { amount: 9.99, label: '$9.99' },
     { amount: 24.99, label: '$24.99' },
   ];
