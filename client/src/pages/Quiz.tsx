@@ -251,8 +251,8 @@ export default function Quiz() {
   };
 
   const handleLoadingComplete = () => {
-    // After loading completes, go to benefits pages
-    setState('benefits');
+    // After loading completes, go to trust page first
+    setState('trust');
   };
 
   const handlePaymentComplete = () => {
@@ -339,8 +339,8 @@ export default function Quiz() {
   };
 
   const handleBenefitsContinue = () => {
-    // After benefits page, show trust page
-    setState('trust');
+    // After benefits page, show donation
+    setState('donation');
   };
 
   const handleSevenDaysContinue = () => {
@@ -354,8 +354,8 @@ export default function Quiz() {
   };
 
   const handleTrustContinue = () => {
-    // After trust page, show donation
-    setState('donation');
+    // After trust page, show benefits
+    setState('benefits');
   };
 
   const handleResultsContinue = () => {
