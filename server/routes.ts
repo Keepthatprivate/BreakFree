@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             primaryPattern: quizAnalysis?.primaryPattern || '',
           },
         },
-        success_url: `${baseUrl}/quiz?state=upsell&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}/quiz?state=results&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/quiz?state=timeline`,
         metadata: {
           type: 'subscription',
