@@ -40,9 +40,12 @@ const getInitialState = (): QuizState => {
   const urlParams = new URLSearchParams(window.location.search);
   const stateParam = urlParams.get('state');
   const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'subscription-checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
+  console.log('[Quiz] URL state param:', stateParam, '| Valid:', validStates.includes(stateParam as QuizState));
   if (stateParam && validStates.includes(stateParam as QuizState)) {
+    console.log('[Quiz] Setting initial state to:', stateParam);
     return stateParam as QuizState;
   }
+  console.log('[Quiz] Defaulting to quiz state');
   return 'quiz';
 };
 
