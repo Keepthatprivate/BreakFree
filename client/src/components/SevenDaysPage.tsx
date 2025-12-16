@@ -39,7 +39,7 @@ export default function SevenDaysPage({ onContinue }: SevenDaysPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-8 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-6 sm:py-8">
       <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">

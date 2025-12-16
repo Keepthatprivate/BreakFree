@@ -4,7 +4,7 @@ interface PersonalizedJourneyProps {
 
 export default function PersonalizedJourney({ onContinue }: PersonalizedJourneyProps) {
   return (
-    <div className="min-h-screen bg-background py-8 sm:py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-8 sm:py-12">
       <div className="max-w-3xl mx-auto px-5 sm:px-6 w-full">
         <div className="text-center mb-10">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">

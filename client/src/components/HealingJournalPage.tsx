@@ -28,7 +28,7 @@ export default function HealingJournalPage({ onAccept, onSkip }: HealingJournalP
   ];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-4 sm:py-8">
+    <div className="min-h-screen bg-background py-4 sm:py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 w-full">
         {/* Progress Indicator */}
         <div className="flex items-center justify-center gap-1.5 sm:gap-4 mb-6 sm:mb-8">

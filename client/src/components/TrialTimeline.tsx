@@ -47,7 +47,7 @@ export default function TrialTimeline({ onStartTrial }: TrialTimelineProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-4 sm:py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-4 sm:py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 w-full">
         <div className="bg-card/50 rounded-3xl p-5 sm:p-10 border border-card-border/50 mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">

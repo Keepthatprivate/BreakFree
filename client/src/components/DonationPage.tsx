@@ -37,7 +37,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
   };
 
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-10 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-6 sm:py-10">
       <div className="max-w-lg mx-auto px-5 sm:px-6 w-full">
         <div className="mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-5 leading-snug">

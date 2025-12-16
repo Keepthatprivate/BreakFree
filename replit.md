@@ -76,3 +76,25 @@ Preferred communication style: Simple, everyday language.
 - `checkout.session.async_payment_failed` → Logged but NOT sent as Purchase
 Uses `conversion_events` PostgreSQL table for idempotent event processing, preventing duplicate Purchase events to Meta using PaymentIntent ID as unique event_id. Signature verification via STRIPE_WEBHOOK_SECRET in production.
 **Development Tools**: Replit-specific plugins, TypeScript strict mode, path aliases, CORS for cross-domain requests.
+
+## Development Guidelines
+
+### Page Layout Pattern (IMPORTANT)
+**Do NOT use `flex items-center justify-center` on full-height page containers** when the content may exceed viewport height on mobile devices. This causes a scroll-jumping bug where users cannot scroll down to interact with buttons.
+
+**Bad pattern (causes scroll bug):**
+```tsx
+<div className="min-h-screen bg-background flex items-center justify-center">
+```
+
+**Good pattern (allows natural scrolling):**
+```tsx
+<div className="min-h-screen bg-background py-6 sm:py-8">
+```
+
+The `flex items-center justify-center` pattern is only acceptable for:
+- Loading spinners (very short content)
+- Error states (minimal content that fits on screen)
+- Modal-style overlays
+
+For all scrollable content pages (testimonials, FAQs, checkout forms, etc.), use padding only.
