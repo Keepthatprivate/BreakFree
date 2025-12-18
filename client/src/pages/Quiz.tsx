@@ -74,7 +74,17 @@ export default function Quiz() {
   const [empathyMessageIndex, setEmpathyMessageIndex] = useState(0);
   const [currentAnimationIndex, setCurrentAnimationIndex] = useState(0);
   const [currentQuoteBreakIndex, setCurrentQuoteBreakIndex] = useState(0);
-  const [hasPaid, setHasPaid] = useState(false);
+  const [hasPaid, setHasPaid] = useState(() => {
+    // Check if user has paid from localStorage or session_id in URL (Stripe checkout return)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    const storedHasPaid = localStorage.getItem('hasPaid') === 'true';
+    if (sessionId || storedHasPaid) {
+      localStorage.setItem('hasPaid', 'true');
+      return true;
+    }
+    return false;
+  });
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
@@ -128,6 +138,18 @@ export default function Quiz() {
   // Track quiz page view on mount with funnel step identification
   useEffect(() => {
     trackViewContent({ contentName: 'Funnel Step 01 - Quiz Start' });
+  }, []);
+
+  // Clean up session_id from URL after Stripe checkout return
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('session_id')) {
+      urlParams.delete('session_id');
+      const newUrl = urlParams.toString()
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
   }, []);
 
   // Scroll to top whenever state or question changes
