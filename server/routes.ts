@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             primaryPattern: quizAnalysis?.primaryPattern || '',
           },
         },
-        success_url: `${baseUrl}/quiz?state=results&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}/quiz?state=upsell&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/quiz?state=timeline`,
         metadata: {
           type: 'subscription',
@@ -1185,12 +1185,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productDetails = getProductDetails(type, paymentIntent.amount);
       const amountInDollars = paymentIntent.amount / 100;
 
-      // NOTE: Purchase events are NOT sent from payment_intent.succeeded
-      // They are ONLY sent from:
-      // - checkout.session.completed (when payment_status === 'paid')
-      // - checkout.session.async_payment_succeeded
-      // This prevents duplicate Purchase events in Meta
-      console.log(`[Stripe Webhook] payment_intent.succeeded: NOT sending Purchase to Meta (will be sent from checkout.session events)`);
+      // Send Purchase event to Meta for PaymentIntent-based payments
+      // These payment types (trial, upsell, donation) use PaymentIntents directly
+      // and do NOT go through Checkout Sessions, so we must send the Purchase event here
+      if (fbCAPI && email && type && ['trial', 'upsell', 'donation', 'masterclass', 'journal'].includes(type)) {
+        try {
+          // Check for duplicate to prevent double-counting
+          const dedupResult = await checkAndRecordConversionEvent(
+            paymentIntent.id,
+            event.id,
+            'Purchase',
+            amountInDollars,
+            paymentIntent.currency?.toUpperCase() || 'USD',
+            email
+          );
+
+          if (dedupResult.isDuplicate) {
+            console.log(`[Stripe Webhook] Skipping duplicate payment_intent Purchase for ${paymentIntent.id}`);
+          } else {
+            // Use source URL from metadata if available, otherwise fallback to production domain
+            const baseUrl = process.env.PRODUCTION_DOMAIN
+              ? `https://${process.env.PRODUCTION_DOMAIN}`
+              : 'https://break-free-app.com';
+            const sourceUrl = paymentIntent.metadata.source_url || `${baseUrl}/checkout`;
+
+            // Extract user data from metadata
+            const fbc = paymentIntent.metadata.fbc;
+            const fbp = paymentIntent.metadata.fbp;
+            const clientUserAgent = paymentIntent.metadata.client_user_agent;
+            const clientIp = paymentIntent.metadata.client_ip;
+
+            // Parse name into first/last
+            const nameParts = (name || '').trim().split(' ');
+            const firstName = nameParts[0] || undefined;
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+            // Get customer ID for external_id
+            const customerId = typeof paymentIntent.customer === 'string'
+              ? paymentIntent.customer
+              : (paymentIntent.customer as any)?.id;
+
+            // Determine content name based on payment type
+            const contentName = paymentIntent.metadata.productName || productDetails.productName;
+
+            const result = await fbCAPI.sendPurchase(
+              sourceUrl,
+              {
+                email,
+                firstName,
+                lastName,
+                externalId: customerId || undefined,
+                fbc: fbc || undefined,
+                fbp: fbp || undefined,
+                ip: clientIp || undefined,
+                userAgent: clientUserAgent || undefined,
+              },
+              {
+                value: amountInDollars,
+                currency: (paymentIntent.currency || 'usd').toUpperCase(),
+                content_name: contentName,
+              },
+              {
+                eventId: paymentIntent.id,
+                eventTime: paymentIntent.created,
+              }
+            );
+
+            await updateConversionEventMetaResponse(paymentIntent.id, JSON.stringify(result));
+
+            if (result.success) {
+              console.log(`[Stripe Webhook] PaymentIntent Purchase sent to Meta:`, {
+                paymentId: paymentIntent.id,
+                type,
+                amount: amountInDollars,
+                currency: paymentIntent.currency,
+                eventsReceived: result.response?.events_received
+              });
+            } else {
+              console.error(`[Stripe Webhook] PaymentIntent Purchase to Meta failed:`, result.error);
+            }
+          }
+        } catch (fbError: any) {
+          console.error('[Stripe Webhook] Error sending PaymentIntent Purchase to Meta:', fbError.message);
+          // Don't fail the webhook - payment already succeeded
+        }
+      } else {
+        console.log(`[Stripe Webhook] payment_intent.succeeded: Skipping Meta Purchase (type=${type}, email=${!!email}, fbCAPI=${!!fbCAPI})`);
+      }
 
       if (email) {
         try {
