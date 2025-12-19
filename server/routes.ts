@@ -764,10 +764,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create Checkout Session for subscription with trial
+      // Note: Omitting payment_method_types enables automatic_payment_methods
+      // which shows all payment methods enabled in Stripe dashboard
       const session = await stripe.checkout.sessions.create({
         customer: customer.id,
         mode: 'subscription',
-        payment_method_types: ['card'],
         line_items: [
           {
             price: MONTHLY_PRICE_ID,

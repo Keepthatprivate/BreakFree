@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { trackViewContent, trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
+import PaymentMethodSelector, { PaymentMethodType } from './PaymentMethodSelector';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -18,9 +19,10 @@ interface CheckoutFormProps {
   email: string;
   name?: string;
   onSuccess: () => void;
+  selectedPaymentMethod: PaymentMethodType;
 }
 
-function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutFormProps) {
+function CheckoutForm({ amount, productName, email, name, onSuccess, selectedPaymentMethod }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -78,14 +80,31 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
     }
   };
 
+  // Build payment method order with selected method first
+  const getPaymentMethodOrder = () => {
+    const baseOrder = ['apple_pay', 'google_pay', 'amazon_pay', 'link', 'klarna', 'revolut_pay', 'card'];
+    if (selectedPaymentMethod && selectedPaymentMethod !== 'card') {
+      // Move selected method to front
+      const filtered = baseOrder.filter(m => m !== selectedPaymentMethod);
+      return [selectedPaymentMethod, ...filtered];
+    }
+    return baseOrder;
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement 
+      <PaymentElement
         onReady={handlePaymentElementReady}
         options={{
           layout: 'accordion',
-          // Stripe integration: Preselect Apple Pay by prioritizing wallets
-          paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
+          // Prioritize the user's selected payment method
+          paymentMethodOrder: getPaymentMethodOrder(),
+          defaultValues: {
+            billingDetails: {
+              email: email,
+              name: name,
+            }
+          },
         }}
       />
       <Button
@@ -121,6 +140,15 @@ export default function CheckoutPage({ amount, productType, productName, email, 
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>('card');
+
+  // Key to force remount PaymentElement when payment method changes
+  const [elementsKey, setElementsKey] = useState(0);
+
+  const handlePaymentMethodChange = (method: PaymentMethodType) => {
+    setSelectedPaymentMethod(method);
+    setElementsKey(prev => prev + 1); // Force remount with new default
+  };
 
   useEffect(() => {
     trackViewContent({ contentName: `Funnel Step - Checkout ${productName}` });
@@ -302,10 +330,20 @@ export default function CheckoutPage({ amount, productType, productName, email, 
             )}
           </div>
 
+          {/* Payment Method Quick Selector */}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs text-muted-foreground">Pay with:</span>
+            <PaymentMethodSelector
+              selectedMethod={selectedPaymentMethod}
+              onMethodChange={handlePaymentMethodChange}
+            />
+          </div>
+
           {/* Stripe integration: Wrap form in Elements provider */}
-          <Elements 
-            stripe={stripePromise} 
-            options={{ 
+          <Elements
+            key={elementsKey}
+            stripe={stripePromise}
+            options={{
               clientSecret,
               appearance: {
                 theme: 'night',
@@ -319,12 +357,13 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               },
             }}
           >
-            <CheckoutForm 
-              amount={amount} 
-              productName={productName} 
+            <CheckoutForm
+              amount={amount}
+              productName={productName}
               email={email}
               name={name}
-              onSuccess={onComplete} 
+              onSuccess={onComplete}
+              selectedPaymentMethod={selectedPaymentMethod}
             />
           </Elements>
 
