@@ -31,11 +31,6 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
     onContinue(selectedDonation || undefined);
   };
 
-  const handleSkip = () => {
-    // Pass undefined to skip donation
-    onContinue(undefined);
-  };
-
   return (
     <div className="min-h-screen bg-background py-6 sm:py-10">
       <div className="max-w-lg mx-auto px-5 sm:px-6 w-full">
@@ -117,13 +112,6 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
           >
             Donate
           </Button>
-          <button
-            onClick={handleSkip}
-            className="w-full text-foreground/70 hover:text-foreground font-medium text-base transition-colors py-2"
-            data-testid="button-skip-donation"
-          >
-            Skip contribution
-          </button>
         </div>
       </div>
     </div>
