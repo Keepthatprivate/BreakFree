@@ -337,7 +337,7 @@ export default function Quiz() {
     // After successful checkout, mark as paid and continue to next step
     setHasPaid(true);
     localStorage.setItem('hasPaid', 'true');
-    
+
     // Determine next step based on checkout type
     // Flow: Donation → Plan Help → Testimonials → Seven Days → Timeline → Trial → Guides → Masterclass → Results
     if (checkoutType === 'donation') {
@@ -355,6 +355,19 @@ export default function Quiz() {
     } else if (checkoutType === 'journal') {
       // After buying journal (downsell), go to results
       setState('results');
+    }
+  };
+
+  const handleCheckoutBack = () => {
+    // Go back to the page where the user selected their payment option
+    if (checkoutType === 'donation') {
+      setState('donation');
+    } else if (checkoutType === 'upsell') {
+      setState('payment');
+    } else if (checkoutType === 'masterclass') {
+      setState('masterclass');
+    } else if (checkoutType === 'journal') {
+      setState('journal');
     }
   };
 
@@ -424,6 +437,7 @@ export default function Quiz() {
         name={userName}
         answers={checkoutType === 'trial' ? answers : undefined}
         onComplete={handleCheckoutComplete}
+        onBack={handleCheckoutBack}
       />
     );
   }
