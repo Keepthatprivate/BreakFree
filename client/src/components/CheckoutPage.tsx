@@ -383,10 +383,10 @@ export default function CheckoutPage({ amount, productType, productName, email, 
             />
           </Elements>
 
-          {/* Change payment method link */}
+          {/* Change payment method link - always visible */}
           <button
             onClick={onBack || (() => window.history.back())}
-            className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors mt-4 text-sm w-full"
+            className="flex items-center justify-center gap-2 text-primary hover:text-primary/80 transition-colors mt-6 text-sm w-full font-medium"
             data-testid="button-change-payment-method"
           >
             <ArrowLeft className="w-4 h-4" />
