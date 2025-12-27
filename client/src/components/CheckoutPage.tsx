@@ -6,6 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { trackViewContent, trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
+import {
+  PaymentMethodType,
+  getOrderedPaymentMethods,
+  setStoredPaymentPreference,
+  getDefaultPaymentMethod
+} from '@/lib/payment-preferences';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
 // Only load if the key is available (runtime check instead of throwing)
@@ -17,15 +23,19 @@ interface CheckoutFormProps {
   productName: string;
   email: string;
   name?: string;
+  preferredPaymentMethod?: PaymentMethodType;
   onSuccess: () => void;
 }
 
-function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutFormProps) {
+function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
+
+  // Get dynamically ordered payment methods based on user preference or device
+  const paymentMethodOrder = getOrderedPaymentMethods(preferredPaymentMethod);
 
   const handlePaymentElementReady = () => {
     // Track AddPaymentInfo when payment element is ready and user can interact
@@ -69,6 +79,11 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
       // This ensures only truly completed payments are tracked as purchases in Meta
       // The frontend confirmation just means the form was submitted, not that payment succeeded
 
+      // Store the user's payment method preference for future purchases
+      if (preferredPaymentMethod) {
+        setStoredPaymentPreference(preferredPaymentMethod);
+      }
+
       toast({
         title: "Payment Successful",
         description: `Thank you for your purchase of ${productName}!`,
@@ -85,17 +100,8 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
         options={{
           layout: 'accordion',
           // Stripe integration: Include all available payment methods
-          // Users can select their preferred method, with wallets prioritized
-          paymentMethodOrder: [
-            'apple_pay',
-            'google_pay',
-            'samsung_pay',
-            'link',
-            'amazon_pay',
-            'revolut_pay',
-            'klarna',
-            'card',
-          ],
+          // Dynamic ordering based on user preference or device detection
+          paymentMethodOrder: paymentMethodOrder,
         }}
       />
       <Button
@@ -124,14 +130,18 @@ interface CheckoutPageProps {
   email: string;
   name?: string;
   answers?: Record<string, string[]>;
+  preferredPaymentMethod?: PaymentMethodType;
   onComplete: () => void;
   onBack?: () => void;
 }
 
-export default function CheckoutPage({ amount, productType, productName, email, name, answers, onComplete, onBack }: CheckoutPageProps) {
+export default function CheckoutPage({ amount, productType, productName, email, name, answers, preferredPaymentMethod, onComplete, onBack }: CheckoutPageProps) {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use provided payment method or get smart default
+  const effectivePaymentMethod = preferredPaymentMethod || getDefaultPaymentMethod();
 
   useEffect(() => {
     trackViewContent({ contentName: `Funnel Step - Checkout ${productName}` });
@@ -339,12 +349,13 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               },
             }}
           >
-            <CheckoutForm 
-              amount={amount} 
-              productName={productName} 
+            <CheckoutForm
+              amount={amount}
+              productName={productName}
               email={email}
               name={name}
-              onSuccess={onComplete} 
+              preferredPaymentMethod={effectivePaymentMethod}
+              onSuccess={onComplete}
             />
           </Elements>
 
