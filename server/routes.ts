@@ -28,10 +28,7 @@ if (!fbCAPI) {
 }
 
 // Payment method type mapping from frontend to Stripe payment_method_types
-type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link' | 'amazon_pay' | 'revolut_pay' | 'klarna' | 'card';
-
-// Klarna requires specific currencies - not USD
-const KLARNA_SUPPORTED_CURRENCIES = ['eur', 'dkk', 'gbp', 'nok', 'sek', 'czk', 'ron', 'pln', 'chf'];
+type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link' | 'amazon_pay' | 'revolut_pay' | 'card';
 
 function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): string[] {
   // Map frontend payment method selection to Stripe payment_method_types
@@ -41,7 +38,8 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
     case 'google_pay':
     case 'samsung_pay':
     case 'card':
-      // Apple Pay/Google Pay use 'card' as the underlying payment method
+      // Apple Pay/Google Pay/Samsung Pay all use 'card' as the underlying payment method
+      // Samsung Pay works through Google Pay on web via the Stripe PaymentElement
       return ['card'];
     case 'link':
       // Link works alongside card
@@ -51,20 +49,14 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
       return ['amazon_pay'];
     case 'revolut_pay':
       return ['revolut_pay'];
-    case 'klarna':
-      // Klarna only - requires EUR/GBP currency (handled separately)
-      return ['klarna'];
     default:
       // If no preference, allow all common methods
       return ['card', 'link'];
   }
 }
 
-// Get the appropriate currency for a payment method
+// Get the appropriate currency for a payment method (all use USD)
 function getCurrencyForPaymentMethod(preferredMethod?: PreferredPaymentMethod): string {
-  if (preferredMethod === 'klarna') {
-    return 'eur'; // Klarna requires EUR (or other European currencies)
-  }
   return 'usd';
 }
 

@@ -42,7 +42,8 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
     
     if (preferredPaymentMethod === 'apple_pay') {
       setWalletAvailable(isApplePayAvailable);
-    } else if (preferredPaymentMethod === 'google_pay') {
+    } else if (preferredPaymentMethod === 'google_pay' || preferredPaymentMethod === 'samsung_pay') {
+      // Samsung Pay uses Google Pay on web
       setWalletAvailable(isGooglePayAvailable);
     } else {
       setWalletAvailable(isApplePayAvailable || isGooglePayAvailable);
@@ -92,7 +93,8 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   const getWalletButtonsConfig = () => {
     if (preferredPaymentMethod === 'apple_pay') {
       return { applePay: 'always' as const, googlePay: 'never' as const };
-    } else if (preferredPaymentMethod === 'google_pay') {
+    } else if (preferredPaymentMethod === 'google_pay' || preferredPaymentMethod === 'samsung_pay') {
+      // Samsung Pay uses Google Pay button on web
       return { applePay: 'never' as const, googlePay: 'always' as const };
     }
     return { applePay: 'always' as const, googlePay: 'always' as const };
@@ -112,7 +114,11 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
 
   // If wallet is not available, show a message
   if (walletAvailable === false) {
-    const walletName = preferredPaymentMethod === 'apple_pay' ? 'Apple Pay' : 'Google Pay';
+    const walletName = preferredPaymentMethod === 'apple_pay' 
+      ? 'Apple Pay' 
+      : preferredPaymentMethod === 'samsung_pay'
+        ? 'Samsung Pay'
+        : 'Google Pay';
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -238,8 +244,11 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
 
 // Main CheckoutForm that routes to the appropriate form based on payment method
 function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
-  // Use Express Checkout for Apple Pay and Google Pay
-  const isWalletPayment = preferredPaymentMethod === 'apple_pay' || preferredPaymentMethod === 'google_pay';
+  // Use Express Checkout for Apple Pay, Google Pay, and Samsung Pay
+  // Samsung Pay uses the Google Pay button on web (handled by Stripe's ExpressCheckoutElement)
+  const isWalletPayment = preferredPaymentMethod === 'apple_pay' || 
+                          preferredPaymentMethod === 'google_pay' || 
+                          preferredPaymentMethod === 'samsung_pay';
   
   if (isWalletPayment) {
     return (
@@ -254,7 +263,7 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
     );
   }
 
-  // Use standard PaymentElement for Card, Link, Amazon Pay, Klarna
+  // Use standard PaymentElement for Card, Link, Amazon Pay
   return (
     <StandardCheckoutForm
       amount={amount}

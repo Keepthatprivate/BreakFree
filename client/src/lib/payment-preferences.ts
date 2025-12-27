@@ -8,7 +8,6 @@ export type PaymentMethodType =
   | 'link'
   | 'amazon_pay'
   | 'revolut_pay'
-  | 'klarna'
   | 'card';
 
 export interface PaymentMethod {
@@ -25,7 +24,6 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 'samsung_pay', name: 'Samsung Pay', icon: '', description: 'Pay with Samsung Pay' },
   { id: 'amazon_pay', name: 'Amazon Pay', icon: '', description: 'Pay with Amazon Pay' },
   { id: 'revolut_pay', name: 'Revolut Pay', icon: '', description: 'Pay with Revolut' },
-  { id: 'klarna', name: 'Klarna', icon: '', description: 'Buy now, pay later with Klarna' },
   { id: 'link', name: 'Link', icon: '', description: 'Pay with Link by Stripe' },
   { id: 'card', name: 'Card', icon: '', description: 'Pay with credit or debit card' },
 ];
@@ -146,7 +144,7 @@ export function getDefaultPaymentMethod(): PaymentMethodType {
 export function getOrderedPaymentMethods(preferredMethod?: PaymentMethodType): PaymentMethodType[] {
   const defaultMethod = preferredMethod || getDefaultPaymentMethod();
 
-  // Base order - digital wallets first, then BNPL, then card
+  // Base order - digital wallets first, then card
   const baseOrder: PaymentMethodType[] = [
     'apple_pay',
     'google_pay',
@@ -154,7 +152,6 @@ export function getOrderedPaymentMethods(preferredMethod?: PaymentMethodType): P
     'link',
     'amazon_pay',
     'revolut_pay',
-    'klarna',
     'card',
   ];
 
@@ -193,7 +190,6 @@ export function getWalletConfiguration(preferredMethod?: PaymentMethodType): {
     case 'link':
     case 'amazon_pay':
     case 'revolut_pay':
-    case 'klarna':
       // User selected a non-wallet method - hide all wallet buttons
       return { applePay: 'never', googlePay: 'never' };
     default:
