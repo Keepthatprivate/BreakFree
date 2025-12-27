@@ -35,10 +35,10 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
   const [walletAvailable, setWalletAvailable] = useState<boolean | null>(null);
 
-  const handleReady = ({ availablePaymentMethods }: { availablePaymentMethods: { applePay?: boolean; googlePay?: boolean } | null }) => {
+  const handleReady = (event: { availablePaymentMethods?: { applePay?: boolean; googlePay?: boolean } }) => {
     // Check if the desired wallet is available
-    const isApplePayAvailable = availablePaymentMethods?.applePay === true;
-    const isGooglePayAvailable = availablePaymentMethods?.googlePay === true;
+    const isApplePayAvailable = event.availablePaymentMethods?.applePay === true;
+    const isGooglePayAvailable = event.availablePaymentMethods?.googlePay === true;
     
     if (preferredPaymentMethod === 'apple_pay') {
       setWalletAvailable(isApplePayAvailable);
