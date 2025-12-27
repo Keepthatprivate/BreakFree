@@ -21,15 +21,17 @@ import UpsellPage from '@/components/UpsellPage';
 import MasterclassBundlePage from '@/components/MasterclassBundlePage';
 import HealingJournalPage from '@/components/HealingJournalPage';
 import CheckoutPage from '@/components/CheckoutPage';
+import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import SubscriptionCheckoutPage from '@/components/SubscriptionCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
 import { trackViewContent, trackLead } from '@/lib/facebook-tracking';
+import { PaymentMethodType } from '@/lib/payment-preferences';
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
 
-type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'checkout' | 'subscription-checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'masterclass' | 'journal';
+type QuizState = 'quiz' | 'empathy' | 'animation' | 'quote-break' | 'contact' | 'loading' | 'donation' | 'payment' | 'payment-method-selection' | 'checkout' | 'subscription-checkout' | 'results' | 'patterns' | 'benefits' | 'seven-days' | 'plan-help' | 'trust' | 'testimonials' | 'timeline' | 'faq' | 'upsell' | 'masterclass' | 'journal';
 
 interface QuizAnswers {
   [questionId: string]: string[];
@@ -39,7 +41,7 @@ interface QuizAnswers {
 const getInitialState = (): QuizState => {
   const urlParams = new URLSearchParams(window.location.search);
   const stateParam = urlParams.get('state');
-  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'checkout', 'subscription-checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
+  const validStates: QuizState[] = ['quiz', 'empathy', 'animation', 'quote-break', 'contact', 'loading', 'donation', 'payment', 'payment-method-selection', 'checkout', 'subscription-checkout', 'results', 'patterns', 'benefits', 'seven-days', 'plan-help', 'trust', 'testimonials', 'timeline', 'faq', 'upsell', 'masterclass', 'journal'];
   console.log('[Quiz] URL state param:', stateParam, '| Valid:', validStates.includes(stateParam as QuizState));
   if (stateParam && validStates.includes(stateParam as QuizState)) {
     console.log('[Quiz] Setting initial state to:', stateParam);
@@ -88,6 +90,7 @@ export default function Quiz() {
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType | undefined>(undefined);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -281,11 +284,11 @@ export default function Quiz() {
   };
 
   const handlePaymentComplete = () => {
-    // When user clicks "Get Now" on UpsellPage, go to checkout
+    // When user clicks "Get Now" on UpsellPage, go to payment method selection
     setCheckoutAmount(1499); // €14.99 in cents
     setCheckoutType('upsell');
     setCheckoutProductName('Mental Well-Being Guides');
-    setState('checkout');
+    setState('payment-method-selection');
   };
 
   const handlePaymentSkip = () => {
@@ -294,11 +297,11 @@ export default function Quiz() {
   };
 
   const handleMasterclassAccept = () => {
-    // When user clicks "Get Masterclass Bundle", go to checkout
+    // When user clicks "Get Masterclass Bundle", go to payment method selection
     setCheckoutAmount(6900); // $69 in cents
     setCheckoutType('masterclass');
     setCheckoutProductName('Trauma Healing Masterclass Bundle');
-    setState('checkout');
+    setState('payment-method-selection');
   };
 
   const handleMasterclassDecline = () => {
@@ -307,11 +310,11 @@ export default function Quiz() {
   };
 
   const handleJournalAccept = () => {
-    // When user clicks "Get Healing Journal", go to checkout
+    // When user clicks "Get Healing Journal", go to payment method selection
     setCheckoutAmount(1499); // $14.99 in cents
     setCheckoutType('journal');
     setCheckoutProductName('Inner Child Healing Journal');
-    setState('checkout');
+    setState('payment-method-selection');
   };
 
   const handleJournalSkip = () => {
@@ -321,12 +324,12 @@ export default function Quiz() {
 
 
   const handleDonationContinue = (donationAmount?: number) => {
-    // If donation amount is provided, go to checkout
+    // If donation amount is provided, go to payment method selection
     if (donationAmount && donationAmount > 0) {
       setCheckoutAmount(Math.round(donationAmount * 100)); // Convert to cents
       setCheckoutType('donation');
-      setCheckoutProductName(`Contribution - €${donationAmount.toFixed(2)}`);
-      setState('checkout');
+      setCheckoutProductName(`Contribution - $${donationAmount.toFixed(2)}`);
+      setState('payment-method-selection');
     } else {
       // Skip donation, go to plan-help page
       setState('plan-help');
@@ -359,7 +362,18 @@ export default function Quiz() {
   };
 
   const handleCheckoutBack = () => {
-    // Go back to the page where the user selected their payment option
+    // Go back to payment method selection
+    setState('payment-method-selection');
+  };
+
+  const handlePaymentMethodSelect = (method: PaymentMethodType) => {
+    // User selected a payment method, proceed to checkout
+    setSelectedPaymentMethod(method);
+    setState('checkout');
+  };
+
+  const handlePaymentMethodBack = () => {
+    // Go back to the product page
     if (checkoutType === 'donation') {
       setState('donation');
     } else if (checkoutType === 'upsell') {
@@ -427,6 +441,17 @@ export default function Quiz() {
     return <HealingJournalPage onAccept={handleJournalAccept} onSkip={handleJournalSkip} />;
   }
 
+  if (state === 'payment-method-selection') {
+    return (
+      <PaymentMethodSelector
+        productName={checkoutProductName}
+        amount={checkoutAmount}
+        onSelect={handlePaymentMethodSelect}
+        onBack={handlePaymentMethodBack}
+      />
+    );
+  }
+
   if (state === 'checkout') {
     return (
       <CheckoutPage
@@ -436,6 +461,7 @@ export default function Quiz() {
         email={userEmail}
         name={userName}
         answers={checkoutType === 'trial' ? answers : undefined}
+        preferredPaymentMethod={selectedPaymentMethod}
         onComplete={handleCheckoutComplete}
         onBack={handleCheckoutBack}
       />

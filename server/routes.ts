@@ -764,10 +764,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create Checkout Session for subscription with trial
+      // Enable all available payment methods for subscriptions
+      // Note: Some methods like Klarna may not support subscriptions
       const session = await stripe.checkout.sessions.create({
         customer: customer.id,
         mode: 'subscription',
-        payment_method_types: ['card'],
+        // Remove payment_method_types to let Stripe auto-detect all eligible methods
+        // This includes: Card (with Apple Pay, Google Pay, Samsung Pay wallets), Link, etc.
+        payment_method_collection: 'always',
         line_items: [
           {
             price: MONTHLY_PRICE_ID,
