@@ -10,7 +10,8 @@ import {
   PaymentMethodType,
   getOrderedPaymentMethods,
   setStoredPaymentPreference,
-  getDefaultPaymentMethod
+  getDefaultPaymentMethod,
+  getWalletConfiguration
 } from '@/lib/payment-preferences';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
@@ -36,6 +37,10 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
 
   // Get dynamically ordered payment methods based on user preference or device
   const paymentMethodOrder = getOrderedPaymentMethods(preferredPaymentMethod);
+
+  // Get wallet configuration based on selected payment method
+  // This ensures only the selected wallet (Apple Pay or Google Pay) is shown
+  const walletConfig = getWalletConfiguration(preferredPaymentMethod);
 
   const handlePaymentElementReady = () => {
     // Track AddPaymentInfo when payment element is ready and user can interact
@@ -102,6 +107,8 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
           // Stripe integration: Include all available payment methods
           // Dynamic ordering based on user preference or device detection
           paymentMethodOrder: paymentMethodOrder,
+          // Configure which wallet buttons appear based on user's payment method selection
+          wallets: walletConfig,
         }}
       />
       <Button
@@ -205,12 +212,14 @@ export default function CheckoutPage({ amount, productType, productName, email, 
     };
 
     // Include Facebook tracking data for proper campaign attribution
+    // Include preferredPaymentMethod so server restricts to only relevant payment types
     const payload = {
       ...getBasePayload(),
       fbc,
       fbp,
       clientUserAgent,
       sourceUrl,
+      preferredPaymentMethod: effectivePaymentMethod,
     };
 
     apiRequest("POST", endpoint, payload)
@@ -358,6 +367,17 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               onSuccess={onComplete}
             />
           </Elements>
+
+          {/* Change payment method link */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors mt-4 text-sm w-full"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Change payment method</span>
+            </button>
+          )}
 
           <p className="text-xs text-muted-foreground text-center mt-4">
             🔒 Secure payment powered by Stripe

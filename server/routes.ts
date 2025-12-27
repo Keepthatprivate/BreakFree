@@ -27,6 +27,33 @@ if (!fbCAPI) {
   console.warn('[Stripe Webhook] Facebook CAPI not configured - purchase events will not be tracked server-side');
 }
 
+// Payment method type mapping from frontend to Stripe payment_method_types
+type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link' | 'amazon_pay' | 'revolut_pay' | 'klarna' | 'card';
+
+function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): string[] {
+  // Map frontend payment method selection to Stripe payment_method_types
+  // Note: Apple Pay/Google Pay/Samsung Pay are handled via PaymentElement wallets option on frontend
+  // They all use 'card' as the underlying payment method type
+  switch (preferredMethod) {
+    case 'apple_pay':
+    case 'google_pay':
+    case 'samsung_pay':
+    case 'card':
+      return ['card'];
+    case 'link':
+      return ['card', 'link'];
+    case 'amazon_pay':
+      return ['card', 'amazon_pay'];
+    case 'revolut_pay':
+      return ['card', 'revolut_pay'];
+    case 'klarna':
+      return ['card', 'klarna'];
+    default:
+      // If no preference, allow all common methods
+      return ['card', 'link', 'amazon_pay', 'klarna'];
+  }
+}
+
 // Deduplication helper: Check if event already processed and insert if not
 async function checkAndRecordConversionEvent(
   eventId: string,
@@ -519,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flow: Collect $1 via PaymentIntent -> Webhook creates subscription with trial
   app.post("/api/create-trial-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, answers } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, answers, preferredPaymentMethod } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -575,14 +602,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create payment intent for $1 trial fee
       // After successful payment, webhook will create the subscription
+      // Use explicit payment_method_types based on user's selection (not automatic_payment_methods)
+      // This ensures only the selected payment method is shown in checkout
+      const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: 100, // $1.00 in cents
         currency: 'usd',
         customer: customer.id,
         setup_future_usage: 'off_session', // Save payment method for subscription
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: paymentMethodTypes as any,
         metadata: {
           email,
           name: name || '',
@@ -616,7 +644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for upsell products (guides, masterclass, journal)
   app.post("/api/create-upsell-payment", async (req, res) => {
     try {
-      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, amount, productName } = req.body;
+      const { email, name, fbc, fbp, clientUserAgent, sourceUrl, amount, productName, preferredPaymentMethod } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -626,13 +654,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Default to $14.99 (guides) if no amount specified
       const paymentAmount = amount ? Math.round(amount * 100) : 1499;
       const productType = productName || "Mental Well-Being Guides";
-      
+
+      // Use explicit payment_method_types based on user's selection
+      const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: paymentAmount,
         currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: paymentMethodTypes as any,
         metadata: {
           email,
           name: name || 'Valued Customer',
@@ -656,7 +684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent for donation
   app.post("/api/create-donation-payment", async (req, res) => {
     try {
-      const { amount, email, name, fbc, fbp, clientUserAgent, sourceUrl } = req.body;
+      const { amount, email, name, fbc, fbp, clientUserAgent, sourceUrl, preferredPaymentMethod } = req.body;
       
       // Capture client IP for Facebook CAPI attribution
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
@@ -666,12 +694,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
 
+      // Use explicit payment_method_types based on user's selection
+      const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: paymentMethodTypes as any,
         metadata: {
           email: email || 'anonymous',
           name: name || 'Anonymous Supporter',

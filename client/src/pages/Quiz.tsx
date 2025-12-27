@@ -26,7 +26,7 @@ import SubscriptionCheckoutPage from '@/components/SubscriptionCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
 import { trackViewContent, trackLead } from '@/lib/facebook-tracking';
-import { PaymentMethodType } from '@/lib/payment-preferences';
+import { PaymentMethodType, getStoredPaymentPreference, getDefaultPaymentMethod } from '@/lib/payment-preferences';
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
@@ -283,12 +283,29 @@ export default function Quiz() {
     setState('trust');
   };
 
+  // Helper function to go to checkout with smart payment method handling
+  // If user has a stored preference, skip payment method selection and go directly to checkout
+  // Otherwise, show payment method selection screen
+  const goToCheckoutWithPaymentMethod = () => {
+    const storedPreference = getStoredPaymentPreference();
+    if (storedPreference) {
+      // User has a stored preference - skip selection and go directly to checkout
+      setSelectedPaymentMethod(storedPreference);
+      setState('checkout');
+    } else {
+      // No stored preference - use smart default based on device and show selection
+      const defaultMethod = getDefaultPaymentMethod();
+      setSelectedPaymentMethod(defaultMethod);
+      setState('payment-method-selection');
+    }
+  };
+
   const handlePaymentComplete = () => {
-    // When user clicks "Get Now" on UpsellPage, go to payment method selection
+    // When user clicks "Get Now" on UpsellPage, go to checkout
     setCheckoutAmount(1499); // €14.99 in cents
     setCheckoutType('upsell');
     setCheckoutProductName('Mental Well-Being Guides');
-    setState('payment-method-selection');
+    goToCheckoutWithPaymentMethod();
   };
 
   const handlePaymentSkip = () => {
@@ -297,11 +314,11 @@ export default function Quiz() {
   };
 
   const handleMasterclassAccept = () => {
-    // When user clicks "Get Masterclass Bundle", go to payment method selection
+    // When user clicks "Get Masterclass Bundle", go to checkout
     setCheckoutAmount(6900); // $69 in cents
     setCheckoutType('masterclass');
     setCheckoutProductName('Trauma Healing Masterclass Bundle');
-    setState('payment-method-selection');
+    goToCheckoutWithPaymentMethod();
   };
 
   const handleMasterclassDecline = () => {
@@ -310,11 +327,11 @@ export default function Quiz() {
   };
 
   const handleJournalAccept = () => {
-    // When user clicks "Get Healing Journal", go to payment method selection
+    // When user clicks "Get Healing Journal", go to checkout
     setCheckoutAmount(1499); // $14.99 in cents
     setCheckoutType('journal');
     setCheckoutProductName('Inner Child Healing Journal');
-    setState('payment-method-selection');
+    goToCheckoutWithPaymentMethod();
   };
 
   const handleJournalSkip = () => {
@@ -324,12 +341,12 @@ export default function Quiz() {
 
 
   const handleDonationContinue = (donationAmount?: number) => {
-    // If donation amount is provided, go to payment method selection
+    // If donation amount is provided, go to checkout
     if (donationAmount && donationAmount > 0) {
       setCheckoutAmount(Math.round(donationAmount * 100)); // Convert to cents
       setCheckoutType('donation');
       setCheckoutProductName(`Contribution - $${donationAmount.toFixed(2)}`);
-      setState('payment-method-selection');
+      goToCheckoutWithPaymentMethod();
     } else {
       // Skip donation, go to plan-help page
       setState('plan-help');
@@ -388,11 +405,11 @@ export default function Quiz() {
   };
 
   const handleStartTrial = () => {
-    // User wants to start trial, go to payment method selection first
+    // User wants to start trial, go to checkout
     setCheckoutAmount(100); // $1 in cents
     setCheckoutType('trial');
     setCheckoutProductName('7-Day BreakFree Trial');
-    setState('payment-method-selection');
+    goToCheckoutWithPaymentMethod();
   };
 
   const handleBenefitsContinue = () => {

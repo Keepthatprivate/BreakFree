@@ -171,3 +171,40 @@ export function getOrderedPaymentMethods(preferredMethod?: PaymentMethodType): P
 export function getPaymentMethodInfo(id: PaymentMethodType): PaymentMethod | undefined {
   return PAYMENT_METHODS.find(m => m.id === id);
 }
+
+/**
+ * Get wallet configuration for Stripe PaymentElement based on selected payment method
+ * This controls which wallet buttons (Apple Pay, Google Pay) appear in the checkout
+ */
+export function getWalletConfiguration(preferredMethod?: PaymentMethodType): {
+  applePay: 'auto' | 'never';
+  googlePay: 'auto' | 'never';
+} {
+  switch (preferredMethod) {
+    case 'apple_pay':
+      // User selected Apple Pay - show only Apple Pay wallet button
+      return { applePay: 'auto', googlePay: 'never' };
+    case 'google_pay':
+    case 'samsung_pay':
+      // User selected Google Pay or Samsung Pay - show only Google Pay wallet button
+      // (Samsung Pay uses Google Pay on web)
+      return { applePay: 'never', googlePay: 'auto' };
+    case 'card':
+    case 'link':
+    case 'amazon_pay':
+    case 'revolut_pay':
+    case 'klarna':
+      // User selected a non-wallet method - hide all wallet buttons
+      return { applePay: 'never', googlePay: 'never' };
+    default:
+      // No preference - allow device-appropriate wallets
+      if (isAppleDevice()) {
+        return { applePay: 'auto', googlePay: 'never' };
+      }
+      if (isAndroidDevice()) {
+        return { applePay: 'never', googlePay: 'auto' };
+      }
+      // Desktop - hide wallets, show card form
+      return { applePay: 'never', googlePay: 'never' };
+  }
+}
