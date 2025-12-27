@@ -55,17 +55,6 @@ const paymentMethodOptions: PaymentMethodOption[] = [
     bgGradient: 'bg-gradient-to-br from-blue-600 to-blue-800',
   },
   {
-    id: 'samsung_pay',
-    name: 'Samsung Pay',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-        <path d="M5.566 11.197c.022-.384.18-.71.472-.978.292-.267.68-.4 1.164-.4.3 0 .546.05.735.15.19.1.33.237.422.41.09.175.135.369.135.582 0 .184-.033.35-.1.495a.822.822 0 0 1-.297.347 1.484 1.484 0 0 1-.485.203 2.57 2.57 0 0 1-.636.07H5.564v-.879zm-.002 1.547h1.412c.4 0 .756.068 1.068.206.312.137.555.343.728.616.173.273.26.607.26 1.002 0 .357-.072.662-.217.915-.144.252-.35.445-.617.577-.267.133-.588.2-.961.2H5.564v-3.516zm-1.58 5.01h3.09c.617 0 1.148-.103 1.595-.31.447-.206.79-.511 1.028-.912.238-.401.357-.892.357-1.47 0-.466-.084-.869-.253-1.21a1.787 1.787 0 0 0-.745-.79c.256-.174.457-.405.603-.693.146-.289.22-.634.22-1.034 0-.396-.084-.738-.252-1.025a1.665 1.665 0 0 0-.717-.671c-.31-.16-.682-.24-1.116-.24H3.984v8.355z"/>
-      </svg>
-    ),
-    color: 'text-white',
-    bgGradient: 'bg-gradient-to-br from-blue-700 to-blue-900',
-  },
-  {
     id: 'amazon_pay',
     name: 'Amazon Pay',
     icon: (
@@ -76,18 +65,6 @@ const paymentMethodOptions: PaymentMethodOption[] = [
     ),
     color: 'text-gray-900',
     bgGradient: 'bg-gradient-to-br from-amber-400 to-orange-500',
-  },
-  {
-    id: 'revolut_pay',
-    name: 'Revolut Pay',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
-        <path d="M8 7h5c1.5 0 2.5 1 2.5 2.5S14.5 12 13 12h-3l3 5H10l-3-5V7z"/>
-      </svg>
-    ),
-    color: 'text-white',
-    bgGradient: 'bg-gradient-to-br from-gray-800 to-black',
   },
   {
     id: 'klarna',

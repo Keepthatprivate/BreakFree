@@ -10,8 +10,7 @@ import {
   PaymentMethodType,
   getOrderedPaymentMethods,
   setStoredPaymentPreference,
-  getDefaultPaymentMethod,
-  getWalletConfiguration
+  getDefaultPaymentMethod
 } from '@/lib/payment-preferences';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
@@ -38,9 +37,26 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
   // Get dynamically ordered payment methods based on user preference or device
   const paymentMethodOrder = getOrderedPaymentMethods(preferredPaymentMethod);
 
-  // Get wallet configuration based on selected payment method
-  // This ensures only the selected wallet (Apple Pay or Google Pay) is shown
-  const walletConfig = getWalletConfiguration(preferredPaymentMethod);
+  // Configure which wallet buttons to show based on user's explicit selection
+  const getWalletConfig = (): { applePay: 'auto' | 'never'; googlePay: 'auto' | 'never' } => {
+    if (!preferredPaymentMethod) {
+      return { applePay: 'auto', googlePay: 'auto' };
+    }
+    switch (preferredPaymentMethod) {
+      case 'apple_pay':
+        return { applePay: 'auto', googlePay: 'never' };
+      case 'google_pay':
+        return { applePay: 'never', googlePay: 'auto' };
+      case 'card':
+      case 'link':
+      case 'klarna':
+      case 'amazon_pay':
+        return { applePay: 'never', googlePay: 'never' };
+      default:
+        return { applePay: 'auto', googlePay: 'auto' };
+    }
+  };
+  const walletConfig = getWalletConfig();
 
   const handlePaymentElementReady = () => {
     // Track AddPaymentInfo when payment element is ready and user can interact
