@@ -1,5 +1,5 @@
-import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { useStripe, Elements, PaymentElement, useElements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import { loadStripe, StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,39 +27,141 @@ interface CheckoutFormProps {
   onSuccess: () => void;
 }
 
-function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
+// Express Checkout Form for Apple Pay and Google Pay
+function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const { toast } = useToast();
+  const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
+  const [walletAvailable, setWalletAvailable] = useState<boolean | null>(null);
+
+  const handleReady = ({ availablePaymentMethods }: { availablePaymentMethods: { applePay?: boolean; googlePay?: boolean } | null }) => {
+    // Check if the desired wallet is available
+    const isApplePayAvailable = availablePaymentMethods?.applePay === true;
+    const isGooglePayAvailable = availablePaymentMethods?.googlePay === true;
+    
+    if (preferredPaymentMethod === 'apple_pay') {
+      setWalletAvailable(isApplePayAvailable);
+    } else if (preferredPaymentMethod === 'google_pay') {
+      setWalletAvailable(isGooglePayAvailable);
+    } else {
+      setWalletAvailable(isApplePayAvailable || isGooglePayAvailable);
+    }
+
+    if (!hasTrackedPaymentInfo) {
+      setHasTrackedPaymentInfo(true);
+      trackAddPaymentInfo({
+        email,
+        firstName: name,
+      });
+    }
+  };
+
+  const handleConfirm = async (event: StripeExpressCheckoutElementConfirmEvent) => {
+    if (!stripe || !elements) {
+      return;
+    }
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/quiz`,
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      toast({
+        title: "Payment Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      if (preferredPaymentMethod) {
+        setStoredPaymentPreference(preferredPaymentMethod);
+      }
+      toast({
+        title: "Payment Successful",
+        description: `Thank you for your purchase of ${productName}!`,
+      });
+      onSuccess();
+    }
+  };
+
+  // Filter which wallets to show based on user's selection
+  const getWalletButtonsConfig = () => {
+    if (preferredPaymentMethod === 'apple_pay') {
+      return { applePay: 'always' as const, googlePay: 'never' as const };
+    } else if (preferredPaymentMethod === 'google_pay') {
+      return { applePay: 'never' as const, googlePay: 'always' as const };
+    }
+    return { applePay: 'always' as const, googlePay: 'always' as const };
+  };
+
+  // Show loading state while checking wallet availability
+  if (walletAvailable === null) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Loading wallet...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // If wallet is not available, show a message
+  if (walletAvailable === false) {
+    const walletName = preferredPaymentMethod === 'apple_pay' ? 'Apple Pay' : 'Google Pay';
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">
+            {walletName} is not available on this device or browser.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Please go back and select a different payment method.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <ExpressCheckoutElement
+        onReady={handleReady}
+        onConfirm={handleConfirm}
+        options={{
+          buttonType: {
+            applePay: 'buy',
+            googlePay: 'buy',
+          },
+          buttonTheme: {
+            applePay: 'black',
+            googlePay: 'black',
+          },
+          buttonHeight: 48,
+          wallets: getWalletButtonsConfig(),
+        }}
+      />
+      <p className="text-xs text-muted-foreground text-center">
+        Click the button above to complete your payment
+      </p>
+    </div>
+  );
+}
+
+// Standard Payment Element Form for Card, Link, Amazon Pay, Klarna
+function StandardCheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
 
-  // Get dynamically ordered payment methods based on user preference or device
-  const paymentMethodOrder = getOrderedPaymentMethods(preferredPaymentMethod);
-
-  // Configure which wallet buttons to show based on user's explicit selection
-  const getWalletConfig = (): { applePay: 'auto' | 'never'; googlePay: 'auto' | 'never' } => {
-    if (!preferredPaymentMethod) {
-      return { applePay: 'auto', googlePay: 'auto' };
-    }
-    switch (preferredPaymentMethod) {
-      case 'apple_pay':
-        return { applePay: 'auto', googlePay: 'never' };
-      case 'google_pay':
-        return { applePay: 'never', googlePay: 'auto' };
-      case 'card':
-      case 'link':
-      case 'klarna':
-      case 'amazon_pay':
-        return { applePay: 'never', googlePay: 'never' };
-      default:
-        return { applePay: 'auto', googlePay: 'auto' };
-    }
-  };
-  const walletConfig = getWalletConfig();
-
   const handlePaymentElementReady = () => {
-    // Track AddPaymentInfo when payment element is ready and user can interact
     if (!hasTrackedPaymentInfo) {
       setHasTrackedPaymentInfo(true);
       trackAddPaymentInfo({
@@ -95,21 +197,13 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
         variant: "destructive",
       });
     } else {
-      // NOTE: Do NOT track Purchase here!
-      // Purchase events are ONLY sent via the server-side Stripe webhook (payment_intent.succeeded)
-      // This ensures only truly completed payments are tracked as purchases in Meta
-      // The frontend confirmation just means the form was submitted, not that payment succeeded
-
-      // Store the user's payment method preference for future purchases
       if (preferredPaymentMethod) {
         setStoredPaymentPreference(preferredPaymentMethod);
       }
-
       toast({
         title: "Payment Successful",
         description: `Thank you for your purchase of ${productName}!`,
       });
-      // Mark payment as complete and continue flow
       onSuccess();
     }
   };
@@ -119,12 +213,8 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
       <PaymentElement
         onReady={handlePaymentElementReady}
         options={{
-          layout: 'accordion',
-          // Stripe integration: Include all available payment methods
-          // Dynamic ordering based on user preference or device detection
-          paymentMethodOrder: paymentMethodOrder,
-          // Configure which wallet buttons appear based on user's payment method selection
-          wallets: walletConfig,
+          layout: 'tabs',
+          wallets: { applePay: 'never', googlePay: 'never' },
         }}
       />
       <Button
@@ -143,6 +233,37 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
         )}
       </Button>
     </form>
+  );
+}
+
+// Main CheckoutForm that routes to the appropriate form based on payment method
+function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
+  // Use Express Checkout for Apple Pay and Google Pay
+  const isWalletPayment = preferredPaymentMethod === 'apple_pay' || preferredPaymentMethod === 'google_pay';
+  
+  if (isWalletPayment) {
+    return (
+      <ExpressCheckoutForm
+        amount={amount}
+        productName={productName}
+        email={email}
+        name={name}
+        preferredPaymentMethod={preferredPaymentMethod}
+        onSuccess={onSuccess}
+      />
+    );
+  }
+
+  // Use standard PaymentElement for Card, Link, Amazon Pay, Klarna
+  return (
+    <StandardCheckoutForm
+      amount={amount}
+      productName={productName}
+      email={email}
+      name={name}
+      preferredPaymentMethod={preferredPaymentMethod}
+      onSuccess={onSuccess}
+    />
   );
 }
 
