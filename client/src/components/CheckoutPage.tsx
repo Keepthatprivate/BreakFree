@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
-import { Check, Loader2, AlertCircle } from 'lucide-react';
+import { Check, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { trackViewContent, trackInitiateCheckout, trackAddPaymentInfo, getFacebookCookies } from '@/lib/facebook-tracking';
 
 // Stripe integration: Load Stripe outside of component to avoid recreation
@@ -80,12 +80,22 @@ function CheckoutForm({ amount, productName, email, name, onSuccess }: CheckoutF
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement 
+      <PaymentElement
         onReady={handlePaymentElementReady}
         options={{
           layout: 'accordion',
-          // Stripe integration: Preselect Apple Pay by prioritizing wallets
-          paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
+          // Stripe integration: Include all available payment methods
+          // Users can select their preferred method, with wallets prioritized
+          paymentMethodOrder: [
+            'apple_pay',
+            'google_pay',
+            'samsung_pay',
+            'link',
+            'amazon_pay',
+            'revolut_pay',
+            'klarna',
+            'card',
+          ],
         }}
       />
       <Button
@@ -115,9 +125,10 @@ interface CheckoutPageProps {
   name?: string;
   answers?: Record<string, string[]>;
   onComplete: () => void;
+  onBack?: () => void;
 }
 
-export default function CheckoutPage({ amount, productType, productName, email, name, answers, onComplete }: CheckoutPageProps) {
+export default function CheckoutPage({ amount, productType, productName, email, name, answers, onComplete, onBack }: CheckoutPageProps) {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -280,6 +291,15 @@ export default function CheckoutPage({ amount, productType, productName, email, 
         </div>
 
         <div className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl border border-card-border/50">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Choose different payment method</span>
+            </button>
+          )}
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-2">
             Secure Checkout
           </h1>
