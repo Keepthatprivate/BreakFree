@@ -382,12 +382,17 @@ export default function Quiz() {
       setState('masterclass');
     } else if (checkoutType === 'journal') {
       setState('journal');
+    } else if (checkoutType === 'trial') {
+      setState('timeline');
     }
   };
 
   const handleStartTrial = () => {
-    // User wants to start trial, redirect to Stripe Checkout
-    setState('subscription-checkout');
+    // User wants to start trial, go to payment method selection first
+    setCheckoutAmount(100); // $1 in cents
+    setCheckoutType('trial');
+    setCheckoutProductName('7-Day BreakFree Trial');
+    setState('payment-method-selection');
   };
 
   const handleBenefitsContinue = () => {
