@@ -326,15 +326,14 @@ export default function CheckoutPage({ amount, productType, productName, email, 
         </div>
 
         <div className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl border border-card-border/50">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Choose different payment method</span>
-            </button>
-          )}
+          <button
+            onClick={onBack || (() => window.history.back())}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
+            data-testid="button-back-to-payment-selection"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Choose different payment method</span>
+          </button>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-2">
             Secure Checkout
           </h1>
@@ -385,15 +384,14 @@ export default function CheckoutPage({ amount, productType, productName, email, 
           </Elements>
 
           {/* Change payment method link */}
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors mt-4 text-sm w-full"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Change payment method</span>
-            </button>
-          )}
+          <button
+            onClick={onBack || (() => window.history.back())}
+            className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors mt-4 text-sm w-full"
+            data-testid="button-change-payment-method"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Change payment method</span>
+          </button>
 
           <p className="text-xs text-muted-foreground text-center mt-4">
             🔒 Secure payment powered by Stripe
