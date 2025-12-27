@@ -30,28 +30,42 @@ if (!fbCAPI) {
 // Payment method type mapping from frontend to Stripe payment_method_types
 type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link' | 'amazon_pay' | 'revolut_pay' | 'klarna' | 'card';
 
+// Klarna requires specific currencies - not USD
+const KLARNA_SUPPORTED_CURRENCIES = ['eur', 'dkk', 'gbp', 'nok', 'sek', 'czk', 'ron', 'pln', 'chf'];
+
 function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): string[] {
   // Map frontend payment method selection to Stripe payment_method_types
-  // Note: Apple Pay/Google Pay/Samsung Pay are handled via PaymentElement wallets option on frontend
-  // They all use 'card' as the underlying payment method type
+  // Each payment method should only include its specific type for a clean checkout experience
   switch (preferredMethod) {
     case 'apple_pay':
     case 'google_pay':
     case 'samsung_pay':
     case 'card':
+      // Apple Pay/Google Pay use 'card' as the underlying payment method
       return ['card'];
     case 'link':
-      return ['card', 'link'];
+      // Link works alongside card
+      return ['link'];
     case 'amazon_pay':
-      return ['card', 'amazon_pay'];
+      // Amazon Pay only - no card fallback for clean UX
+      return ['amazon_pay'];
     case 'revolut_pay':
-      return ['card', 'revolut_pay'];
+      return ['revolut_pay'];
     case 'klarna':
-      return ['card', 'klarna'];
+      // Klarna only - requires EUR/GBP currency (handled separately)
+      return ['klarna'];
     default:
       // If no preference, allow all common methods
-      return ['card', 'link', 'amazon_pay', 'klarna'];
+      return ['card', 'link'];
   }
+}
+
+// Get the appropriate currency for a payment method
+function getCurrencyForPaymentMethod(preferredMethod?: PreferredPaymentMethod): string {
+  if (preferredMethod === 'klarna') {
+    return 'eur'; // Klarna requires EUR (or other European currencies)
+  }
+  return 'usd';
 }
 
 // Deduplication helper: Check if event already processed and insert if not
@@ -657,9 +671,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Use explicit payment_method_types based on user's selection
       const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
+      const currency = getCurrencyForPaymentMethod(preferredPaymentMethod);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: paymentAmount,
-        currency: "usd",
+        currency: currency,
         payment_method_types: paymentMethodTypes as any,
         metadata: {
           email,
@@ -696,9 +711,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Use explicit payment_method_types based on user's selection
       const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
+      const currency = getCurrencyForPaymentMethod(preferredPaymentMethod);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
-        currency: "usd",
+        currency: currency,
         payment_method_types: paymentMethodTypes as any,
         metadata: {
           email: email || 'anonymous',
