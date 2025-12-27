@@ -13,12 +13,12 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
     trackViewContent({ contentName: 'Funnel Step 05 - Donation' });
   }, []);
 
-  const [selectedDonation, setSelectedDonation] = useState<number>(24.99);
+  const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
 
   const donationAmounts = [
-    { amount: 2.99, label: '$2.99' },
+    { amount: 1, label: '$1' },
+    { amount: 4.99, label: '$4.99' },
     { amount: 9.99, label: '$9.99' },
-    { amount: 24.99, label: '$24.99' },
   ];
 
   const handleDonationClick = (amount: number) => {
@@ -87,14 +87,12 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
             })}
           </div>
           
-          {selectedDonation === 3 && (
-            <p className="text-xs sm:text-sm text-muted-foreground text-center mb-2">
-              It's less than a Starbucks coffee
-            </p>
-          )}
-
           <div className="text-right mb-5">
-            <span className="text-xs sm:text-sm text-primary">Cost to cover our team's effort</span>
+            <span className="text-xs sm:text-sm text-primary">
+              {selectedDonation === 9.99 
+                ? "Cost to cover our team's effort" 
+                : "Less than a Starbucks' coffee"}
+            </span>
           </div>
 
           <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border-2 border-blue-500/30 mb-6">
@@ -103,7 +101,7 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
                 <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
               </div>
               <p className="text-foreground text-xs sm:text-sm leading-relaxed">
-                We work to ensure our mental health resources are accessible for everyone. It costs us $24.99 to provide this trial offer, but we want you to choose what feels right for you.
+                We work to ensure our mental health resources are accessible for everyone. It costs us $9.99 to provide this trial offer, but we want you to choose what feels right for you.
               </p>
             </div>
           </div>
