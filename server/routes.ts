@@ -756,7 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This creates a Checkout Session that can be embedded directly on the page
   app.post("/api/create-embedded-checkout", async (req, res) => {
     try {
-      const { amount, email, productType, returnUrl } = req.body;
+      const { amount, email, name, productType, productName, returnUrl } = req.body;
       
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: "Invalid amount" });
@@ -766,32 +766,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
         : 'http://localhost:5000';
 
-      // Create a Checkout Session with embedded mode
-      const session = await stripe.checkout.sessions.create({
+      // Get product name and description based on type
+      const getProductInfo = () => {
+        switch (productType) {
+          case 'donation':
+            return {
+              name: 'Donation',
+              description: 'Support Break Free and unlock your full results',
+            };
+          case 'subscription':
+            return {
+              name: 'Break Free App - 7 Day Trial',
+              description: 'Start your healing journey with full access',
+            };
+          case 'upsell':
+            return {
+              name: productName || '3 Healing Guides Bundle',
+              description: 'Premium healing resources to accelerate your journey',
+            };
+          case 'masterclass':
+            return {
+              name: productName || 'Masterclass Bundle',
+              description: 'Expert-led masterclass for deep healing',
+            };
+          case 'journal':
+            return {
+              name: productName || 'Healing Journal',
+              description: 'Guided journaling for emotional healing',
+            };
+          default:
+            return {
+              name: productName || 'Break Free Purchase',
+              description: 'Break Free healing resources',
+            };
+        }
+      };
+
+      const productInfo = getProductInfo();
+
+      // Determine checkout mode (subscription vs payment)
+      const isSubscription = productType === 'subscription';
+
+      // Create checkout session config
+      const sessionConfig: any = {
         ui_mode: 'embedded',
-        mode: 'payment',
-        line_items: [
+        mode: isSubscription ? 'subscription' : 'payment',
+        customer_email: email || undefined,
+        return_url: returnUrl || `${baseUrl}/quiz?state=results&payment_success=true`,
+        metadata: {
+          type: productType || 'purchase',
+          productName: productName || productInfo.name,
+          email: email || 'anonymous',
+          name: name || '',
+        },
+      };
+
+      if (isSubscription) {
+        // For subscription with trial
+        sessionConfig.line_items = [
           {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: productType === 'donation' ? 'Donation' : 'Purchase',
-                description: productType === 'donation' 
-                  ? 'Support Break Free and unlock your full results'
-                  : 'Break Free Purchase',
+                name: 'Break Free App Monthly',
+                description: 'Full access to Break Free healing app',
+              },
+              unit_amount: 2999, // $29.99/month after trial
+              recurring: {
+                interval: 'month',
+              },
+            },
+            quantity: 1,
+          },
+        ];
+        sessionConfig.subscription_data = {
+          trial_period_days: 7,
+          metadata: {
+            email: email || 'anonymous',
+            name: name || '',
+          },
+        };
+        // Add trial fee as a separate line item
+        sessionConfig.line_items.push({
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Trial Activation Fee',
+              description: '7-day trial access to Break Free App',
+            },
+            unit_amount: 100, // $1.00 trial fee
+          },
+          quantity: 1,
+        });
+      } else {
+        // One-time payment
+        sessionConfig.line_items = [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: productInfo.name,
+                description: productInfo.description,
               },
               unit_amount: Math.round(amount * 100),
             },
             quantity: 1,
           },
-        ],
-        customer_email: email || undefined,
-        return_url: returnUrl || `${baseUrl}/quiz?state=results`,
-        metadata: {
-          type: productType || 'donation',
-          email: email || 'anonymous',
-        },
-      });
+        ];
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
 
       res.json({ clientSecret: session.client_secret });
     } catch (error: any) {
