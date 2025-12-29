@@ -28,7 +28,7 @@ if (!fbCAPI) {
 }
 
 // Payment method type mapping from frontend to Stripe payment_method_types
-type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link' | 'amazon_pay' | 'revolut_pay' | 'card';
+type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'paypal' | 'link' | 'amazon_pay' | 'revolut_pay' | 'card';
 
 function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): string[] {
   // Map frontend payment method selection to Stripe payment_method_types
@@ -37,10 +37,8 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
   switch (preferredMethod) {
     case 'apple_pay':
     case 'google_pay':
-    case 'samsung_pay':
     case 'card':
-      // Apple Pay/Google Pay/Samsung Pay all use 'card' as the underlying payment method
-      // Samsung Pay works through Google Pay on web via the Stripe PaymentElement
+      // Apple Pay/Google Pay all use 'card' as the underlying payment method
       return ['card'];
     case 'link':
       // Link needs card as the underlying payment method
@@ -48,6 +46,9 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
     case 'amazon_pay':
       // Amazon Pay only - no card fallback for clean UX
       return ['amazon_pay'];
+    case 'paypal':
+      // PayPal only
+      return ['paypal'];
     case 'revolut_pay':
       return ['revolut_pay'];
     default:
