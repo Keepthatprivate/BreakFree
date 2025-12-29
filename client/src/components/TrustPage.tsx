@@ -141,7 +141,7 @@ export default function TrustPage({ onContinue }: TrustPageProps) {
             </Avatar>
             <div className="flex-1">
               <p className="text-foreground text-sm leading-relaxed italic mb-2">
-                "After my separation, I found sleep again in 2 weeks. Find out why I kept on repeating the same patterns was the key."
+                "After my separation, I found sleep again in 2 weeks. Finding out why I kept on repeating the same patterns was the key."
               </p>
               <p className="text-muted-foreground text-xs font-medium">
                 — Marie, 34
