@@ -56,14 +56,14 @@ export default function TrustPage({ onContinue }: TrustPageProps) {
     },
     {
       icon: Star,
-      number: '4.9/5',
+      number: '4.72/5',
       label: 'Average rating',
       iconBg: 'bg-amber-500/15',
       iconColor: 'text-amber-400'
     },
     {
       icon: Heart,
-      number: '94%',
+      number: '93.7%',
       label: 'Feel better in 7 days',
       iconBg: 'bg-rose-500/15',
       iconColor: 'text-rose-400'
