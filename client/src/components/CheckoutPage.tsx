@@ -90,14 +90,16 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   };
 
   // Filter which wallets to show based on user's selection
+  // IMPORTANT: Always disable Link for wallet payments - user selected a specific wallet
   const getWalletButtonsConfig = () => {
     if (preferredPaymentMethod === 'apple_pay') {
-      return { applePay: 'always' as const, googlePay: 'never' as const };
+      return { applePay: 'always' as const, googlePay: 'never' as const, link: 'never' as const };
     } else if (preferredPaymentMethod === 'google_pay' || preferredPaymentMethod === 'samsung_pay') {
       // Samsung Pay uses Google Pay button on web
-      return { applePay: 'never' as const, googlePay: 'always' as const };
+      return { applePay: 'never' as const, googlePay: 'always' as const, link: 'never' as const };
     }
-    return { applePay: 'always' as const, googlePay: 'always' as const };
+    // Default: show all wallets but disable Link
+    return { applePay: 'always' as const, googlePay: 'always' as const, link: 'never' as const };
   };
 
   // Get wallet name for display
@@ -166,6 +168,9 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   // For Amazon Pay, we want to hide card options completely - only show Amazon Pay
   const isAmazonPayOnly = preferredPaymentMethod === 'amazon_pay';
 
+  // For Link, we want to ensure Link shows prominently
+  const isLinkPayment = preferredPaymentMethod === 'link';
+
   const handlePaymentElementReady = () => {
     if (!hasTrackedPaymentInfo) {
       setHasTrackedPaymentInfo(true);
@@ -228,8 +233,24 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   // The actual payment methods available come from the PaymentIntent's payment_method_types
   // We also need to disable Link detection when user explicitly chose another method
   const getPaymentElementOptions = () => {
-    // For Link, allow Link to show (it's what they selected)
+    // For Link, show Link prominently with card as fallback
+    // paymentMethodOrder ensures Link appears first
     if (preferredPaymentMethod === 'link') {
+      return {
+        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+        layout: {
+          type: 'accordion' as const,
+          defaultCollapsed: false,
+          radios: true,
+          spacedAccordionItems: true,
+        },
+        paymentMethodOrder: ['link', 'card'],
+      };
+    }
+
+    // For Amazon Pay, show only amazon_pay button
+    // PaymentIntent only includes 'amazon_pay' so only that should render
+    if (preferredPaymentMethod === 'amazon_pay') {
       return {
         wallets: { applePay: 'never' as const, googlePay: 'never' as const },
         layout: {
@@ -238,29 +259,16 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
           radios: false,
           spacedAccordionItems: false,
         },
-      };
-    }
-
-    // For Amazon Pay, use a simple tabs layout that shows only amazon_pay
-    // Since payment_method_types only includes 'amazon_pay', this should show just that
-    if (preferredPaymentMethod === 'amazon_pay') {
-      return {
-        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-        layout: {
-          type: 'tabs' as const,
-          defaultCollapsed: false,
-        },
-        // Disable any saved payment methods or Link
-        defaultValues: {
-          billingDetails: {
-            email: undefined, // Don't pre-fill email to avoid Link detection
-          },
+        paymentMethodOrder: ['amazon_pay'],
+        // Disable Link completely for Amazon Pay checkout
+        fields: {
+          billingDetails: 'never' as const,
         },
       };
     }
 
-    // For card payments, disable wallets and Link autofill
-    // to prevent Stripe from showing saved Link accounts
+    // For card payments, disable wallets and ensure only card shows
+    // paymentMethodOrder explicitly puts card first and excludes link
     return {
       wallets: { applePay: 'never' as const, googlePay: 'never' as const },
       layout: {
@@ -269,14 +277,16 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
         radios: false,
         spacedAccordionItems: false,
       },
+      paymentMethodOrder: ['card'],
     };
   };
 
-  // Build CSS classes to hide unwanted payment options
+  // Build CSS classes to control payment method visibility
   const getContainerClasses = () => {
     const classes: string[] = [];
     if (shouldHideLink) classes.push('hide-stripe-link');
     if (isAmazonPayOnly) classes.push('amazon-pay-only');
+    if (isLinkPayment) classes.push('link-payment');
     return classes.join(' ');
   };
 
