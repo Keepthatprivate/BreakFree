@@ -7,7 +7,7 @@ import { trackViewContent } from '@/lib/facebook-tracking';
 import lisaImage from '@assets/stock_images/professional_woman_s_d4fbbe22.jpg';
 import annaImage from '@assets/stock_images/young_woman_casual_s_b2572404.jpg';
 import rachelImage from '@assets/stock_images/young_woman_casual_s_cb2bd61f.jpg';
-import jamesImage from '@assets/stock_images/professional_headsho_05ec7d78.jpg';
+import jamesImage from '@assets/stock_images/professional_black_m_06705ed8.jpg';
 import michaelImage from '@assets/stock_images/young_man_casual_sel_cfbef95c.jpg';
 import emilyImage from '@assets/stock_images/young_woman_smiling__c268d950.jpg';
 import davidImage from '@assets/stock_images/young_man_casual_sel_fecd2253.jpg';
