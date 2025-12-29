@@ -4,7 +4,7 @@
 export type PaymentMethodType =
   | 'apple_pay'
   | 'google_pay'
-  | 'samsung_pay'
+  | 'paypal'
   | 'link'
   | 'amazon_pay'
   | 'revolut_pay'
@@ -21,7 +21,7 @@ export interface PaymentMethod {
 export const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 'apple_pay', name: 'Apple Pay', icon: '', description: 'Pay with Apple Pay' },
   { id: 'google_pay', name: 'Google Pay', icon: '', description: 'Pay with Google Pay' },
-  { id: 'samsung_pay', name: 'Samsung Pay', icon: '', description: 'Pay with Samsung Pay' },
+  { id: 'paypal', name: 'PayPal', icon: '', description: 'Pay with PayPal' },
   { id: 'amazon_pay', name: 'Amazon Pay', icon: '', description: 'Pay with Amazon Pay' },
   { id: 'revolut_pay', name: 'Revolut Pay', icon: '', description: 'Pay with Revolut' },
   { id: 'link', name: 'Link', icon: '', description: 'Pay with Link by Stripe' },
@@ -66,15 +66,6 @@ export function isAndroidDevice(): boolean {
   return userAgent.includes('android');
 }
 
-/**
- * Detect if the user is on a Samsung device
- */
-export function isSamsungDevice(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  const userAgent = navigator.userAgent.toLowerCase();
-  return userAgent.includes('samsung');
-}
 
 /**
  * Get the user's stored preferred payment method
@@ -123,9 +114,6 @@ export function getDefaultPaymentMethod(): PaymentMethodType {
     if (isAppleDevice()) {
       return 'apple_pay';
     }
-    if (isSamsungDevice()) {
-      return 'samsung_pay';
-    }
     if (isAndroidDevice()) {
       return 'google_pay';
     }
@@ -148,7 +136,7 @@ export function getOrderedPaymentMethods(preferredMethod?: PaymentMethodType): P
   const baseOrder: PaymentMethodType[] = [
     'apple_pay',
     'google_pay',
-    'samsung_pay',
+    'paypal',
     'link',
     'amazon_pay',
     'revolut_pay',
@@ -182,13 +170,12 @@ export function getWalletConfiguration(preferredMethod?: PaymentMethodType): {
       // User selected Apple Pay - show only Apple Pay wallet button
       return { applePay: 'auto', googlePay: 'never' };
     case 'google_pay':
-    case 'samsung_pay':
-      // User selected Google Pay or Samsung Pay - show only Google Pay wallet button
-      // (Samsung Pay uses Google Pay on web)
+      // User selected Google Pay - show only Google Pay wallet button
       return { applePay: 'never', googlePay: 'auto' };
     case 'card':
     case 'link':
     case 'amazon_pay':
+    case 'paypal':
     case 'revolut_pay':
       // User selected a non-wallet method - hide all wallet buttons
       return { applePay: 'never', googlePay: 'never' };
