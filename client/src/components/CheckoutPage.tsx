@@ -226,45 +226,29 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   };
 
   // Configure PaymentElement to show ONLY the selected payment method
-  // Use 'accordion' layout with collapsed items to minimize visual clutter
   // The actual payment methods available come from the PaymentIntent's payment_method_types
+  // We also need to disable Link detection when user explicitly chose another method
   const getPaymentElementOptions = () => {
-    // For card, use simple accordion layout
-    if (preferredPaymentMethod === 'card') {
-      return {
-        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-        layout: {
-          type: 'accordion' as const,
-          defaultCollapsed: false,
-          radios: false,
-          spacedAccordionItems: false,
-        },
-      };
-    }
+    const baseLayout = {
+      type: 'accordion' as const,
+      defaultCollapsed: false,
+      radios: false,
+      spacedAccordionItems: false,
+    };
 
-    // For Link, need to include card as Link is an accelerated card checkout
+    // For Link, allow Link to show (it's what they selected)
     if (preferredPaymentMethod === 'link') {
       return {
         wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-        layout: {
-          type: 'accordion' as const,
-          defaultCollapsed: false,
-          radios: false,
-          spacedAccordionItems: false,
-        },
+        layout: baseLayout,
       };
     }
 
-    // For Amazon Pay and other methods - the PaymentIntent only includes that method
-    // so the PaymentElement should only show that payment method
+    // For all other methods (card, amazon_pay, revolut_pay, etc.)
+    // Disable wallets AND Link autofill to prevent Stripe from showing saved Link accounts
     return {
-      wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-      layout: {
-        type: 'accordion' as const,
-        defaultCollapsed: false,
-        radios: false,
-        spacedAccordionItems: false,
-      },
+      wallets: { applePay: 'never' as const, googlePay: 'never' as const, link: 'never' as const },
+      layout: baseLayout,
     };
   };
 
