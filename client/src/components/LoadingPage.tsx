@@ -95,6 +95,7 @@ const getProgressForTime = (elapsedMs: number, totalDuration: number): number =>
 
 export default function LoadingPage({ onComplete }: LoadingPageProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
@@ -152,6 +153,24 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     return () => clearInterval(timer);
   }, [onComplete, imagesLoaded]);
 
+  // Rotate testimonials in fixed order (no shuffling) every 8 seconds
+  useEffect(() => {
+    if (!imagesLoaded) return;
+
+    const testimonialTimer = setInterval(() => {
+      setCurrentTestimonialIndex((prev) => {
+        if (prev < testimonials.length - 1) {
+          if (navigator.vibrate) {
+            navigator.vibrate([30]);
+          }
+          return prev + 1;
+        }
+        return prev; // Stay on last testimonial
+      });
+    }, 8000);
+
+    return () => clearInterval(testimonialTimer);
+  }, [imagesLoaded]);
 
   // Get current stage based on progress
   const getCurrentStage = () => {
@@ -159,7 +178,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   };
 
   const currentStage = getCurrentStage();
-  const currentTestimonial = testimonials[0];
+  const currentTestimonial = testimonials[currentTestimonialIndex];
 
   // Show a simple loading state while images preload
   if (!imagesLoaded) {
@@ -319,13 +338,13 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
             <div className="relative min-h-[160px] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key="testimonial"
+                  key={currentTestimonialIndex}
                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -20 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   className="flex flex-col items-center gap-4"
-                  data-testid="testimonial-fixed"
+                  data-testid={`testimonial-${currentTestimonialIndex}`}
                 >
                   {/* Avatar */}
                   <Avatar className="w-16 h-16 border-2 border-primary/30 shadow-lg">
