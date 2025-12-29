@@ -39,10 +39,12 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
   // IMPORTANT: Only include the exact payment method the user selected - no fallbacks
   switch (preferredMethod) {
     case 'apple_pay':
-    case 'google_pay':
     case 'card':
-      // Apple Pay/Google Pay all use 'card' as the underlying payment method
+      // Apple Pay uses 'card' as the underlying payment method
       return ['card'];
+    case 'google_pay':
+      // Google Pay uses 'card' but we also show Link alongside it
+      return ['card', 'link'];
     case 'link':
       // Link needs card as the underlying payment method
       return ['card', 'link'];
