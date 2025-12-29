@@ -384,18 +384,19 @@
   }
 
   /* Dark mode styling for Stripe Embedded Checkout */
-  /* Apply filters to match website's dark blue theme: background HSL(230, 35%, 12%) */
+  /* Match website: background #1a1b2e (HSL 230 35% 12%), primary teal #2dd4bf (HSL 165 70% 55%) */
   .stripe-embedded-checkout {
-    filter: invert(0.92) hue-rotate(200deg) saturate(0.8) brightness(0.85);
+    filter: invert(0.88) hue-rotate(180deg) saturate(0.6) brightness(0.78) contrast(1.1);
     border-radius: 12px;
     overflow: hidden;
+    background: hsl(230 35% 12%);
   }
   
-  /* Revert images and icons inside the checkout so they display correctly */
+  /* Double-invert images and icons so they appear correctly */
   .stripe-embedded-checkout img,
   .stripe-embedded-checkout svg,
   .stripe-embedded-checkout [class*="Logo"],
   .stripe-embedded-checkout [class*="Icon"] {
-    filter: invert(0.92) hue-rotate(200deg) saturate(0.8) brightness(0.85);
+    filter: invert(0.88) hue-rotate(180deg) saturate(0.6) brightness(0.78) contrast(1.1);
   }
 }
