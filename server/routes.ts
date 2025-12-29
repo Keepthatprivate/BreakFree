@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Determine checkout mode (subscription vs payment)
       const isSubscription = productType === 'subscription';
 
-      // Create checkout session config with dark mode appearance
+      // Create checkout session config
       const sessionConfig: any = {
         ui_mode: 'embedded',
         mode: isSubscription ? 'subscription' : 'payment',
@@ -818,19 +818,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           productName: productName || productInfo.name,
           email: email || 'anonymous',
           name: name || '',
-        },
-        // Dark mode appearance for embedded checkout
-        custom_fields: [],
-        appearance: {
-          theme: 'night',
-          variables: {
-            colorPrimary: '#a78bfa',
-            colorBackground: '#1a1a2e',
-            colorText: '#ffffff',
-            colorDanger: '#ef4444',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            borderRadius: '12px',
-          },
         },
       };
 

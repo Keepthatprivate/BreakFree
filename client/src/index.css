@@ -382,4 +382,20 @@
     opacity: 0 !important;
     pointer-events: none !important;
   }
+
+  /* Dark mode styling for Stripe Embedded Checkout */
+  /* Apply invert filter to make the white checkout appear dark */
+  .stripe-embedded-checkout {
+    filter: invert(1) hue-rotate(180deg);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  /* Revert images and icons inside the checkout so they display correctly */
+  .stripe-embedded-checkout img,
+  .stripe-embedded-checkout svg,
+  .stripe-embedded-checkout [class*="Logo"],
+  .stripe-embedded-checkout [class*="Icon"] {
+    filter: invert(1) hue-rotate(180deg);
+  }
 }
