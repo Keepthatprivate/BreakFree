@@ -325,9 +325,12 @@ class FacebookCAPI {
         }
       };
 
+      // Only include test_event_code in non-production environments
+      // This ensures live payments go to the real Facebook events feed
+      const isProduction = process.env.NODE_ENV === 'production';
       const payload = {
         data: [eventPayload],
-        test_event_code: process.env.FB_TEST_EVENT_CODE || undefined
+        ...((!isProduction && process.env.FB_TEST_EVENT_CODE) && { test_event_code: process.env.FB_TEST_EVENT_CODE })
       };
 
       // Enhanced logging in development mode
