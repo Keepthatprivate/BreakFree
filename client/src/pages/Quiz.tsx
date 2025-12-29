@@ -580,7 +580,7 @@ export default function Quiz() {
     return (
       <>
         <ProgressBar currentChapter="future" currentQuestionIndex={questions.length - 1} totalQuestions={questions.length} />
-        <DonationPage userName={userName} onContinue={handleDonationContinue} />
+        <DonationPage userName={userName} email={userEmail} onContinue={handleDonationContinue} />
       </>
     );
   }

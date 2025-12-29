@@ -752,6 +752,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create Stripe Embedded Checkout Session
+  // This creates a Checkout Session that can be embedded directly on the page
+  app.post("/api/create-embedded-checkout", async (req, res) => {
+    try {
+      const { amount, email, productType, returnUrl } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : 'http://localhost:5000';
+
+      // Create a Checkout Session with embedded mode
+      const session = await stripe.checkout.sessions.create({
+        ui_mode: 'embedded',
+        mode: 'payment',
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: productType === 'donation' ? 'Donation' : 'Purchase',
+                description: productType === 'donation' 
+                  ? 'Support Break Free and unlock your full results'
+                  : 'Break Free Purchase',
+              },
+              unit_amount: Math.round(amount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        customer_email: email || undefined,
+        return_url: returnUrl || `${baseUrl}/quiz?state=results`,
+        metadata: {
+          type: productType || 'donation',
+          email: email || 'anonymous',
+        },
+      });
+
+      res.json({ clientSecret: session.client_secret });
+    } catch (error: any) {
+      console.error("Error creating embedded checkout:", error);
+      res.status(500).json({ message: "Error creating embedded checkout: " + error.message });
+    }
+  });
+
   // Create Stripe Checkout Session for subscription with trial
   // Flow: $1 trial fee + 7-day trial, then $29.99/month
   app.post("/api/create-subscription-checkout", async (req, res) => {
