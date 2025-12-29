@@ -1,10 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Heart, ArrowLeft, Loader2 } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { Heart } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { trackViewContent } from '@/lib/facebook-tracking';
-import { loadStripe } from '@stripe/stripe-js';
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
-import { apiRequest } from '@/lib/queryClient';
 
 interface DonationPageProps {
   userName: string;
@@ -12,8 +9,11 @@ interface DonationPageProps {
   onContinue: (donationAmount?: number) => void;
 }
 
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
+const STRIPE_PAYMENT_LINKS: Record<number, string> = {
+  1: 'https://buy.stripe.com/3cIbJ13DL8Jo0wfdaE6oo00',
+  4.99: 'https://buy.stripe.com/aFa4gzb6d8Jo4MveeI6oo01',
+  9.99: 'https://buy.stripe.com/dRmeVd8Y55xc6UD8Uo6oo02',
+};
 
 export default function DonationPage({ userName, email, onContinue }: DonationPageProps) {
   useEffect(() => {
@@ -21,7 +21,6 @@ export default function DonationPage({ userName, email, onContinue }: DonationPa
   }, []);
 
   const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
-  const [showCheckout, setShowCheckout] = useState(false);
 
   const donationAmounts = [
     { amount: 1, label: '$1' },
@@ -35,62 +34,11 @@ export default function DonationPage({ userName, email, onContinue }: DonationPa
 
   const handleContinue = () => {
     console.log('Donation selected:', selectedDonation);
-    setShowCheckout(true);
+    const paymentLink = STRIPE_PAYMENT_LINKS[selectedDonation];
+    if (paymentLink) {
+      window.location.href = paymentLink;
+    }
   };
-
-  const handleBack = () => {
-    setShowCheckout(false);
-  };
-
-  const fetchClientSecret = useCallback(async () => {
-    const response = await apiRequest('POST', '/api/create-embedded-checkout', {
-      amount: selectedDonation,
-      email: email || '',
-      productType: 'donation',
-      returnUrl: `${window.location.origin}/quiz?state=results&donation_success=true`,
-    });
-    const data = await response.json();
-    return data.clientSecret;
-  }, [selectedDonation, email]);
-
-  if (showCheckout) {
-    return (
-      <div className="min-h-screen bg-background py-6 sm:py-10">
-        <div className="max-w-lg mx-auto px-5 sm:px-6 w-full">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
-            data-testid="button-back-to-donation"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Change donation amount</span>
-          </button>
-
-          <div className="bg-card rounded-3xl p-5 sm:p-8 shadow-xl border border-card-border/50 mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
-              Complete Your Donation
-            </h2>
-            <p className="text-muted-foreground text-sm mb-4">
-              Donating ${selectedDonation.toFixed(2)} to unlock your results
-            </p>
-
-            {stripePromise ? (
-              <EmbeddedCheckoutProvider
-                stripe={stripePromise}
-                options={{ fetchClientSecret }}
-              >
-                <EmbeddedCheckout className="stripe-embedded-checkout" />
-              </EmbeddedCheckoutProvider>
-            ) : (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background py-6 sm:py-10">
