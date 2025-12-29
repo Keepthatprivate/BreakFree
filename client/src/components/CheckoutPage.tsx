@@ -139,7 +139,7 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
             applePay: 'black',
             googlePay: 'black',
           },
-          buttonHeight: 48,
+          buttonHeight: 55,
           wallets: getWalletButtonsConfig(),
           // Explicitly specify which payment methods to show
           paymentMethods: {
@@ -147,10 +147,16 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
             googlePay: preferredPaymentMethod === 'google_pay' ? 'always' : 'never',
             link: 'never', // Never show Link in Express Checkout
           },
+          // Show all buttons directly without any accordion/expansion
+          layout: {
+            maxColumns: 1,
+            maxRows: 1,
+            overflow: 'never',
+          },
         }}
       />
       <p className="text-xs text-muted-foreground text-center">
-        Click the button above to complete your payment
+        Tap above to complete your payment
       </p>
     </div>
   );
