@@ -326,11 +326,8 @@ export default function Quiz() {
   };
 
   const handleDonationContinue = (donationAmount?: number) => {
-    // Donation now handles its own embedded checkout, so this is only called for skip
-    if (!donationAmount || donationAmount <= 0) {
-      // Skip donation, go to plan-help page
-      setState('plan-help');
-    }
+    // After donation (or skip), go to trial page
+    setState('timeline');
   };
 
   const handleCheckoutBack = () => {
@@ -357,8 +354,8 @@ export default function Quiz() {
   };
 
   const handleBenefitsContinue = () => {
-    // After benefits page, show trial (timeline) first, before upsells
-    setState('timeline');
+    // After benefits page, show donation first
+    setState('donation');
   };
 
   const handleSevenDaysContinue = () => {
@@ -453,7 +450,7 @@ export default function Quiz() {
         email={userEmail}
         name={userName}
         onBack={() => setState('timeline')}
-        returnUrl={`${window.location.origin}/quiz?state=donation&payment_success=true`}
+        returnUrl={`${window.location.origin}/quiz?state=plan-help&payment_success=true`}
       />
     );
   }
