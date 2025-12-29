@@ -8,6 +8,12 @@ interface DonationPageProps {
   onContinue: (donationAmount?: number) => void;
 }
 
+const STRIPE_PAYMENT_LINKS: Record<number, string> = {
+  1: 'https://buy.stripe.com/3cIbJ13DL8Jo0wfdaE6oo00',
+  4.99: 'https://buy.stripe.com/aFa4gzb6d8Jo4MveeI6oo01',
+  9.99: 'https://buy.stripe.com/dRmeVd8Y55xc6UD8Uo6oo02',
+};
+
 export default function DonationPage({ userName, onContinue }: DonationPageProps) {
   useEffect(() => {
     trackViewContent({ contentName: 'Funnel Step 05 - Donation' });
@@ -27,8 +33,10 @@ export default function DonationPage({ userName, onContinue }: DonationPageProps
 
   const handleContinue = () => {
     console.log('Donation selected:', selectedDonation);
-    // Pass the selected donation amount to trigger checkout
-    onContinue(selectedDonation || undefined);
+    const paymentLink = STRIPE_PAYMENT_LINKS[selectedDonation];
+    if (paymentLink) {
+      window.location.href = paymentLink;
+    }
   };
 
   return (
