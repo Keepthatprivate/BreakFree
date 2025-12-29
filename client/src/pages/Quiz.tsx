@@ -20,13 +20,11 @@ import FAQPage from '@/components/FAQPage';
 import UpsellPage from '@/components/UpsellPage';
 import MasterclassBundlePage from '@/components/MasterclassBundlePage';
 import HealingJournalPage from '@/components/HealingJournalPage';
-import CheckoutPage from '@/components/CheckoutPage';
-import PaymentMethodSelector from '@/components/PaymentMethodSelector';
-import SubscriptionCheckoutPage from '@/components/SubscriptionCheckoutPage';
+import EmbeddedCheckoutPage from '@/components/EmbeddedCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
 import { trackViewContent, trackLead, getFacebookCookies } from '@/lib/facebook-tracking';
-import { PaymentMethodType, getStoredPaymentPreference, getDefaultPaymentMethod } from '@/lib/payment-preferences';
+import { type EmbeddedCheckoutProductType } from '@/components/EmbeddedCheckoutPage';
 import { apiRequest } from "@/lib/queryClient";
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
 import footstepsAudio from '@assets/footsteps_short.mp3';
@@ -91,10 +89,7 @@ export default function Quiz() {
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType | undefined>(undefined);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
-  const [prefetchedClientSecret, setPrefetchedClientSecret] = useState<string | null>(null);
-  const [prefetchParams, setPrefetchParams] = useState<{amount: number, productType: string, paymentMethod: PaymentMethodType} | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -286,88 +281,9 @@ export default function Quiz() {
     setState('trust');
   };
 
-  // Pre-fetch PaymentIntent to make checkout instantaneous
-  // Called when entering payment-method-selection or checkout state
-  const prefetchPaymentIntent = (amount: number, productType: string, productName: string, paymentMethod?: PaymentMethodType) => {
-    // Determine which payment method to use for prefetch
-    const methodForPrefetch = paymentMethod || getStoredPaymentPreference() || getDefaultPaymentMethod();
-
-    // Check if we already have a valid prefetched secret for the same params AND payment method
-    if (prefetchedClientSecret &&
-        prefetchParams?.amount === amount &&
-        prefetchParams?.productType === productType &&
-        prefetchParams?.paymentMethod === methodForPrefetch) {
-      return; // Already have valid prefetched secret for this payment method
-    }
-
-    // Clear old secret if params or payment method changed
-    setPrefetchedClientSecret(null);
-    setPrefetchParams({ amount, productType, paymentMethod: methodForPrefetch });
-
-    const getEndpoint = () => {
-      switch (productType) {
-        case 'trial': return '/api/create-trial-payment';
-        case 'donation': return '/api/create-donation-payment';
-        default: return '/api/create-upsell-payment';
-      }
-    };
-
-    const { fbc, fbp } = getFacebookCookies();
-    const clientUserAgent = navigator.userAgent;
-    const sourceUrl = window.location.href;
-
-    const getBasePayload = () => {
-      switch (productType) {
-        case 'donation':
-          return { amount: amount / 100, email: userEmail, name: userName };
-        case 'masterclass':
-        case 'journal':
-          return { amount: amount / 100, email: userEmail, name: userName, productName };
-        case 'trial':
-          return { email: userEmail, name: userName, answers };
-        default:
-          return { email: userEmail, name: userName };
-      }
-    };
-
-    const payload = {
-      ...getBasePayload(),
-      fbc,
-      fbp,
-      clientUserAgent,
-      sourceUrl,
-      preferredPaymentMethod: methodForPrefetch,
-    };
-
-    apiRequest("POST", getEndpoint(), payload)
-      .then((res) => res.json())
-      .then((data) => {
-        // Only set if params still match (user hasn't navigated away)
-        setPrefetchedClientSecret(data.clientSecret);
-      })
-      .catch((error) => {
-        console.error('Error pre-fetching payment intent:', error);
-        // Don't set error state - CheckoutPage will retry if needed
-      });
-  };
-
-  // Helper function to go to checkout with smart payment method handling
-  // If user has a stored preference, skip payment method selection and go directly to checkout
-  // Otherwise, show payment method selection screen
-  const goToCheckoutWithPaymentMethod = () => {
-    const storedPreference = getStoredPaymentPreference();
-    if (storedPreference) {
-      // User has a stored preference - skip selection and go directly to checkout
-      setSelectedPaymentMethod(storedPreference);
-      setState('checkout');
-    } else {
-      // No stored preference - use smart default based on device and show selection
-      const defaultMethod = getDefaultPaymentMethod();
-      setSelectedPaymentMethod(defaultMethod);
-      setState('payment-method-selection');
-    }
-    // Pre-fetch PaymentIntent immediately so checkout loads instantly
-    prefetchPaymentIntent(checkoutAmount, checkoutType, checkoutProductName);
+  // Helper function to go directly to embedded checkout
+  const goToCheckout = () => {
+    setState('checkout');
   };
 
   const handlePaymentComplete = () => {
@@ -375,7 +291,7 @@ export default function Quiz() {
     setCheckoutAmount(1499); // €14.99 in cents
     setCheckoutType('upsell');
     setCheckoutProductName('Mental Well-Being Guides');
-    goToCheckoutWithPaymentMethod();
+    goToCheckout();
   };
 
   const handlePaymentSkip = () => {
@@ -388,7 +304,7 @@ export default function Quiz() {
     setCheckoutAmount(6900); // $69 in cents
     setCheckoutType('masterclass');
     setCheckoutProductName('Trauma Healing Masterclass Bundle');
-    goToCheckoutWithPaymentMethod();
+    goToCheckout();
   };
 
   const handleMasterclassDecline = () => {
@@ -401,7 +317,7 @@ export default function Quiz() {
     setCheckoutAmount(1499); // $14.99 in cents
     setCheckoutType('journal');
     setCheckoutProductName('Inner Child Healing Journal');
-    goToCheckoutWithPaymentMethod();
+    goToCheckout();
   };
 
   const handleJournalSkip = () => {
@@ -409,82 +325,35 @@ export default function Quiz() {
     setState('results');
   };
 
-
   const handleDonationContinue = (donationAmount?: number) => {
-    // If donation amount is provided, go to checkout
-    if (donationAmount && donationAmount > 0) {
-      setCheckoutAmount(Math.round(donationAmount * 100)); // Convert to cents
-      setCheckoutType('donation');
-      setCheckoutProductName(`Contribution - $${donationAmount.toFixed(2)}`);
-      goToCheckoutWithPaymentMethod();
-    } else {
+    // Donation now handles its own embedded checkout, so this is only called for skip
+    if (!donationAmount || donationAmount <= 0) {
       // Skip donation, go to plan-help page
       setState('plan-help');
     }
   };
 
-  const handleCheckoutComplete = () => {
-    // After successful checkout, mark as paid and continue to next step
-    setHasPaid(true);
-    localStorage.setItem('hasPaid', 'true');
-
-    // Determine next step based on checkout type
-    // Flow: Donation → Plan Help → Testimonials → Seven Days → Timeline → Trial → Guides → Masterclass → Results
-    if (checkoutType === 'donation') {
-      // After donation checkout, go to plan-help page
-      setState('plan-help');
-    } else if (checkoutType === 'trial') {
-      // After trial/membership checkout, go to guide upsell page
-      setState('payment');
-    } else if (checkoutType === 'upsell') {
-      // After buying guides, go to masterclass upsell
-      setState('masterclass');
-    } else if (checkoutType === 'masterclass') {
-      // After buying masterclass, show journal as additional offer
-      setState('journal');
-    } else if (checkoutType === 'journal') {
-      // After buying journal, go to results (final step)
-      setState('results');
-    }
-  };
-
   const handleCheckoutBack = () => {
-    // Go back to payment method selection
-    setState('payment-method-selection');
-  };
-
-  const handlePaymentMethodSelect = (method: PaymentMethodType) => {
-    // User selected a payment method, proceed to checkout
-    setSelectedPaymentMethod(method);
-
-    // Prefetch a new PaymentIntent for the selected payment method
-    // This ensures the checkout has the correct payment_method_types
-    prefetchPaymentIntent(checkoutAmount, checkoutType, checkoutProductName, method);
-
-    setState('checkout');
-  };
-
-  const handlePaymentMethodBack = () => {
-    // Go back to the product page
-    if (checkoutType === 'donation') {
-      setState('donation');
-    } else if (checkoutType === 'upsell') {
+    // Go back based on checkout type
+    if (checkoutType === 'upsell') {
       setState('payment');
     } else if (checkoutType === 'masterclass') {
       setState('masterclass');
     } else if (checkoutType === 'journal') {
       setState('journal');
     } else if (checkoutType === 'trial') {
-      setState('timeline');
+      setState('faq');
+    } else {
+      setState('donation');
     }
   };
 
   const handleStartTrial = () => {
-    // User wants to start trial, go to checkout
+    // User wants to start trial, go to subscription checkout
     setCheckoutAmount(100); // $1 in cents
     setCheckoutType('trial');
     setCheckoutProductName('7-Day BreakFree Trial');
-    goToCheckoutWithPaymentMethod();
+    setState('subscription-checkout');
   };
 
   const handleBenefitsContinue = () => {
@@ -538,40 +407,53 @@ export default function Quiz() {
     return <HealingJournalPage onAccept={handleJournalAccept} onSkip={handleJournalSkip} />;
   }
 
-  if (state === 'payment-method-selection') {
-    return (
-      <PaymentMethodSelector
-        productName={checkoutProductName}
-        amount={checkoutAmount}
-        onSelect={handlePaymentMethodSelect}
-        onBack={handlePaymentMethodBack}
-      />
-    );
-  }
-
   if (state === 'checkout') {
+    // Map checkoutType to EmbeddedCheckoutProductType
+    const getProductType = (): EmbeddedCheckoutProductType => {
+      if (checkoutType === 'masterclass') return 'masterclass';
+      if (checkoutType === 'journal') return 'journal';
+      if (checkoutType === 'donation') return 'donation';
+      return 'upsell';
+    };
+
+    // Determine the return URL based on checkout type
+    const getReturnUrl = () => {
+      const baseUrl = window.location.origin;
+      if (checkoutType === 'donation') {
+        return `${baseUrl}/quiz?state=plan-help&payment_success=true`;
+      } else if (checkoutType === 'upsell') {
+        return `${baseUrl}/quiz?state=masterclass&payment_success=true`;
+      } else if (checkoutType === 'masterclass') {
+        return `${baseUrl}/quiz?state=journal&payment_success=true`;
+      } else if (checkoutType === 'journal') {
+        return `${baseUrl}/quiz?state=results&payment_success=true`;
+      }
+      return `${baseUrl}/quiz?state=results&payment_success=true`;
+    };
+
     return (
-      <CheckoutPage
-        amount={checkoutAmount}
-        productType={checkoutType}
+      <EmbeddedCheckoutPage
+        amount={checkoutAmount / 100}
+        productType={getProductType()}
         productName={checkoutProductName}
         email={userEmail}
         name={userName}
-        answers={checkoutType === 'trial' ? answers : undefined}
-        preferredPaymentMethod={selectedPaymentMethod}
-        prefetchedClientSecret={prefetchedClientSecret}
-        onComplete={handleCheckoutComplete}
         onBack={handleCheckoutBack}
+        returnUrl={getReturnUrl()}
       />
     );
   }
 
   if (state === 'subscription-checkout') {
     return (
-      <SubscriptionCheckoutPage
+      <EmbeddedCheckoutPage
+        amount={1}
+        productType="subscription"
+        productName="7-Day BreakFree Trial"
         email={userEmail}
         name={userName}
-        quizAnalysis={undefined}
+        onBack={() => setState('faq')}
+        returnUrl={`${window.location.origin}/quiz?state=payment&payment_success=true`}
       />
     );
   }

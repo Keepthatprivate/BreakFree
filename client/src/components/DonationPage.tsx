@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { trackViewContent } from '@/lib/facebook-tracking';
+import EmbeddedCheckoutPage from './EmbeddedCheckoutPage';
 
 interface DonationPageProps {
   userName: string;
@@ -9,18 +10,13 @@ interface DonationPageProps {
   onContinue: (donationAmount?: number) => void;
 }
 
-const STRIPE_PAYMENT_LINKS: Record<number, string> = {
-  1: 'https://buy.stripe.com/3cIbJ13DL8Jo0wfdaE6oo00',
-  4.99: 'https://buy.stripe.com/aFa4gzb6d8Jo4MveeI6oo01',
-  9.99: 'https://buy.stripe.com/dRmeVd8Y55xc6UD8Uo6oo02',
-};
-
 export default function DonationPage({ userName, email, onContinue }: DonationPageProps) {
   useEffect(() => {
     trackViewContent({ contentName: 'Funnel Step 05 - Donation' });
   }, []);
 
   const [selectedDonation, setSelectedDonation] = useState<number>(9.99);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const donationAmounts = [
     { amount: 1, label: '$1' },
@@ -34,11 +30,22 @@ export default function DonationPage({ userName, email, onContinue }: DonationPa
 
   const handleContinue = () => {
     console.log('Donation selected:', selectedDonation);
-    const paymentLink = STRIPE_PAYMENT_LINKS[selectedDonation];
-    if (paymentLink) {
-      window.location.href = paymentLink;
-    }
+    setShowCheckout(true);
   };
+
+  if (showCheckout) {
+    return (
+      <EmbeddedCheckoutPage
+        amount={selectedDonation}
+        productType="donation"
+        productName="Donation"
+        email={email || ''}
+        name={userName}
+        onBack={() => setShowCheckout(false)}
+        returnUrl={`${window.location.origin}/quiz?state=results&donation_success=true`}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-6 sm:py-10">
