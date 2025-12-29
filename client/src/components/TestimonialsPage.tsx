@@ -3,13 +3,14 @@ import { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
 
-// Import diverse profile images - these should NOT overlap with LoadingPage images
-import sarahImage from '@assets/stock_images/professional_woman_s_42c21774.jpg';
-import markImage from '@assets/stock_images/casual_photo_young_m_c492381e.jpg';
-import jessicaImage from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
-import chrisImage from '@assets/stock_images/young_man_casual_sel_6b0d184e.jpg';
-import amandaImage from '@assets/stock_images/young_woman_casual_s_cab6f0c8.jpg';
-import johnImage from '@assets/stock_images/professional_headsho_9ebfa56d.jpg';
+// Import the same images used in LoadingPage for consistency
+import lisaImage from '@assets/stock_images/professional_woman_s_d4fbbe22.jpg';
+import annaImage from '@assets/stock_images/young_woman_casual_s_b2572404.jpg';
+import rachelImage from '@assets/stock_images/young_woman_casual_s_cb2bd61f.jpg';
+import jamesImage from '@assets/stock_images/professional_black_m_06705ed8.jpg';
+import michaelImage from '@assets/stock_images/young_man_casual_sel_cfbef95c.jpg';
+import emilyImage from '@assets/stock_images/young_woman_smiling__c268d950.jpg';
+import davidImage from '@assets/stock_images/young_man_casual_sel_fecd2253.jpg';
 
 interface TestimonialsPageProps {
   onContinue: () => void;
@@ -29,40 +30,46 @@ export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) 
 
   const testimonials: Testimonial[] = [
     {
-      name: 'Sarah M.',
-      rating: 4.8,
-      text: 'This program helped me understand patterns I\'ve carried since childhood. I finally feel free.',
-      image: sarahImage
-    },
-    {
-      name: 'Mark T.',
+      name: 'Lisa Chen',
       rating: 4.9,
-      text: 'The 28-day plan gave me tools I never knew I needed. My relationships have never been better.',
-      image: markImage
+      text: 'In every relationship I had, there were the same patterns - same conflicts, same drama, same reactions. Now I get it. I am finally able to move on with my life.',
+      image: lisaImage
     },
     {
-      name: 'Jessica R.',
-      rating: 4.7,
-      text: 'I was skeptical at first, but the insights I gained were life-changing.',
-      image: jessicaImage
-    },
-    {
-      name: 'Chris L.',
-      rating: 4.9,
-      text: 'Finally found a program that addresses the root cause. My anxiety has significantly decreased.',
-      image: chrisImage
-    },
-    {
-      name: 'Amanda K.',
+      name: 'Anna B.',
       rating: 4.8,
-      text: 'The empathy and understanding in this program is unlike anything I\'ve experienced.',
-      image: amandaImage
+      text: 'Since my accident as a teenager, I\'ve never been the same. Understanding the roots of my fears and the way I reacted was the only way for me to finally overcome this trauma.',
+      image: annaImage
     },
     {
-      name: 'John P.',
+      name: 'Rachel W.',
       rating: 4.7,
-      text: 'This helped me break free from limiting beliefs I didn\'t even know I had.',
-      image: johnImage
+      text: 'This app helped me realize that in my relationships my past traumas was a key component for the reasons we broke up. I wouldn\'t have guessed without it.',
+      image: rachelImage
+    },
+    {
+      name: 'James R.',
+      rating: 4.9,
+      text: 'I\'ve always thought I had ADHD. My childhood in Kenya was rough, and I couldn\'t cope with what I saw. Therefore I always had this mental fog, this inability to focus because my mind was keeping me busy to avoid pain. Now it\'s gone for good.',
+      image: jamesImage
+    },
+    {
+      name: 'Michael T.',
+      rating: 4.8,
+      text: 'I\'ve always felt different. Didn\'t know why I was weird or perceived as such by most. This app helped me realize that my childhood traumas made me behave in certain ways that weren\'t normal. The clarity this app gave me is such a relief.',
+      image: michaelImage
+    },
+    {
+      name: 'Emily K.',
+      rating: 4.7,
+      text: 'I am a very susceptible person. Always thought it was part of my identity, actually it was just a reaction to some childhood events. Now my anger is gone, and I can even joke about myself.',
+      image: emilyImage
+    },
+    {
+      name: 'David P.',
+      rating: 4.9,
+      text: 'I have been in depression for over 10 years. Never thought of taking the step to meet with a psy. Now I discovered my triggers, I wish I had found this app sooner.',
+      image: davidImage
     }
   ];
 
