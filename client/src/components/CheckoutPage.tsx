@@ -156,7 +156,62 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   );
 }
 
-// Standard Payment Element Form for Card, Link, Amazon Pay
+// Auto-redirect form for Amazon Pay and PayPal - redirects immediately when ready
+function RedirectCheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const { toast } = useToast();
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  const paymentMethodName = preferredPaymentMethod === 'amazon_pay' ? 'Amazon Pay' : 'PayPal';
+
+  // Auto-redirect as soon as stripe and elements are ready
+  useEffect(() => {
+    if (stripe && elements && !hasRedirected) {
+      setHasRedirected(true);
+      
+      // Track payment info
+      trackAddPaymentInfo({
+        email,
+        firstName: name,
+      });
+
+      // Immediately trigger the redirect
+      stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/quiz?payment_success=true`,
+        },
+        redirect: 'always',
+      }).then(({ error }) => {
+        if (error) {
+          toast({
+            title: "Payment Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          setHasRedirected(false); // Allow retry
+        }
+      });
+    }
+  }, [stripe, elements, hasRedirected, email, name, toast]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col items-center justify-center py-8">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+        <p className="text-foreground font-medium">Redirecting to {paymentMethodName}...</p>
+        <p className="text-sm text-muted-foreground mt-2">Please wait a moment</p>
+      </div>
+      {/* Hidden PaymentElement - required for confirmPayment to work */}
+      <div className="hidden">
+        <PaymentElement />
+      </div>
+    </div>
+  );
+}
+
+// Standard Payment Element Form for Card, Link
 function StandardCheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -167,9 +222,6 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   // Hide Link when user selected a different payment method
   // Stripe's PaymentElement shows Link for saved accounts, but we want to respect user's choice
   const shouldHideLink = preferredPaymentMethod && preferredPaymentMethod !== 'link';
-
-  // For Amazon Pay, we want to hide card options completely - only show Amazon Pay
-  const isAmazonPayOnly = preferredPaymentMethod === 'amazon_pay';
 
   // For Link, we want to ensure Link shows prominently
   const isLinkPayment = preferredPaymentMethod === 'link';
@@ -193,31 +245,6 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
 
     setIsProcessing(true);
 
-    // Amazon Pay and PayPal REQUIRE redirect to their hosted pages
-    // For these methods, we must use redirect: 'always'
-    const requiresRedirect = preferredPaymentMethod === 'amazon_pay' || preferredPaymentMethod === 'paypal';
-
-    if (requiresRedirect) {
-      // For redirect-based payment methods, always redirect
-      const { error: redirectError } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/quiz?payment_success=true`,
-        },
-        redirect: 'always',
-      });
-      // If we get here, redirect failed
-      setIsProcessing(false);
-      if (redirectError) {
-        toast({
-          title: "Payment Failed",
-          description: redirectError.message,
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
     // For card/link payments, only redirect if required
     const { error } = await stripe.confirmPayment({
       elements,
@@ -227,7 +254,6 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
       redirect: 'if_required',
     });
 
-    // If we get here with requiresRedirect, there was an error (redirect didn't happen)
     setIsProcessing(false);
 
     if (error) {
@@ -316,7 +342,6 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   const getContainerClasses = () => {
     const classes: string[] = [];
     if (shouldHideLink) classes.push('hide-stripe-link');
-    if (isAmazonPayOnly) classes.push('amazon-pay-only');
     if (isLinkPayment) classes.push('link-payment');
     return classes.join(' ');
   };
@@ -355,6 +380,10 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
   const isWalletPayment = preferredPaymentMethod === 'apple_pay' || 
                           preferredPaymentMethod === 'google_pay';
   
+  // Use redirect-based checkout for Amazon Pay and PayPal (auto-redirects immediately)
+  const isRedirectPayment = preferredPaymentMethod === 'amazon_pay' || 
+                            preferredPaymentMethod === 'paypal';
+  
   if (isWalletPayment) {
     return (
       <ExpressCheckoutForm
@@ -368,7 +397,20 @@ function CheckoutForm({ amount, productName, email, name, preferredPaymentMethod
     );
   }
 
-  // Use standard PaymentElement for Card, Link, Amazon Pay
+  if (isRedirectPayment) {
+    return (
+      <RedirectCheckoutForm
+        amount={amount}
+        productName={productName}
+        email={email}
+        name={name}
+        preferredPaymentMethod={preferredPaymentMethod}
+        onSuccess={onSuccess}
+      />
+    );
+  }
+
+  // Use standard PaymentElement for Card, Link
   return (
     <StandardCheckoutForm
       amount={amount}
