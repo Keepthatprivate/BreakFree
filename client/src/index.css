@@ -289,4 +289,19 @@
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
+
+  /* Hide Stripe Link authentication when user selected a different payment method */
+  /* This targets the Link Authentication Element that Stripe injects */
+  .hide-stripe-link [data-stripe-class="p-LinkAuthenticationElement"],
+  .hide-stripe-link .p-LinkAuthenticationElement,
+  .hide-stripe-link [class*="LinkAuthentication"],
+  .hide-stripe-link [data-testid*="link"],
+  .hide-stripe-link .StripeElement--link {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }

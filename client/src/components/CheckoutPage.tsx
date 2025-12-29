@@ -166,6 +166,10 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
+  
+  // Hide Link when user selected a different payment method
+  // Stripe's PaymentElement shows Link for saved accounts, but we want to respect user's choice
+  const shouldHideLink = preferredPaymentMethod && preferredPaymentMethod !== 'link';
 
   const handlePaymentElementReady = () => {
     if (!hasTrackedPaymentInfo) {
@@ -254,10 +258,13 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement
-        onReady={handlePaymentElementReady}
-        options={getPaymentElementOptions()}
-      />
+      {/* Container with CSS to hide Link authentication when user chose different method */}
+      <div className={shouldHideLink ? 'hide-stripe-link' : ''}>
+        <PaymentElement
+          onReady={handlePaymentElementReady}
+          options={getPaymentElementOptions()}
+        />
+      </div>
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
@@ -522,6 +529,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
           </div>
 
           {/* Stripe integration: Wrap form in Elements provider */}
+          {/* Disable Link authentication unless user explicitly selected Link */}
           <Elements 
             stripe={stripePromise} 
             options={{ 
@@ -536,6 +544,9 @@ export default function CheckoutPage({ amount, productType, productName, email, 
                   borderRadius: '12px',
                 },
               },
+              // Disable Link Authentication Element unless user selected Link
+              // This prevents Stripe from auto-detecting saved Link accounts
+              loader: effectivePaymentMethod === 'link' ? 'auto' : 'always',
             }}
           >
             <CheckoutForm
