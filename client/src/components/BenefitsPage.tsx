@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { trackViewContent } from '@/lib/facebook-tracking';
-import { Brain, Heart, Sparkles } from 'lucide-react';
+import { Shield, Heart, Sparkles } from 'lucide-react';
 
 interface BenefitsPageProps {
   onContinue: () => void;
@@ -13,23 +13,23 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
 
   const benefits = [
     {
-      icon: Brain,
-      title: 'Emotional Balance',
-      description: 'Learn to manage triggers, regulate emotions, and build lasting resilience.',
+      icon: Shield,
+      title: 'Feel Safe in Your Own Skin',
+      description: 'Learn to calm your nervous system, understand your triggers, and finally feel at peace — even when life gets hard.',
       iconBg: 'bg-blue-500/15',
       iconColor: 'text-blue-400'
     },
     {
       icon: Heart,
-      title: 'Deeper Connections',
-      description: 'Improve communication and build healthier, more fulfilling relationships.',
+      title: 'Build Trust & Let People In',
+      description: 'Heal the wounds that keep you guarded. Create deeper, more fulfilling relationships without fear of being hurt again.',
       iconBg: 'bg-rose-500/15',
       iconColor: 'text-rose-400'
     },
     {
       icon: Sparkles,
-      title: 'Personal Freedom',
-      description: 'Break free from limiting beliefs and reclaim control over your life.',
+      title: 'Release What Was Never Yours',
+      description: "Let go of the shame, guilt, and patterns you inherited from childhood. It's time to write your own story.",
       iconBg: 'bg-amber-500/15',
       iconColor: 'text-amber-400'
     }
@@ -40,10 +40,10 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
       <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
-            Your 28-Day Healing Plan
+            Your Healing Journey Starts Here
           </h1>
           <p className="text-muted-foreground text-base">
-            Here's what you'll experience
+            In 28 days, here's what becomes possible for you
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
             className="w-full sm:w-auto min-w-[280px] bg-primary hover-elevate active-elevate-2 text-background font-bold text-lg px-10 py-4 rounded-full shadow-xl shadow-primary/30 transition-all duration-200"
             data-testid="button-continue-benefits"
           >
-            Get my result and plan
+            Start My Healing Journey
           </button>
         </div>
       </div>
