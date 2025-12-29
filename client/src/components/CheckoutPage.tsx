@@ -226,34 +226,45 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   };
 
   // Configure PaymentElement to show ONLY the selected payment method
-  // Use 'accordion' layout with paymentMethodOrder to prioritize the selected method
-  // Hide all wallets since those use ExpressCheckoutElement
+  // Use 'accordion' layout with collapsed items to minimize visual clutter
+  // The actual payment methods available come from the PaymentIntent's payment_method_types
   const getPaymentElementOptions = () => {
-    const baseOptions = {
-      wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-    };
-
-    // For card-only, use simple layout
+    // For card, use simple accordion layout
     if (preferredPaymentMethod === 'card') {
       return {
-        ...baseOptions,
-        layout: 'tabs' as const,
-        paymentMethodOrder: ['card'],
+        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+        layout: {
+          type: 'accordion' as const,
+          defaultCollapsed: false,
+          radios: false,
+          spacedAccordionItems: false,
+        },
       };
     }
 
-    // For other methods (amazon_pay, link, revolut_pay), hide card entirely
-    // by using accordion layout and filtering to only show the selected method
+    // For Link, need to include card as Link is an accelerated card checkout
+    if (preferredPaymentMethod === 'link') {
+      return {
+        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+        layout: {
+          type: 'accordion' as const,
+          defaultCollapsed: false,
+          radios: false,
+          spacedAccordionItems: false,
+        },
+      };
+    }
+
+    // For Amazon Pay and other methods - the PaymentIntent only includes that method
+    // so the PaymentElement should only show that payment method
     return {
-      ...baseOptions,
+      wallets: { applePay: 'never' as const, googlePay: 'never' as const },
       layout: {
         type: 'accordion' as const,
         defaultCollapsed: false,
         radios: false,
         spacedAccordionItems: false,
       },
-      // Only show the selected payment method, explicitly exclude card
-      paymentMethodOrder: preferredPaymentMethod ? [preferredPaymentMethod] : undefined,
     };
   };
 
