@@ -336,4 +336,29 @@
     height: 0 !important;
     overflow: hidden !important;
   }
+
+  /* Hide Link tab/option in PaymentElement accordion for card-only checkout */
+  .hide-stripe-link .p-AccordionItem[data-testid*="link"],
+  .hide-stripe-link .p-Tab[data-testid*="link"],
+  .hide-stripe-link button[aria-label*="Link"],
+  .hide-stripe-link [data-payment-method-type="link"] {
+    display: none !important;
+  }
+
+  /* Ensure Amazon Pay only shows Amazon Pay button, hide all card-related UI */
+  .amazon-pay-only .p-AccordionItem:not([data-testid*="amazon"]),
+  .amazon-pay-only .p-Tab:not([data-testid*="amazon"]),
+  .amazon-pay-only [data-payment-method-type="card"],
+  .amazon-pay-only [data-payment-method-type="link"] {
+    display: none !important;
+  }
+
+  /* Link payment - ensure Link shows first and prominently */
+  .link-payment [data-payment-method-type="link"] {
+    order: -1;
+  }
+  .link-payment .p-AccordionItem[data-testid*="link"],
+  .link-payment .p-Tab[data-testid*="link"] {
+    order: -1;
+  }
 }
