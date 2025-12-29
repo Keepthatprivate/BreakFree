@@ -89,12 +89,12 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   };
 
   // Filter which wallets to show based on user's selection
-  // IMPORTANT: Always disable Link for wallet payments - user selected a specific wallet
   const getWalletButtonsConfig = () => {
     if (preferredPaymentMethod === 'apple_pay') {
       return { applePay: 'always' as const, googlePay: 'never' as const, link: 'never' as const };
     } else if (preferredPaymentMethod === 'google_pay') {
-      return { applePay: 'never' as const, googlePay: 'always' as const, link: 'never' as const };
+      // Show Link alongside Google Pay
+      return { applePay: 'never' as const, googlePay: 'always' as const, link: 'always' as const };
     }
     // Default: show all wallets but disable Link
     return { applePay: 'always' as const, googlePay: 'always' as const, link: 'never' as const };
@@ -125,8 +125,11 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
 
   // Always render ExpressCheckoutElement immediately - Stripe handles its own loading state
   // This makes wallet loading instantaneous instead of showing our own loading spinner
+  // Only hide Link for Apple Pay, show it for Google Pay
+  const containerClass = preferredPaymentMethod === 'apple_pay' ? 'space-y-6 hide-express-link' : 'space-y-6';
+  
   return (
-    <div className="space-y-6 hide-express-link">
+    <div className={containerClass}>
       <ExpressCheckoutElement
         onReady={handleReady}
         onConfirm={handleConfirm}
@@ -141,12 +144,6 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
           },
           buttonHeight: 55,
           wallets: getWalletButtonsConfig(),
-          // Explicitly specify which payment methods to show
-          paymentMethods: {
-            applePay: preferredPaymentMethod === 'apple_pay' ? 'always' : 'never',
-            googlePay: preferredPaymentMethod === 'google_pay' ? 'always' : 'never',
-            link: 'never', // Never show Link in Express Checkout
-          },
         }}
       />
       <p className="text-xs text-muted-foreground text-center">
