@@ -94,7 +94,7 @@ export default function Quiz() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType | undefined>(undefined);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [prefetchedClientSecret, setPrefetchedClientSecret] = useState<string | null>(null);
-  const [prefetchParams, setPrefetchParams] = useState<{amount: number, productType: string} | null>(null);
+  const [prefetchParams, setPrefetchParams] = useState<{amount: number, productType: string, paymentMethod: PaymentMethodType} | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -288,15 +288,21 @@ export default function Quiz() {
 
   // Pre-fetch PaymentIntent to make checkout instantaneous
   // Called when entering payment-method-selection or checkout state
-  const prefetchPaymentIntent = (amount: number, productType: string, productName: string) => {
-    // Check if we already have a valid prefetched secret for the same params
-    if (prefetchedClientSecret && prefetchParams?.amount === amount && prefetchParams?.productType === productType) {
-      return; // Already have valid prefetched secret
+  const prefetchPaymentIntent = (amount: number, productType: string, productName: string, paymentMethod?: PaymentMethodType) => {
+    // Determine which payment method to use for prefetch
+    const methodForPrefetch = paymentMethod || getStoredPaymentPreference() || getDefaultPaymentMethod();
+
+    // Check if we already have a valid prefetched secret for the same params AND payment method
+    if (prefetchedClientSecret &&
+        prefetchParams?.amount === amount &&
+        prefetchParams?.productType === productType &&
+        prefetchParams?.paymentMethod === methodForPrefetch) {
+      return; // Already have valid prefetched secret for this payment method
     }
 
-    // Clear old secret if params changed
+    // Clear old secret if params or payment method changed
     setPrefetchedClientSecret(null);
-    setPrefetchParams({ amount, productType });
+    setPrefetchParams({ amount, productType, paymentMethod: methodForPrefetch });
 
     const getEndpoint = () => {
       switch (productType) {
@@ -330,7 +336,7 @@ export default function Quiz() {
       fbp,
       clientUserAgent,
       sourceUrl,
-      preferredPaymentMethod: getStoredPaymentPreference() || getDefaultPaymentMethod(),
+      preferredPaymentMethod: methodForPrefetch,
     };
 
     apiRequest("POST", getEndpoint(), payload)
@@ -450,6 +456,11 @@ export default function Quiz() {
   const handlePaymentMethodSelect = (method: PaymentMethodType) => {
     // User selected a payment method, proceed to checkout
     setSelectedPaymentMethod(method);
+
+    // Prefetch a new PaymentIntent for the selected payment method
+    // This ensures the checkout has the correct payment_method_types
+    prefetchPaymentIntent(checkoutAmount, checkoutType, checkoutProductName, method);
+
     setState('checkout');
   };
 
