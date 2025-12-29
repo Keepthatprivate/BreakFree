@@ -2,12 +2,13 @@ import { Star } from 'lucide-react';
 import { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
-// Import diverse profile images from different photo batches to ensure visual variety
+
+// Import diverse profile images - these should NOT overlap with LoadingPage images
 import sarahImage from '@assets/stock_images/professional_woman_s_42c21774.jpg';
-import michaelImage from '@assets/stock_images/casual_photo_young_m_c492381e.jpg';
-import emilyImage from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
-import davidImage from '@assets/stock_images/young_man_casual_sel_6b0d184e.jpg';
-import rachelImage from '@assets/stock_images/young_woman_casual_s_cab6f0c8.jpg';
+import markImage from '@assets/stock_images/casual_photo_young_m_c492381e.jpg';
+import jessicaImage from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
+import chrisImage from '@assets/stock_images/young_man_casual_sel_6b0d184e.jpg';
+import amandaImage from '@assets/stock_images/young_woman_casual_s_cab6f0c8.jpg';
 import johnImage from '@assets/stock_images/professional_headsho_9ebfa56d.jpg';
 
 interface TestimonialsPageProps {
@@ -34,28 +35,28 @@ export default function TestimonialsPage({ onContinue }: TestimonialsPageProps) 
       image: sarahImage
     },
     {
-      name: 'Michael T.',
+      name: 'Mark T.',
       rating: 4.9,
       text: 'The 28-day plan gave me tools I never knew I needed. My relationships have never been better.',
-      image: michaelImage
+      image: markImage
     },
     {
-      name: 'Emily R.',
+      name: 'Jessica R.',
       rating: 4.7,
       text: 'I was skeptical at first, but the insights I gained were life-changing.',
-      image: emilyImage
+      image: jessicaImage
     },
     {
-      name: 'David L.',
+      name: 'Chris L.',
       rating: 4.9,
       text: 'Finally found a program that addresses the root cause. My anxiety has significantly decreased.',
-      image: davidImage
+      image: chrisImage
     },
     {
-      name: 'Rachel K.',
+      name: 'Amanda K.',
       rating: 4.8,
       text: 'The empathy and understanding in this program is unlike anything I\'ve experienced.',
-      image: rachelImage
+      image: amandaImage
     },
     {
       name: 'John P.',

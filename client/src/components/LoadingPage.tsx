@@ -3,15 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { trackViewContent } from '@/lib/facebook-tracking';
 
-// Import diverse profile images from different photo batches to ensure visual variety
-import womanImage1 from '@assets/stock_images/young_woman_smiling__c268d950.jpg';
-import womanImage2 from '@assets/stock_images/casual_photo_young_w_7efca3f0.jpg';
-import womanImage3 from '@assets/stock_images/casual_photo_young_w_c4fd0758.jpg';
-import womanImage4 from '@assets/stock_images/young_woman_casual_s_6c4fccfc.jpg';
-import womanImage5 from '@assets/stock_images/young_woman_casual_s_f587a3a2.jpg';
-import manImage1 from '@assets/stock_images/young_man_smiling_po_52800bb4.jpg';
-import manImage2 from '@assets/stock_images/casual_photo_young_m_5efeca9f.jpg';
-import manImage3 from '@assets/stock_images/young_man_casual_sel_4d7d31ee.jpg';
+// Import diverse profile images - these should NOT overlap with TestimonialsPage images
+import lisaImage from '@assets/stock_images/professional_woman_s_d4fbbe22.jpg';
+import annaImage from '@assets/stock_images/young_woman_casual_s_b2572404.jpg';
+import rachelImage from '@assets/stock_images/young_woman_casual_s_cb2bd61f.jpg';
+import jamesImage from '@assets/stock_images/professional_headsho_05ec7d78.jpg';
+import michaelImage from '@assets/stock_images/young_man_casual_sel_cfbef95c.jpg';
+import emilyImage from '@assets/stock_images/young_woman_smiling__c268d950.jpg';
+import davidImage from '@assets/stock_images/young_man_casual_sel_fecd2253.jpg';
 
 interface LoadingPageProps {
   onComplete: () => void;
@@ -19,44 +18,39 @@ interface LoadingPageProps {
 
 const testimonials = [
   { 
-    quote: "It helped me save 10 years of therapy", 
-    name: "Sarah M.",
-    image: womanImage1
-  },
-  { 
-    quote: "My mental fog finally disappeared, such a relief", 
-    name: "James R.",
-    image: manImage1
-  },
-  { 
-    quote: "I finally understand why I react the way I do", 
-    name: "Emily K.",
-    image: womanImage2
-  },
-  { 
-    quote: "This clarity changed everything for me", 
-    name: "Michael T.",
-    image: manImage2
-  },
-  { 
-    quote: "The patterns suddenly made sense", 
+    quote: "In every relationship I had, there were the same patterns - same conflicts, same drama, same reactions. Now I get it. I am finally able to move on with my life.", 
     name: "Lisa Chen",
-    image: womanImage3
+    image: lisaImage
   },
   { 
-    quote: "I wish I had found this sooner", 
-    name: "David P.",
-    image: manImage3
-  },
-  { 
-    quote: "Finally feeling like myself again", 
+    quote: "Since my accident as a teenager, I've never been the same. Understanding the roots of my fears and the way I reacted was the only way for me to finally overcome this trauma.", 
     name: "Anna B.",
-    image: womanImage4
+    image: annaImage
   },
   { 
-    quote: "This explained so much about my relationships", 
+    quote: "This app helped me realize that in my relationships my past traumas was a key component for the reasons we broke up. I wouldn't have guessed without it.", 
     name: "Rachel W.",
-    image: womanImage5
+    image: rachelImage
+  },
+  { 
+    quote: "I've always thought I had ADHD. My childhood in Kenya was rough, and I couldn't cope with what I saw. Therefore I always had this mental fog, this inability to focus because my mind was keeping me busy to avoid pain. Now it's gone for good.", 
+    name: "James R.",
+    image: jamesImage
+  },
+  { 
+    quote: "I've always felt different. Didn't know why I was weird or perceived as such by most. This app helped me realize that my childhood traumas made me behave in certain ways that weren't normal. The clarity this app gave me is such a relief.", 
+    name: "Michael T.",
+    image: michaelImage
+  },
+  { 
+    quote: "I am a very susceptible person. Always thought it was part of my identity, actually it was just a reaction to some childhood events. Now my anger is gone, and I can even joke about myself.", 
+    name: "Emily K.",
+    image: emilyImage
+  },
+  { 
+    quote: "I have been in depression for over 10 years. Never thought of taking the step to meet with a psy. Now I discovered my triggers, I wish I had found this app sooner.", 
+    name: "David P.",
+    image: davidImage
   }
 ];
 
