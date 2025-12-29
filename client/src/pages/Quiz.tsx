@@ -25,8 +25,9 @@ import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import SubscriptionCheckoutPage from '@/components/SubscriptionCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
-import { trackViewContent, trackLead } from '@/lib/facebook-tracking';
+import { trackViewContent, trackLead, getFacebookCookies } from '@/lib/facebook-tracking';
 import { PaymentMethodType, getStoredPaymentPreference, getDefaultPaymentMethod } from '@/lib/payment-preferences';
+import { apiRequest } from "@/lib/queryClient";
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
 import footstepsAudio from '@assets/footsteps_short.mp3';
 import doorClosingAudio from '@assets/doors_PZuanhr_1761859927075.mp3';
@@ -92,6 +93,8 @@ export default function Quiz() {
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType | undefined>(undefined);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [prefetchedClientSecret, setPrefetchedClientSecret] = useState<string | null>(null);
+  const [prefetchParams, setPrefetchParams] = useState<{amount: number, productType: string} | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
@@ -283,6 +286,65 @@ export default function Quiz() {
     setState('trust');
   };
 
+  // Pre-fetch PaymentIntent to make checkout instantaneous
+  // Called when entering payment-method-selection or checkout state
+  const prefetchPaymentIntent = (amount: number, productType: string, productName: string) => {
+    // Check if we already have a valid prefetched secret for the same params
+    if (prefetchedClientSecret && prefetchParams?.amount === amount && prefetchParams?.productType === productType) {
+      return; // Already have valid prefetched secret
+    }
+
+    // Clear old secret if params changed
+    setPrefetchedClientSecret(null);
+    setPrefetchParams({ amount, productType });
+
+    const getEndpoint = () => {
+      switch (productType) {
+        case 'trial': return '/api/create-trial-payment';
+        case 'donation': return '/api/create-donation-payment';
+        default: return '/api/create-upsell-payment';
+      }
+    };
+
+    const { fbc, fbp } = getFacebookCookies();
+    const clientUserAgent = navigator.userAgent;
+    const sourceUrl = window.location.href;
+
+    const getBasePayload = () => {
+      switch (productType) {
+        case 'donation':
+          return { amount: amount / 100, email: userEmail, name: userName };
+        case 'masterclass':
+        case 'journal':
+          return { amount: amount / 100, email: userEmail, name: userName, productName };
+        case 'trial':
+          return { email: userEmail, name: userName, answers };
+        default:
+          return { email: userEmail, name: userName };
+      }
+    };
+
+    const payload = {
+      ...getBasePayload(),
+      fbc,
+      fbp,
+      clientUserAgent,
+      sourceUrl,
+      preferredPaymentMethod: getStoredPaymentPreference() || getDefaultPaymentMethod(),
+    };
+
+    apiRequest("POST", getEndpoint(), payload)
+      .then((res) => res.json())
+      .then((data) => {
+        // Only set if params still match (user hasn't navigated away)
+        setPrefetchedClientSecret(data.clientSecret);
+      })
+      .catch((error) => {
+        console.error('Error pre-fetching payment intent:', error);
+        // Don't set error state - CheckoutPage will retry if needed
+      });
+  };
+
   // Helper function to go to checkout with smart payment method handling
   // If user has a stored preference, skip payment method selection and go directly to checkout
   // Otherwise, show payment method selection screen
@@ -298,6 +360,8 @@ export default function Quiz() {
       setSelectedPaymentMethod(defaultMethod);
       setState('payment-method-selection');
     }
+    // Pre-fetch PaymentIntent immediately so checkout loads instantly
+    prefetchPaymentIntent(checkoutAmount, checkoutType, checkoutProductName);
   };
 
   const handlePaymentComplete = () => {
@@ -484,6 +548,7 @@ export default function Quiz() {
         name={userName}
         answers={checkoutType === 'trial' ? answers : undefined}
         preferredPaymentMethod={selectedPaymentMethod}
+        prefetchedClientSecret={prefetchedClientSecret}
         onComplete={handleCheckoutComplete}
         onBack={handleCheckoutBack}
       />

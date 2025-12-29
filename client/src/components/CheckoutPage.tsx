@@ -350,13 +350,14 @@ interface CheckoutPageProps {
   name?: string;
   answers?: Record<string, string[]>;
   preferredPaymentMethod?: PaymentMethodType;
+  prefetchedClientSecret?: string | null;
   onComplete: () => void;
   onBack?: () => void;
 }
 
-export default function CheckoutPage({ amount, productType, productName, email, name, answers, preferredPaymentMethod, onComplete, onBack }: CheckoutPageProps) {
-  const [clientSecret, setClientSecret] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+export default function CheckoutPage({ amount, productType, productName, email, name, answers, preferredPaymentMethod, prefetchedClientSecret, onComplete, onBack }: CheckoutPageProps) {
+  const [clientSecret, setClientSecret] = useState(prefetchedClientSecret || "");
+  const [isLoading, setIsLoading] = useState(!prefetchedClientSecret);
   const [error, setError] = useState<string | null>(null);
 
   // Use provided payment method or get smart default
@@ -388,6 +389,11 @@ export default function CheckoutPage({ amount, productType, productName, email, 
   }
 
   useEffect(() => {
+    // Skip if we have a prefetched client secret
+    if (prefetchedClientSecret) {
+      return;
+    }
+
     // Stripe integration: Create PaymentIntent as soon as the page loads
     // Masterclass and journal use the upsell endpoint with custom amount
     const getEndpoint = () => {
@@ -445,7 +451,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
         setError(error.message || 'Failed to initialize payment. Please try again.');
         setIsLoading(false);
       });
-  }, [amount, productType, email]);
+  }, [amount, productType, email, prefetchedClientSecret]);
 
   // Track InitiateCheckout when checkout page loads
   useEffect(() => {
