@@ -33,6 +33,7 @@ type PreferredPaymentMethod = 'apple_pay' | 'google_pay' | 'samsung_pay' | 'link
 function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): string[] {
   // Map frontend payment method selection to Stripe payment_method_types
   // Each payment method should only include its specific type for a clean checkout experience
+  // IMPORTANT: Only include the exact payment method the user selected - no fallbacks
   switch (preferredMethod) {
     case 'apple_pay':
     case 'google_pay':
@@ -42,8 +43,8 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
       // Samsung Pay works through Google Pay on web via the Stripe PaymentElement
       return ['card'];
     case 'link':
-      // Link works alongside card
-      return ['link'];
+      // Link needs card as the underlying payment method
+      return ['card', 'link'];
     case 'amazon_pay':
       // Amazon Pay only - no card fallback for clean UX
       return ['amazon_pay'];
@@ -53,6 +54,21 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
       // If no preference, allow all common methods
       return ['card', 'link'];
   }
+}
+
+// Get payment method options to control Stripe behavior (e.g., disable Link autofill)
+function getPaymentMethodOptions(preferredMethod?: PreferredPaymentMethod): Record<string, unknown> | undefined {
+  // For non-Link payment methods, we want to prevent Stripe from auto-showing Link
+  // based on saved email associations
+  if (preferredMethod && preferredMethod !== 'link') {
+    return {
+      card: {
+        // Disable Link in the card payment method
+        setup_future_usage: undefined,
+      },
+    };
+  }
+  return undefined;
 }
 
 // Get the appropriate currency for a payment method (all use USD)
