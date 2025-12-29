@@ -18,6 +18,9 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Stripe subscription price ID - configure via environment variable for live/test switching
+const STRIPE_MONTHLY_PRICE_ID = process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SXgKrFmbb3h0dKoBmtSeD96';
+
 // Initialize Facebook CAPI for server-side purchase tracking
 const fbPixelId = process.env.FB_PIXEL_ID;
 const fbAccessToken = process.env.FB_ACCESS_TOKEN;
@@ -807,9 +810,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[Subscription Checkout] Customer ${customer.id} for ${email}`);
 
-      // BreakFree App Monthly Subscription - $29.99/month
-      const MONTHLY_PRICE_ID = 'price_1SXgKrFmbb3h0dKoBmtSeD96';
-
       // First, create a pending invoice item for the $1 trial fee
       // This will be included in the first invoice when subscription is created
       await stripe.invoiceItems.create({
@@ -830,7 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payment_method_collection: 'always',
         line_items: [
           {
-            price: MONTHLY_PRICE_ID,
+            price: STRIPE_MONTHLY_PRICE_ID,
             quantity: 1,
           },
         ],
@@ -1171,14 +1171,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
 
-          // BreakFree App Monthly Subscription - $29.99/month
-          const MONTHLY_PRICE_ID = 'price_1SXgKrFmbb3h0dKoBmtSeD96';
-
           // Create subscription with 7-day trial
           // First billing of $29.99 will happen 7 days from now
           const subscription = await stripe.subscriptions.create({
             customer: customerId,
-            items: [{ price: MONTHLY_PRICE_ID }],
+            items: [{ price: STRIPE_MONTHLY_PRICE_ID }],
             trial_period_days: 7,
             metadata: {
               type: 'trial_subscription',
