@@ -159,7 +159,7 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   );
 }
 
-// Standard Payment Element Form for Card, Link, Amazon Pay, Klarna
+// Standard Payment Element Form for Card, Link, Amazon Pay
 function StandardCheckoutForm({ amount, productName, email, name, preferredPaymentMethod, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -214,14 +214,54 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
     }
   };
 
+  // Get payment method display name
+  const getPaymentMethodName = () => {
+    switch (preferredPaymentMethod) {
+      case 'amazon_pay': return 'Amazon Pay';
+      case 'link': return 'Link';
+      case 'revolut_pay': return 'Revolut Pay';
+      case 'card': return 'Card';
+      default: return 'Payment';
+    }
+  };
+
+  // Configure PaymentElement to show ONLY the selected payment method
+  // Use 'accordion' layout with paymentMethodOrder to prioritize the selected method
+  // Hide all wallets since those use ExpressCheckoutElement
+  const getPaymentElementOptions = () => {
+    const baseOptions = {
+      wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+    };
+
+    // For card-only, use simple layout
+    if (preferredPaymentMethod === 'card') {
+      return {
+        ...baseOptions,
+        layout: 'tabs' as const,
+        paymentMethodOrder: ['card'],
+      };
+    }
+
+    // For other methods (amazon_pay, link, revolut_pay), hide card entirely
+    // by using accordion layout and filtering to only show the selected method
+    return {
+      ...baseOptions,
+      layout: {
+        type: 'accordion' as const,
+        defaultCollapsed: false,
+        radios: false,
+        spacedAccordionItems: false,
+      },
+      // Only show the selected payment method, explicitly exclude card
+      paymentMethodOrder: preferredPaymentMethod ? [preferredPaymentMethod] : undefined,
+    };
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement
         onReady={handlePaymentElementReady}
-        options={{
-          layout: 'tabs',
-          wallets: { applePay: 'never', googlePay: 'never' },
-        }}
+        options={getPaymentElementOptions()}
       />
       <Button
         type="submit"
@@ -235,7 +275,7 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
             Processing...
           </>
         ) : (
-          'Access my result and plan'
+          `Pay with ${getPaymentMethodName()}`
         )}
       </Button>
     </form>

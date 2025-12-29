@@ -611,6 +611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use explicit payment_method_types based on user's selection (not automatic_payment_methods)
       // This ensures only the selected payment method is shown in checkout
       const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
+      console.log(`[Trial Payment] Preferred method: ${preferredPaymentMethod}, Payment method types: ${JSON.stringify(paymentMethodTypes)}`);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: 100, // $1.00 in cents
         currency: 'usd',
@@ -664,6 +665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use explicit payment_method_types based on user's selection
       const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
       const currency = getCurrencyForPaymentMethod(preferredPaymentMethod);
+      console.log(`[Upsell Payment] Preferred method: ${preferredPaymentMethod}, Payment method types: ${JSON.stringify(paymentMethodTypes)}`);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: paymentAmount,
         currency: currency,
@@ -704,6 +706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use explicit payment_method_types based on user's selection
       const paymentMethodTypes = getStripePaymentMethodTypes(preferredPaymentMethod);
       const currency = getCurrencyForPaymentMethod(preferredPaymentMethod);
+      console.log(`[Donation Payment] Preferred method: ${preferredPaymentMethod}, Payment method types: ${JSON.stringify(paymentMethodTypes)}`);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: currency,
