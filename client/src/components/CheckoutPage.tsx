@@ -166,10 +166,13 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasTrackedPaymentInfo, setHasTrackedPaymentInfo] = useState(false);
-  
+
   // Hide Link when user selected a different payment method
   // Stripe's PaymentElement shows Link for saved accounts, but we want to respect user's choice
   const shouldHideLink = preferredPaymentMethod && preferredPaymentMethod !== 'link';
+
+  // For Amazon Pay, we want to hide card options completely - only show Amazon Pay
+  const isAmazonPayOnly = preferredPaymentMethod === 'amazon_pay';
 
   const handlePaymentElementReady = () => {
     if (!hasTrackedPaymentInfo) {
@@ -233,33 +236,62 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
   // The actual payment methods available come from the PaymentIntent's payment_method_types
   // We also need to disable Link detection when user explicitly chose another method
   const getPaymentElementOptions = () => {
-    const baseLayout = {
-      type: 'accordion' as const,
-      defaultCollapsed: false,
-      radios: false,
-      spacedAccordionItems: false,
-    };
-
     // For Link, allow Link to show (it's what they selected)
     if (preferredPaymentMethod === 'link') {
       return {
         wallets: { applePay: 'never' as const, googlePay: 'never' as const },
-        layout: baseLayout,
+        layout: {
+          type: 'accordion' as const,
+          defaultCollapsed: false,
+          radios: false,
+          spacedAccordionItems: false,
+        },
       };
     }
 
-    // For all other methods (card, amazon_pay, revolut_pay, etc.)
-    // Disable wallets AND Link autofill to prevent Stripe from showing saved Link accounts
+    // For Amazon Pay, use a simple tabs layout that shows only amazon_pay
+    // Since payment_method_types only includes 'amazon_pay', this should show just that
+    if (preferredPaymentMethod === 'amazon_pay') {
+      return {
+        wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+        layout: {
+          type: 'tabs' as const,
+          defaultCollapsed: false,
+        },
+        // Disable any saved payment methods or Link
+        defaultValues: {
+          billingDetails: {
+            email: undefined, // Don't pre-fill email to avoid Link detection
+          },
+        },
+      };
+    }
+
+    // For card payments, disable wallets and Link autofill
+    // to prevent Stripe from showing saved Link accounts
     return {
-      wallets: { applePay: 'never' as const, googlePay: 'never' as const, link: 'never' as const },
-      layout: baseLayout,
+      wallets: { applePay: 'never' as const, googlePay: 'never' as const },
+      layout: {
+        type: 'accordion' as const,
+        defaultCollapsed: false,
+        radios: false,
+        spacedAccordionItems: false,
+      },
     };
+  };
+
+  // Build CSS classes to hide unwanted payment options
+  const getContainerClasses = () => {
+    const classes: string[] = [];
+    if (shouldHideLink) classes.push('hide-stripe-link');
+    if (isAmazonPayOnly) classes.push('amazon-pay-only');
+    return classes.join(' ');
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Container with CSS to hide Link authentication when user chose different method */}
-      <div className={shouldHideLink ? 'hide-stripe-link' : ''}>
+      {/* Container with CSS to hide unwanted payment methods - show only selected method */}
+      <div className={getContainerClasses()}>
         <PaymentElement
           onReady={handlePaymentElementReady}
           options={getPaymentElementOptions()}
@@ -530,9 +562,9 @@ export default function CheckoutPage({ amount, productType, productName, email, 
 
           {/* Stripe integration: Wrap form in Elements provider */}
           {/* Disable Link authentication unless user explicitly selected Link */}
-          <Elements 
-            stripe={stripePromise} 
-            options={{ 
+          <Elements
+            stripe={stripePromise}
+            options={{
               clientSecret,
               appearance: {
                 theme: 'night',
@@ -546,7 +578,7 @@ export default function CheckoutPage({ amount, productType, productName, email, 
               },
               // Disable Link Authentication Element unless user selected Link
               // This prevents Stripe from auto-detecting saved Link accounts
-              loader: effectivePaymentMethod === 'link' ? 'auto' : 'always',
+              loader: 'always',
             }}
           >
             <CheckoutForm

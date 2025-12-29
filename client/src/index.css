@@ -296,12 +296,44 @@
   .hide-stripe-link .p-LinkAuthenticationElement,
   .hide-stripe-link [class*="LinkAuthentication"],
   .hide-stripe-link [data-testid*="link"],
-  .hide-stripe-link .StripeElement--link {
+  .hide-stripe-link .StripeElement--link,
+  .hide-stripe-link [class*="link" i],
+  .hide-stripe-link [data-field-name*="link" i] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  /* Hide card payment option when Amazon Pay is selected - only show Amazon Pay */
+  .amazon-pay-only .p-PaymentMethodSelector,
+  .amazon-pay-only [class*="PaymentMethodSelector"],
+  .amazon-pay-only [data-testid*="card"],
+  .amazon-pay-only [id*="card-element"],
+  .amazon-pay-only [class*="CardField"],
+  .amazon-pay-only [data-field-container-id*="card"],
+  .amazon-pay-only .p-CardNumberField,
+  .amazon-pay-only .p-CardExpiryField,
+  .amazon-pay-only .p-CardCvcField {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* More comprehensive hiding of Link in PaymentElement accordion */
+  .hide-stripe-link .p-TabPanel[aria-labelledby*="link"],
+  .hide-stripe-link [data-testid="payment-element"] [class*="link" i]:not([class*="hyperlink"]),
+  .hide-stripe-link .p-TabPanelList button[data-testid*="link" i],
+  .hide-stripe-link [aria-label*="Link" i],
+  .hide-stripe-link [title*="Link" i] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 }
