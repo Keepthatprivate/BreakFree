@@ -95,9 +95,7 @@ const getProgressForTime = (elapsedMs: number, totalDuration: number): number =>
 
 export default function LoadingPage({ onComplete }: LoadingPageProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [shuffledTestimonials, setShuffledTestimonials] = useState<typeof testimonials>([]);
 
   useEffect(() => {
     trackViewContent({ contentName: 'Funnel Step 03 - Loading Analysis' });
@@ -105,12 +103,6 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
 
   const totalDuration = 60000; // 60 seconds
   const progress = getProgressForTime(elapsedTime, totalDuration);
-
-  // Shuffle testimonials once on mount to ensure random, non-repeating order
-  useEffect(() => {
-    const shuffled = [...testimonials].sort(() => Math.random() - 0.5);
-    setShuffledTestimonials(shuffled);
-  }, []);
 
   // Preload all testimonial images
   useEffect(() => {
@@ -160,27 +152,6 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
     return () => clearInterval(timer);
   }, [onComplete, imagesLoaded]);
 
-  useEffect(() => {
-    // Only start rotating testimonials once images are loaded and shuffled
-    if (!imagesLoaded || shuffledTestimonials.length === 0) return;
-
-    // Rotate testimonials every 7 seconds, only move forward (no repeats)
-    const testimonialTimer = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => {
-        // Only advance if we haven't shown all testimonials yet
-        if (prev < shuffledTestimonials.length - 1) {
-          // Trigger haptic feedback on testimonial change
-          if (navigator.vibrate) {
-            navigator.vibrate([30]);
-          }
-          return prev + 1;
-        }
-        return prev; // Stay on last testimonial
-      });
-    }, 7000);
-
-    return () => clearInterval(testimonialTimer);
-  }, [imagesLoaded, shuffledTestimonials]);
 
   // Get current stage based on progress
   const getCurrentStage = () => {
@@ -188,7 +159,7 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
   };
 
   const currentStage = getCurrentStage();
-  const currentTestimonial = shuffledTestimonials[currentTestimonialIndex] || testimonials[0];
+  const currentTestimonial = testimonials[0];
 
   // Show a simple loading state while images preload
   if (!imagesLoaded) {
@@ -348,13 +319,13 @@ export default function LoadingPage({ onComplete }: LoadingPageProps) {
             <div className="relative min-h-[160px] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={currentTestimonialIndex}
+                  key="testimonial"
                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -20 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                   className="flex flex-col items-center gap-4"
-                  data-testid={`testimonial-${currentTestimonialIndex}`}
+                  data-testid="testimonial-fixed"
                 >
                   {/* Avatar */}
                   <Avatar className="w-16 h-16 border-2 border-primary/30 shadow-lg">
