@@ -290,50 +290,74 @@
     animation: shimmer 2s infinite;
   }
 
-  /* Hide Stripe Link authentication when user selected a different payment method */
-  /* This targets the Link Authentication Element that Stripe injects */
+  /* ============================================
+   * STRIPE PAYMENT METHOD VISIBILITY CONTROLS
+   * These CSS rules hide unwanted payment methods from Stripe Elements
+   * ============================================ */
+
+  /* Hide Stripe Link when user selected Card payment */
+  /* This targets ALL Link-related UI elements that Stripe might inject */
   .hide-stripe-link [data-stripe-class="p-LinkAuthenticationElement"],
   .hide-stripe-link .p-LinkAuthenticationElement,
   .hide-stripe-link [class*="LinkAuthentication"],
-  .hide-stripe-link [data-testid*="link"],
+  .hide-stripe-link [data-testid*="link" i],
   .hide-stripe-link .StripeElement--link,
-  .hide-stripe-link [class*="link" i],
-  .hide-stripe-link [data-field-name*="link" i] {
+  .hide-stripe-link [data-field-name*="link" i],
+  .hide-stripe-link .p-TabPanel[aria-labelledby*="link" i],
+  .hide-stripe-link [aria-label*="Link" i]:not(a),
+  .hide-stripe-link [title*="Link" i]:not(a),
+  .hide-stripe-link button[class*="link" i]:not([class*="hyperlink"]),
+  .hide-stripe-link [role="tab"][id*="link" i],
+  .hide-stripe-link [role="tabpanel"][id*="link" i] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
+    max-height: 0 !important;
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
-  /* Hide card payment option when Amazon Pay is selected - only show Amazon Pay */
+  /* Hide card payment elements when Amazon Pay is selected */
+  /* Amazon Pay should be the ONLY payment option visible */
   .amazon-pay-only .p-PaymentMethodSelector,
   .amazon-pay-only [class*="PaymentMethodSelector"],
-  .amazon-pay-only [data-testid*="card"],
+  .amazon-pay-only [data-testid*="card" i],
   .amazon-pay-only [id*="card-element"],
   .amazon-pay-only [class*="CardField"],
   .amazon-pay-only [data-field-container-id*="card"],
   .amazon-pay-only .p-CardNumberField,
   .amazon-pay-only .p-CardExpiryField,
-  .amazon-pay-only .p-CardCvcField {
+  .amazon-pay-only .p-CardCvcField,
+  .amazon-pay-only [role="tab"][id*="card" i],
+  .amazon-pay-only [role="tabpanel"][id*="card" i],
+  .amazon-pay-only [aria-label*="card" i] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
+    max-height: 0 !important;
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
-  /* More comprehensive hiding of Link in PaymentElement accordion */
-  .hide-stripe-link .p-TabPanel[aria-labelledby*="link"],
-  .hide-stripe-link [data-testid="payment-element"] [class*="link" i]:not([class*="hyperlink"]),
-  .hide-stripe-link .p-TabPanelList button[data-testid*="link" i],
-  .hide-stripe-link [aria-label*="Link" i],
-  .hide-stripe-link [title*="Link" i] {
+  /* Also hide Link for Amazon Pay */
+  .amazon-pay-only [data-testid*="link" i],
+  .amazon-pay-only [aria-label*="Link" i]:not(a),
+  .amazon-pay-only [role="tab"][id*="link" i],
+  .amazon-pay-only [role="tabpanel"][id*="link" i] {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
+    max-height: 0 !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 }

@@ -41,9 +41,10 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
     case 'card':
       // Apple Pay/Google Pay/Samsung Pay all use 'card' as the underlying payment method
       // Samsung Pay works through Google Pay on web via the Stripe PaymentElement
+      // IMPORTANT: Do NOT include 'link' to prevent Link from appearing
       return ['card'];
     case 'link':
-      // Link needs card as the underlying payment method
+      // Link needs card as the underlying payment method (fallback)
       return ['card', 'link'];
     case 'amazon_pay':
       // Amazon Pay only - no card fallback for clean UX
@@ -51,23 +52,23 @@ function getStripePaymentMethodTypes(preferredMethod?: PreferredPaymentMethod): 
     case 'revolut_pay':
       return ['revolut_pay'];
     default:
-      // If no preference, allow all common methods
-      return ['card', 'link'];
+      // If no preference, default to card only (no Link unless explicitly selected)
+      return ['card'];
   }
 }
 
-// Get payment method options to control Stripe behavior (e.g., disable Link autofill)
+// Get payment method options to control Stripe behavior
+// This is used to configure how each payment method works
 function getPaymentMethodOptions(preferredMethod?: PreferredPaymentMethod): Record<string, unknown> | undefined {
-  // For non-Link payment methods, we want to prevent Stripe from auto-showing Link
-  // based on saved email associations
-  if (preferredMethod && preferredMethod !== 'link') {
+  // For Link payment, enable persistent token
+  if (preferredMethod === 'link') {
     return {
-      card: {
-        // Disable Link in the card payment method
-        setup_future_usage: undefined,
+      link: {
+        persistent_token: undefined, // Let Stripe manage
       },
     };
   }
+  // For other methods, no special options needed
   return undefined;
 }
 
