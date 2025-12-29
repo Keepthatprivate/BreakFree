@@ -363,6 +363,15 @@ export default function CheckoutPage({ amount, productType, productName, email, 
   // Use provided payment method or get smart default
   const effectivePaymentMethod = preferredPaymentMethod || getDefaultPaymentMethod();
 
+  // Sync prefetchedClientSecret prop to state when it becomes available
+  // This handles the case where Quiz.tsx prefetch completes after CheckoutPage mounts
+  useEffect(() => {
+    if (prefetchedClientSecret && !clientSecret) {
+      setClientSecret(prefetchedClientSecret);
+      setIsLoading(false);
+    }
+  }, [prefetchedClientSecret, clientSecret]);
+
   useEffect(() => {
     trackViewContent({ contentName: `Funnel Step - Checkout ${productName}` });
   }, [productName]);
