@@ -357,8 +357,8 @@ export default function Quiz() {
   };
 
   const handleBenefitsContinue = () => {
-    // After benefits page, show donation
-    setState('donation');
+    // After benefits page, show trial (timeline) first, before upsells
+    setState('timeline');
   };
 
   const handleSevenDaysContinue = () => {
@@ -377,8 +377,8 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    // After results, go to timeline (trial page)
-    setState('timeline');
+    // After results, go to FAQ (final step before signup)
+    setState('faq');
   };
 
   const handlePatternsContinue = () => {
@@ -452,8 +452,8 @@ export default function Quiz() {
         productName="7-Day BreakFree Trial"
         email={userEmail}
         name={userName}
-        onBack={() => setState('faq')}
-        returnUrl={`${window.location.origin}/quiz?state=payment&payment_success=true`}
+        onBack={() => setState('timeline')}
+        returnUrl={`${window.location.origin}/quiz?state=donation&payment_success=true`}
       />
     );
   }
