@@ -39,7 +39,7 @@ export default function BenefitsPage({ onContinue }: BenefitsPageProps) {
     <div className="min-h-screen bg-background py-6 sm:py-8">
       <div className="max-w-2xl mx-auto px-5 sm:px-6 w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-snug mb-3">
             Your Healing Journey Starts Here
           </h1>
           <p className="text-muted-foreground text-base">
