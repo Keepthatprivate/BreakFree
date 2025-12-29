@@ -100,31 +100,21 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
     return { applePay: 'always' as const, googlePay: 'always' as const };
   };
 
-  // Show loading state while checking wallet availability
-  if (walletAvailable === null) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Loading wallet...</span>
-        </div>
-      </div>
-    );
-  }
+  // Get wallet name for display
+  const getWalletName = () => {
+    if (preferredPaymentMethod === 'apple_pay') return 'Apple Pay';
+    if (preferredPaymentMethod === 'samsung_pay') return 'Samsung Pay';
+    return 'Google Pay';
+  };
 
-  // If wallet is not available, show a message
+  // If wallet is explicitly not available (after onReady fired), show a message
   if (walletAvailable === false) {
-    const walletName = preferredPaymentMethod === 'apple_pay' 
-      ? 'Apple Pay' 
-      : preferredPaymentMethod === 'samsung_pay'
-        ? 'Samsung Pay'
-        : 'Google Pay';
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">
-            {walletName} is not available on this device or browser.
+            {getWalletName()} is not available on this device or browser.
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             Please go back and select a different payment method.
@@ -134,6 +124,8 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
     );
   }
 
+  // Always render ExpressCheckoutElement immediately - Stripe handles its own loading state
+  // This makes wallet loading instantaneous instead of showing our own loading spinner
   return (
     <div className="space-y-6">
       <ExpressCheckoutElement
