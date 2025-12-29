@@ -255,8 +255,8 @@ export default function Quiz() {
         setState('quiz');
       }, 100);
     } else {
-      // After last question's animation + quote, go to contact
-      setState('contact');
+      // After last question's animation + quote, go to seven-days before contact
+      setState('seven-days');
     }
   };
 
@@ -362,8 +362,8 @@ export default function Quiz() {
   };
 
   const handleSevenDaysContinue = () => {
-    // After seven days page, go to timeline (trial page)
-    setState('timeline');
+    // After seven days page, go to contact (email capture)
+    setState('contact');
   };
 
   const handlePlanHelpContinue = () => {
@@ -377,8 +377,8 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    // After results, go to seven-days page (just before trial)
-    setState('seven-days');
+    // After results, go to timeline (trial page)
+    setState('timeline');
   };
 
   const handlePatternsContinue = () => {
