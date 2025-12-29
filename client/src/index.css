@@ -384,9 +384,9 @@
   }
 
   /* Dark mode styling for Stripe Embedded Checkout */
-  /* Apply invert filter to make the white checkout appear dark */
+  /* Apply filters to match website's dark blue theme: background HSL(230, 35%, 12%) */
   .stripe-embedded-checkout {
-    filter: invert(1) hue-rotate(180deg);
+    filter: invert(0.92) hue-rotate(200deg) saturate(0.8) brightness(0.85);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -396,6 +396,6 @@
   .stripe-embedded-checkout svg,
   .stripe-embedded-checkout [class*="Logo"],
   .stripe-embedded-checkout [class*="Icon"] {
-    filter: invert(1) hue-rotate(180deg);
+    filter: invert(0.92) hue-rotate(200deg) saturate(0.8) brightness(0.85);
   }
 }
