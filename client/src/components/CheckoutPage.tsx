@@ -147,12 +147,6 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
             googlePay: preferredPaymentMethod === 'google_pay' ? 'always' : 'never',
             link: 'never', // Never show Link in Express Checkout
           },
-          // Show all buttons directly without any accordion/expansion
-          layout: {
-            maxColumns: 1,
-            maxRows: 1,
-            overflow: 'never',
-          },
         }}
       />
       <p className="text-xs text-muted-foreground text-center">
