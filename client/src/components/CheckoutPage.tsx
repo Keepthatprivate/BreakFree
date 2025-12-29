@@ -126,7 +126,7 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
   // Always render ExpressCheckoutElement immediately - Stripe handles its own loading state
   // This makes wallet loading instantaneous instead of showing our own loading spinner
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 hide-express-link">
       <ExpressCheckoutElement
         onReady={handleReady}
         onConfirm={handleConfirm}
@@ -141,6 +141,12 @@ function ExpressCheckoutForm({ amount, productName, email, name, preferredPaymen
           },
           buttonHeight: 48,
           wallets: getWalletButtonsConfig(),
+          // Explicitly specify which payment methods to show
+          paymentMethods: {
+            applePay: preferredPaymentMethod === 'apple_pay' ? 'always' : 'never',
+            googlePay: preferredPaymentMethod === 'google_pay' ? 'always' : 'never',
+            link: 'never', // Never show Link in Express Checkout
+          },
         }}
       />
       <p className="text-xs text-muted-foreground text-center">
@@ -187,14 +193,41 @@ function StandardCheckoutForm({ amount, productName, email, name, preferredPayme
 
     setIsProcessing(true);
 
+    // Amazon Pay and PayPal REQUIRE redirect to their hosted pages
+    // For these methods, we must use redirect: 'always'
+    const requiresRedirect = preferredPaymentMethod === 'amazon_pay' || preferredPaymentMethod === 'paypal';
+
+    if (requiresRedirect) {
+      // For redirect-based payment methods, always redirect
+      const { error: redirectError } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/quiz?payment_success=true`,
+        },
+        redirect: 'always',
+      });
+      // If we get here, redirect failed
+      setIsProcessing(false);
+      if (redirectError) {
+        toast({
+          title: "Payment Failed",
+          description: redirectError.message,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    // For card/link payments, only redirect if required
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/quiz`,
+        return_url: `${window.location.origin}/quiz?payment_success=true`,
       },
       redirect: 'if_required',
     });
 
+    // If we get here with requiresRedirect, there was an error (redirect didn't happen)
     setIsProcessing(false);
 
     if (error) {

@@ -361,4 +361,25 @@
   .link-payment .p-Tab[data-testid*="link"] {
     order: -1;
   }
+
+  /* Hide Link button in ExpressCheckoutElement for wallet payments (Apple Pay, Google Pay) */
+  /* This ensures only the selected wallet button appears, no Link button */
+  .hide-express-link [data-testid*="link"],
+  .hide-express-link button[aria-label*="Link"],
+  .hide-express-link button[data-testid*="link"],
+  .hide-express-link [class*="ExpressCheckout"][class*="link" i],
+  .hide-express-link [data-payment-method-type="link"],
+  .hide-express-link .p-ExpressCheckoutLink,
+  .hide-express-link [class*="LinkButton"],
+  .hide-express-link [data-button-type="link"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 }
