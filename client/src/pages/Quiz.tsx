@@ -326,8 +326,8 @@ export default function Quiz() {
   };
 
   const handleDonationContinue = (donationAmount?: number) => {
-    // After donation (or skip), go to trial page
-    setState('timeline');
+    // After donation (or skip), go to results page
+    setState('results');
   };
 
   const handleCheckoutBack = () => {
@@ -374,8 +374,8 @@ export default function Quiz() {
   };
 
   const handleResultsContinue = () => {
-    // After results, go to FAQ (final step before signup)
-    setState('faq');
+    // After results, go to trial timeline
+    setState('timeline');
   };
 
   const handlePatternsContinue = () => {
@@ -383,8 +383,8 @@ export default function Quiz() {
   };
 
   const handleTestimonialsContinue = () => {
-    // After testimonials, go to results page
-    setState('results');
+    // After testimonials, go to FAQ
+    setState('faq');
   };
 
   const handleFAQContinue = () => {
