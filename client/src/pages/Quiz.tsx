@@ -321,8 +321,8 @@ export default function Quiz() {
   };
 
   const handleJournalSkip = () => {
-    // If user skips journal, go to results
-    setState('results');
+    // If user skips journal, go to FAQ
+    setState('faq');
   };
 
   const handleDonationContinue = (donationAmount?: number) => {
@@ -364,8 +364,8 @@ export default function Quiz() {
   };
 
   const handlePlanHelpContinue = () => {
-    // After plan help page, go to FAQ
-    setState('faq');
+    // After plan help page, go to upsell guides
+    setState('upsell');
   };
 
   const handleTrustContinue = () => {
@@ -423,9 +423,9 @@ export default function Quiz() {
       } else if (checkoutType === 'masterclass') {
         return `${baseUrl}/quiz?state=journal&payment_success=true`;
       } else if (checkoutType === 'journal') {
-        return `${baseUrl}/quiz?state=results&payment_success=true`;
+        return `${baseUrl}/quiz?state=faq&payment_success=true`;
       }
-      return `${baseUrl}/quiz?state=results&payment_success=true`;
+      return `${baseUrl}/quiz?state=faq&payment_success=true`;
     };
 
     return (
