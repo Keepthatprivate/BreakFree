@@ -364,8 +364,8 @@ export default function Quiz() {
   };
 
   const handlePlanHelpContinue = () => {
-    // After plan help page, show testimonials
-    setState('testimonials');
+    // After plan help page, go to FAQ
+    setState('faq');
   };
 
   const handleTrustContinue = () => {
@@ -383,8 +383,8 @@ export default function Quiz() {
   };
 
   const handleTestimonialsContinue = () => {
-    // After testimonials, go to FAQ
-    setState('faq');
+    // After testimonials, go to plan help
+    setState('plan-help');
   };
 
   const handleFAQContinue = () => {
@@ -450,7 +450,7 @@ export default function Quiz() {
         email={userEmail}
         name={userName}
         onBack={() => setState('timeline')}
-        returnUrl={`${window.location.origin}/quiz?state=plan-help&payment_success=true`}
+        returnUrl={`${window.location.origin}/quiz?state=testimonials&payment_success=true`}
       />
     );
   }
