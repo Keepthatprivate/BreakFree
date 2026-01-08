@@ -3,8 +3,10 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
-import kidsImageDesktop from '@assets/ChatGPT Image 3 nov. 2025, 15_52_05_1762181570565.png';
-import kidsImageMobile from '@assets/ChatGPT Image 3 nov. 2025, 15_56_30_1762181821528.png';
+
+// Lazy load hero images from public folder - not bundled in main JS
+const kidsImageDesktop = '/assets/hero-desktop.png';
+const kidsImageMobile = '/assets/hero-mobile.png';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
@@ -14,6 +16,7 @@ export default function IntroScene() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -32,6 +35,14 @@ export default function IntroScene() {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
+  // Preload the hero image based on device type
+  useEffect(() => {
+    const imageSrc = isMobile ? kidsImageMobile : kidsImageDesktop;
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = imageSrc;
+  }, [isMobile]);
 
   // Show question after delay
   useEffect(() => {
@@ -100,35 +111,52 @@ export default function IntroScene() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
         >
-          <motion.img
-            src={isMobile ? kidsImageMobile : kidsImageDesktop}
-            alt="Children playing"
-            className="absolute inset-0 w-full h-full object-cover brightness-90"
-            initial={{ scale: 1 }}
-            animate={
-              isZooming 
-                ? getMindPlungeAnimation() // Deep zoom into child's mind after selection
-                : { 
-                    scale: introConfig.initialZoom.scale // Initial gentle zoom during playback
-                  }
-            }
-            transition={
-              isZooming
-                ? { 
-                    // Mind plunge animation - dramatic zoom into selected child
-                    scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
-                    x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
-                    y: { duration: introConfig.mindPlungeDuration, ease: "easeIn" }
-                  }
-                : {
-                    // Initial zoom during playback
-                    scale: { duration: introConfig.initialZoom.duration, ease: "easeInOut" }
-                  }
-            }
-            data-testid="intro-image"
-          />
+          {/* Loading placeholder while image loads */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d16] via-[#1a1a2e] to-[#0d0d16] flex items-center justify-center">
+              <div className="text-center">
+                <motion.div
+                  className="w-12 h-12 border-4 border-[#54d3bb]/30 border-t-[#54d3bb] rounded-full mx-auto"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+            </div>
+          )}
+          {imageLoaded && (
+            <motion.img
+              src={isMobile ? kidsImageMobile : kidsImageDesktop}
+              alt="Children playing"
+              className="absolute inset-0 w-full h-full object-cover brightness-90"
+              initial={{ scale: 1, opacity: 0 }}
+              animate={
+                isZooming
+                  ? { ...getMindPlungeAnimation(), opacity: 1 }
+                  : {
+                      scale: introConfig.initialZoom.scale,
+                      opacity: 1
+                    }
+              }
+              transition={
+                isZooming
+                  ? {
+                      // Mind plunge animation - dramatic zoom into selected child
+                      scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                      x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                      y: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
+                      opacity: { duration: 0.3 }
+                    }
+                  : {
+                      // Initial zoom during playback
+                      scale: { duration: introConfig.initialZoom.duration, ease: "easeInOut" },
+                      opacity: { duration: 0.5 }
+                    }
+              }
+              data-testid="intro-image"
+            />
+          )}
           {/* Animated overlay for depth */}
-          <motion.div 
+          <motion.div
             className="absolute inset-0 bg-gradient-to-br from-[#54d3bb]/10 via-transparent to-[#0d0d16]/30"
             animate={{
               opacity: [0.3, 0.5, 0.3]

@@ -14,25 +14,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
     <script>
-      (function() {
-        var urlParams = new URLSearchParams(window.location.search);
-        var fbclid = urlParams.get('fbclid');
-        
-        // Always create/refresh fbc when fbclid is in URL (new ad click)
-        if (fbclid) {
-          var timestamp = Date.now();
-          var fbcValue = 'fb.1.' + timestamp + '.' + fbclid;
-          var expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + 90);
-          document.cookie = '_fbc=' + fbcValue + '; expires=' + expiryDate.toUTCString() + '; path=/; SameSite=Lax';
-          try { 
-            localStorage.setItem('fb_fbc', fbcValue); 
+      // Defer Facebook tracking setup to not block initial render
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFbTracking);
+      } else {
+        // DOM already loaded, run after a microtask to not block paint
+        setTimeout(initFbTracking, 0);
+      }
+
+      function initFbTracking() {
+        try {
+          var urlParams = new URLSearchParams(window.location.search);
+          var fbclid = urlParams.get('fbclid');
+
+          // Always create/refresh fbc when fbclid is in URL (new ad click)
+          if (fbclid) {
+            var timestamp = Date.now();
+            var fbcValue = 'fb.1.' + timestamp + '.' + fbclid;
+            var expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 90);
+            document.cookie = '_fbc=' + fbcValue + '; expires=' + expiryDate.toUTCString() + '; path=/; SameSite=Lax';
+            localStorage.setItem('fb_fbc', fbcValue);
             localStorage.setItem('fb_click_id', fbclid);
             localStorage.setItem('fb_fbc_timestamp', timestamp.toString());
-          } catch(e) {}
-        } else {
-          // No fbclid in URL - validate existing fbc is not stale (>7 days old)
-          try {
+          } else {
+            // No fbclid in URL - validate existing fbc is not stale (>7 days old)
             var existingFbc = localStorage.getItem('fb_fbc');
             if (existingFbc) {
               var parts = existingFbc.split('.');
@@ -40,7 +46,6 @@
                 var fbcTimestamp = parseInt(parts[2], 10);
                 var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
                 // If fbc is older than 7 days and no new fbclid, clear it
-                // This prevents sending stale attribution data
                 if (Date.now() - fbcTimestamp > sevenDaysMs) {
                   localStorage.removeItem('fb_fbc');
                   localStorage.removeItem('fb_click_id');
@@ -48,20 +53,22 @@
                 }
               }
             }
-          } catch(e) {}
+          }
+
+          // Create fbp if it doesn't exist
+          if (!document.cookie.includes('_fbp=')) {
+            var ts = Date.now();
+            var rand = Math.floor(Math.random() * 2147483647);
+            var fbpValue = 'fb.1.' + ts + '.' + rand;
+            var exp = new Date();
+            exp.setDate(exp.getDate() + 90);
+            document.cookie = '_fbp=' + fbpValue + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+            localStorage.setItem('fb_fbp', fbpValue);
+          }
+        } catch(e) {
+          // Silently fail - tracking is non-critical
         }
-        
-        // Create fbp if it doesn't exist
-        if (!document.cookie.includes('_fbp=')) {
-          var ts = Date.now();
-          var rand = Math.floor(Math.random() * 2147483647);
-          var fbpValue = 'fb.1.' + ts + '.' + rand;
-          var exp = new Date();
-          exp.setDate(exp.getDate() + 90);
-          document.cookie = '_fbp=' + fbpValue + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
-          try { localStorage.setItem('fb_fbp', fbpValue); } catch(e) {}
-        }
-      })();
+      }
     </script>
   </head>
   <body>

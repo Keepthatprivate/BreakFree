@@ -94,42 +94,29 @@ export default function Quiz() {
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
 
-  // Preload all images and audio assets
+  // Progressive asset loading - only load what's needed for immediate use
+  // This prevents blocking the UI while waiting for 60MB+ of images
   useEffect(() => {
-    const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
-    const allAssets: string[] = [];
+    // Mark as loaded immediately - we'll lazy load assets as needed
+    // The individual animation components will handle their own image loading
+    setAssetsLoaded(true);
 
-    // Collect all animation images for the selected gender
-    animations[gender].forEach((animation) => {
-      allAssets.push(...animation.images);
+    // Preload only critical audio files in the background (small files)
+    [footstepsAudio, doorClosingAudio].forEach((src) => {
+      const audio = new Audio();
+      audio.src = src;
     });
 
-    // Add other static assets
-    allAssets.push(geometricPattern);
-
-    // Preload images
-    const imagePromises = allAssets.map((src) => {
-      return new Promise<void>((resolve) => {
+    // Preload only the first animation's images (3 images instead of 12)
+    // Other animations will be preloaded when user gets closer to needing them
+    const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
+    const firstAnimation = animations[gender][0];
+    if (firstAnimation) {
+      firstAnimation.images.forEach((src) => {
         const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
         img.src = src;
       });
-    });
-
-    // Preload audio files
-    const audioPromises = [footstepsAudio, doorClosingAudio].map((src) => {
-      return new Promise<void>((resolve) => {
-        const audio = new Audio();
-        audio.oncanplaythrough = () => resolve();
-        audio.onerror = () => resolve();
-        audio.src = src;
-      });
-    });
-
-    Promise.all([...imagePromises, ...audioPromises]).then(() => {
-      setAssetsLoaded(true);
-    });
+    }
   }, []);
 
   useEffect(() => {

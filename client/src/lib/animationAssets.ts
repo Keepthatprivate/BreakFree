@@ -1,40 +1,12 @@
 // Animation assets for Break Screens
 // 24 total images: 12 for boy animations, 12 for girl animations
 // Each of 4 animations has 3 images showing emotional arc: distress → crying → healing → hope
+//
+// IMPORTANT: These are string paths to assets in /public/assets/animations/
+// They are NOT bundled - they load on-demand when the Quiz component needs them
+// This reduces initial bundle size by ~60MB
 
-// Boy Animations
-import boyAnim1Img1 from '@assets/ChatGPT_Image_14_déc._2025,_05_34_06_1765687552867.png';
-import boyAnim1Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_37_20_1765687591926.png';
-import boyAnim1Img3 from '@assets/ChatGPT_Image_14_déc._2025,_05_39_29_1765687684108.png';
-
-import boyAnim2Img1 from '@assets/ChatGPT_Image_14_déc._2025,_05_39_29_1765687832136.png';
-import boyAnim2Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_42_11_1765690518553.png';
-import boyAnim2Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_59_1765690558979.png';
-
-import boyAnim3Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_59_1765690596119.png';
-import boyAnim3Img2 from '@assets/ChatGPT_Image_14_déc._2025,_05_45_03_1765690612426.png';
-import boyAnim3Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_28_31_1765690633341.png';
-
-import boyAnim4Img1 from '@assets/ChatGPTImage3nov.202523_39_37_1765690683401.png';
-import boyAnim4Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_00_32_1765690703534.png';
-import boyAnim4Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_33_56_1765690722405.png';
-
-// Girl Animations
-import girlAnim1Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_43_47_1765691050277.png';
-import girlAnim1Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_19_08_1765691067705.png';
-import girlAnim1Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_59_25_1765691974697.png';
-
-import girlAnim2Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_59_25_1765691992911.png';
-import girlAnim2Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_45_18_1765692041463.png';
-import girlAnim2Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_42_33_1765692120599.png';
-
-import girlAnim3Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_42_33_1765692146680.png';
-import girlAnim3Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_42_38_1765692160088.png';
-import girlAnim3Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_50_17_1765692194116.png';
-
-import girlAnim4Img1 from '@assets/ChatGPT_Image_14_déc._2025,_06_50_17_1765692217896.png';
-import girlAnim4Img2 from '@assets/ChatGPT_Image_14_déc._2025,_06_55_23_1765692234194.png';
-import girlAnim4Img3 from '@assets/ChatGPT_Image_14_déc._2025,_06_51_50_1765692261574.png';
+const ANIMATION_BASE_PATH = '/assets/animations';
 
 export type AnimationSequence = {
   images: [string, string, string];
@@ -48,30 +20,62 @@ export type GenderAnimations = {
 export const animations: GenderAnimations = {
   boy: [
     {
-      images: [boyAnim1Img1, boyAnim1Img2, boyAnim1Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/boy-anim1-img1.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim1-img2.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim1-img3.png`,
+      ],
     },
     {
-      images: [boyAnim2Img1, boyAnim2Img2, boyAnim2Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/boy-anim2-img1.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim2-img2.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim2-img3.png`,
+      ],
     },
     {
-      images: [boyAnim3Img1, boyAnim3Img2, boyAnim3Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/boy-anim3-img1.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim3-img2.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim3-img3.png`,
+      ],
     },
     {
-      images: [boyAnim4Img1, boyAnim4Img2, boyAnim4Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/boy-anim4-img1.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim4-img2.png`,
+        `${ANIMATION_BASE_PATH}/boy-anim4-img3.png`,
+      ],
     },
   ],
   girl: [
     {
-      images: [girlAnim1Img1, girlAnim1Img2, girlAnim1Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/girl-anim1-img1.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim1-img2.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim1-img3.png`,
+      ],
     },
     {
-      images: [girlAnim2Img1, girlAnim2Img2, girlAnim2Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/girl-anim2-img1.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim2-img2.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim2-img3.png`,
+      ],
     },
     {
-      images: [girlAnim3Img1, girlAnim3Img2, girlAnim3Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/girl-anim3-img1.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim3-img2.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim3-img3.png`,
+      ],
     },
     {
-      images: [girlAnim4Img1, girlAnim4Img2, girlAnim4Img3],
+      images: [
+        `${ANIMATION_BASE_PATH}/girl-anim4-img1.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim4-img2.png`,
+        `${ANIMATION_BASE_PATH}/girl-anim4-img3.png`,
+      ],
     },
   ],
 };
