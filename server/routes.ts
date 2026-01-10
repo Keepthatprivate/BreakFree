@@ -1117,28 +1117,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
 
     if (!sig) {
+      console.error('[Stripe Webhook] Missing stripe-signature header');
       return res.status(400).send('Missing stripe-signature header');
     }
 
     let event: Stripe.Event;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // In production, webhook secret is required for security
+    if (isProduction && !webhookSecret) {
+      console.error('[Stripe Webhook] CRITICAL: STRIPE_WEBHOOK_SECRET is not configured in production!');
+      return res.status(500).send('Webhook configuration error: missing webhook secret');
+    }
 
     try {
-      // Verify webhook signature
-      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-      
       if (webhookSecret) {
-        // In production, verify the signature
+        // Verify the signature - rawBody MUST be a Buffer/string, not parsed JSON
+        if (!req.rawBody) {
+          console.error('[Stripe Webhook] rawBody is missing - body parsing middleware issue');
+          return res.status(500).send('Webhook configuration error: rawBody not captured');
+        }
+
+        // Log rawBody type for debugging
+        console.log('[Stripe Webhook] Processing webhook with rawBody type:', typeof req.rawBody, 'isBuffer:', Buffer.isBuffer(req.rawBody));
+
         event = stripe.webhooks.constructEvent(
-          req.rawBody || req.body,
+          req.rawBody,
           sig,
           webhookSecret
         );
       } else {
-        // In development, skip signature verification
+        // Only in development: skip signature verification
+        console.warn('[Stripe Webhook] WARNING: Skipping signature verification (development mode)');
         event = req.body as Stripe.Event;
       }
     } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
+      console.error('[Stripe Webhook] Signature verification failed:', {
+        error: err.message,
+        signatureHeader: sig ? sig.substring(0, 20) + '...' : 'missing',
+        rawBodyType: typeof req.rawBody,
+        rawBodyLength: req.rawBody?.length || 0,
+        hasWebhookSecret: !!webhookSecret
+      });
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
@@ -2884,14 +2905,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Diagnostic endpoint for webhook setup
     app.get("/api/debug/webhook-status", async (req, res) => {
-      const webhookUrl = process.env.REPLIT_DEV_DOMAIN 
+      // Use production domain for webhook URL
+      const productionDomain = process.env.PRODUCTION_DOMAIN || 'break-free-app.com';
+      const webhookUrl = `https://${productionDomain}/api/webhook/stripe`;
+      const devWebhookUrl = process.env.REPLIT_DEV_DOMAIN
         ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/webhook/stripe`
-        : 'https://your-domain.com/api/webhook/stripe';
+        : null;
 
       const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
       const hasFbPixel = !!process.env.FB_PIXEL_ID;
       const hasFbToken = !!process.env.FB_ACCESS_TOKEN;
-      
+      const isProduction = process.env.NODE_ENV === 'production';
+
       // Check if using test or live Stripe keys
       const stripeKey = process.env.STRIPE_SECRET_KEY || '';
       const isTestMode = stripeKey.startsWith('sk_test_');
@@ -2906,22 +2931,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const realEvents = recentEvents.filter(e => !e.eventId.startsWith('pi_test_') && !e.eventId.startsWith('in_test_'));
       const testEvents = recentEvents.filter(e => e.eventId.startsWith('pi_test_') || e.eventId.startsWith('in_test_'));
 
+      // Build warnings list
+      const warnings: string[] = [];
+      if (isTestMode) {
+        warnings.push('Using TEST mode Stripe keys - purchases will not appear in live Stripe account!');
+      }
+      if (!hasWebhookSecret) {
+        warnings.push('STRIPE_WEBHOOK_SECRET is not configured - webhooks will fail signature verification!');
+      }
+      if (isProduction && !hasWebhookSecret) {
+        warnings.push('CRITICAL: Running in production without webhook secret - webhooks will be rejected!');
+      }
+
       res.json({
         status: {
+          environment: isProduction ? 'PRODUCTION' : 'DEVELOPMENT',
           stripeMode: isLiveMode ? 'LIVE (Production)' : isTestMode ? 'TEST (Development)' : 'UNKNOWN',
-          stripeWebhookSecret: hasWebhookSecret ? 'CONFIGURED' : 'MISSING - Webhook will fail in production!',
+          stripeWebhookSecret: hasWebhookSecret ? 'CONFIGURED' : 'MISSING - Webhook will fail!',
           facebookPixel: hasFbPixel ? 'CONFIGURED' : 'MISSING',
           facebookAccessToken: hasFbToken ? 'CONFIGURED' : 'MISSING',
           facebookCAPI: fbCAPI ? 'CONNECTED' : 'NOT CONNECTED'
         },
-        warning: isTestMode ? 'Using TEST mode Stripe keys - purchases will not appear in live Stripe account!' : null,
+        warnings: warnings.length > 0 ? warnings : null,
         webhookUrl: webhookUrl,
+        devWebhookUrl: devWebhookUrl,
+        troubleshooting: {
+          commonIssues: [
+            'Webhook secret mismatch - ensure STRIPE_WEBHOOK_SECRET matches the secret from Stripe Dashboard',
+            'Using wrong webhook secret - live and test mode have different secrets',
+            'Webhook endpoint URL mismatch - ensure Stripe is sending to the correct URL',
+            'Missing events in Stripe webhook config - add all required events'
+          ],
+          requiredEvents: [
+            'checkout.session.completed',
+            'payment_intent.created',
+            'payment_intent.succeeded',
+            'payment_intent.payment_failed',
+            'invoice.paid',
+            'invoice.payment_failed',
+            'customer.subscription.created',
+            'customer.subscription.updated',
+            'customer.subscription.deleted'
+          ]
+        },
         instructions: hasWebhookSecret ? null : {
           step1: 'Go to Stripe Dashboard → Developers → Webhooks',
           step2: `Add endpoint: ${webhookUrl}`,
-          step3: 'Select events: checkout.session.completed, invoice.paid, customer.subscription.created, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed',
+          step3: 'Select the required events listed in troubleshooting.requiredEvents',
           step4: 'Copy the webhook signing secret (starts with whsec_)',
-          step5: 'Add it as STRIPE_WEBHOOK_SECRET in your Replit Secrets'
+          step5: 'Add it as STRIPE_WEBHOOK_SECRET in your environment/secrets'
         },
         recentEvents: {
           realPurchases: realEvents.length,

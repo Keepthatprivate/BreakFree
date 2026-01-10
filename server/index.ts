@@ -10,17 +10,17 @@ app.set('trust proxy', true);
 
 // Enable CORS for cross-domain requests (e.g., from break-free-app.com)
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? ['https://break-free-app.com', 'https://www.break-free-app.com']
     : true, // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature']
 }));
 
 declare module 'http' {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: Buffer
   }
 }
 app.use(express.json({
