@@ -1133,31 +1133,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       if (webhookSecret) {
-        // Verify the signature - rawBody MUST be a Buffer/string, not parsed JSON
-        if (!req.rawBody) {
-          console.error('[Stripe Webhook] rawBody is missing - body parsing middleware issue');
-          return res.status(500).send('Webhook configuration error: rawBody not captured');
+        // With express.raw() middleware, req.body is the raw Buffer
+        // This is the Stripe-recommended approach for webhook signature verification
+        const rawBody = req.body;
+
+        if (!rawBody || !Buffer.isBuffer(rawBody)) {
+          console.error('[Stripe Webhook] Raw body is missing or not a Buffer:', {
+            hasBody: !!rawBody,
+            bodyType: typeof rawBody,
+            isBuffer: Buffer.isBuffer(rawBody)
+          });
+          return res.status(500).send('Webhook configuration error: raw body not captured correctly');
         }
 
-        // Log rawBody type for debugging
-        console.log('[Stripe Webhook] Processing webhook with rawBody type:', typeof req.rawBody, 'isBuffer:', Buffer.isBuffer(req.rawBody));
+        // Log for debugging
+        console.log('[Stripe Webhook] Processing webhook with raw body:', {
+          isBuffer: Buffer.isBuffer(rawBody),
+          length: rawBody.length,
+          signaturePresent: !!sig
+        });
 
         event = stripe.webhooks.constructEvent(
-          req.rawBody,
+          rawBody,
           sig,
           webhookSecret
         );
       } else {
         // Only in development: skip signature verification
         console.warn('[Stripe Webhook] WARNING: Skipping signature verification (development mode)');
-        event = req.body as Stripe.Event;
+        // In dev without webhook secret, body might be parsed JSON or raw Buffer
+        if (Buffer.isBuffer(req.body)) {
+          event = JSON.parse(req.body.toString()) as Stripe.Event;
+        } else {
+          event = req.body as Stripe.Event;
+        }
       }
     } catch (err: any) {
       console.error('[Stripe Webhook] Signature verification failed:', {
         error: err.message,
         signatureHeader: sig ? sig.substring(0, 20) + '...' : 'missing',
-        rawBodyType: typeof req.rawBody,
-        rawBodyLength: req.rawBody?.length || 0,
+        bodyType: typeof req.body,
+        bodyIsBuffer: Buffer.isBuffer(req.body),
+        bodyLength: req.body?.length || 0,
         hasWebhookSecret: !!webhookSecret
       });
       return res.status(400).send(`Webhook Error: ${err.message}`);

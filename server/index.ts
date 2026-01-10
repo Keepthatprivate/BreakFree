@@ -18,13 +18,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature']
 }));
 
+// CRITICAL: Stripe webhook needs raw body for signature verification
+// This MUST come BEFORE express.json() to ensure raw body is captured
+// The raw body is stored on req.body as a Buffer for /api/webhook/stripe
+app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: Buffer
   }
 }
+
+// For all other routes, parse JSON normally but also capture raw body as backup
 app.use(express.json({
   verify: (req, _res, buf) => {
+    // Store raw body for any routes that might need it
     req.rawBody = buf;
   }
 }));
