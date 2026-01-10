@@ -1133,49 +1133,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       if (webhookSecret) {
-        // With express.raw() middleware, req.body is the raw Buffer
-        // This is the Stripe-recommended approach for webhook signature verification
-        const rawBody = req.body;
+        // Try req.rawBody first (set by our custom middleware), then req.body
+        const rawBody = req.rawBody || req.body;
 
-        if (!rawBody || !Buffer.isBuffer(rawBody)) {
-          console.error('[Stripe Webhook] Raw body is missing or not a Buffer:', {
-            hasBody: !!rawBody,
-            bodyType: typeof rawBody,
-            isBuffer: Buffer.isBuffer(rawBody)
-          });
-          return res.status(500).send('Webhook configuration error: raw body not captured correctly');
-        }
-
-        // Log for debugging
-        console.log('[Stripe Webhook] Processing webhook with raw body:', {
-          isBuffer: Buffer.isBuffer(rawBody),
-          length: rawBody.length,
-          signaturePresent: !!sig
+        // Detailed logging for debugging
+        console.log('[Stripe Webhook] Request details:', {
+          hasRawBody: !!req.rawBody,
+          rawBodyIsBuffer: Buffer.isBuffer(req.rawBody),
+          rawBodyLength: req.rawBody?.length || 0,
+          hasBody: !!req.body,
+          bodyType: typeof req.body,
+          bodyIsBuffer: Buffer.isBuffer(req.body),
+          bodyLength: req.body?.length || 0,
+          contentType: req.headers['content-type'],
+          signatureHeader: sig ? sig.substring(0, 50) + '...' : 'missing'
         });
 
+        if (!rawBody) {
+          console.error('[Stripe Webhook] No raw body available');
+          return res.status(500).send('Webhook configuration error: raw body not captured');
+        }
+
+        // Convert to Buffer if it's a string
+        let bodyBuffer: Buffer;
+        if (Buffer.isBuffer(rawBody)) {
+          bodyBuffer = rawBody;
+        } else if (typeof rawBody === 'string') {
+          bodyBuffer = Buffer.from(rawBody, 'utf8');
+        } else if (typeof rawBody === 'object') {
+          // Body was parsed as JSON - this shouldn't happen but handle it
+          console.warn('[Stripe Webhook] Body was parsed as JSON, converting back to string');
+          bodyBuffer = Buffer.from(JSON.stringify(rawBody), 'utf8');
+        } else {
+          console.error('[Stripe Webhook] Unexpected body type:', typeof rawBody);
+          return res.status(500).send('Webhook configuration error: unexpected body type');
+        }
+
+        console.log('[Stripe Webhook] Using body buffer, length:', bodyBuffer.length);
+
         event = stripe.webhooks.constructEvent(
-          rawBody,
+          bodyBuffer,
           sig,
           webhookSecret
         );
+
+        console.log('[Stripe Webhook] Signature verification successful!');
       } else {
         // Only in development: skip signature verification
         console.warn('[Stripe Webhook] WARNING: Skipping signature verification (development mode)');
         // In dev without webhook secret, body might be parsed JSON or raw Buffer
-        if (Buffer.isBuffer(req.body)) {
-          event = JSON.parse(req.body.toString()) as Stripe.Event;
+        const rawBody = req.rawBody || req.body;
+        if (Buffer.isBuffer(rawBody)) {
+          event = JSON.parse(rawBody.toString()) as Stripe.Event;
+        } else if (typeof rawBody === 'string') {
+          event = JSON.parse(rawBody) as Stripe.Event;
         } else {
-          event = req.body as Stripe.Event;
+          event = rawBody as Stripe.Event;
         }
       }
     } catch (err: any) {
-      console.error('[Stripe Webhook] Signature verification failed:', {
+      console.error('[Stripe Webhook] Signature verification FAILED:', {
         error: err.message,
-        signatureHeader: sig ? sig.substring(0, 20) + '...' : 'missing',
+        stack: err.stack?.split('\n').slice(0, 3).join('\n'),
+        signatureHeader: sig ? sig.substring(0, 50) + '...' : 'missing',
+        hasRawBody: !!req.rawBody,
+        rawBodyLength: req.rawBody?.length || 0,
         bodyType: typeof req.body,
         bodyIsBuffer: Buffer.isBuffer(req.body),
         bodyLength: req.body?.length || 0,
-        hasWebhookSecret: !!webhookSecret
+        webhookSecretPrefix: webhookSecret ? webhookSecret.substring(0, 10) + '...' : 'missing'
       });
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }

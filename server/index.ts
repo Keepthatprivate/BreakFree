@@ -18,25 +18,50 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature']
 }));
 
-// CRITICAL: Stripe webhook needs raw body for signature verification
-// This MUST come BEFORE express.json() to ensure raw body is captured
-// The raw body is stored on req.body as a Buffer for /api/webhook/stripe
-app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
-
-declare module 'http' {
-  interface IncomingMessage {
-    rawBody: Buffer
+declare module 'express' {
+  interface Request {
+    rawBody?: Buffer;
   }
 }
 
-// For all other routes, parse JSON normally but also capture raw body as backup
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    // Store raw body for any routes that might need it
-    req.rawBody = buf;
+// CRITICAL: Manually capture raw body for Stripe webhook BEFORE any body parsing
+// This is the most reliable method for webhook signature verification
+app.use('/api/webhook/stripe', (req, res, next) => {
+  const chunks: Buffer[] = [];
+
+  req.on('data', (chunk: Buffer) => {
+    chunks.push(chunk);
+  });
+
+  req.on('end', () => {
+    req.rawBody = Buffer.concat(chunks);
+    // Also set req.body to the raw buffer for the webhook handler
+    (req as any).body = req.rawBody;
+    next();
+  });
+
+  req.on('error', (err) => {
+    console.error('[Webhook] Error reading request body:', err);
+    res.status(500).send('Error reading request body');
+  });
+});
+
+// For all other routes, parse JSON normally
+app.use((req, res, next) => {
+  // Skip JSON parsing for Stripe webhook - already handled above
+  if (req.path === '/api/webhook/stripe') {
+    return next();
   }
-}));
-app.use(express.urlencoded({ extended: false }));
+  express.json()(req, res, next);
+});
+
+// Also skip urlencoded for webhook route
+app.use((req, res, next) => {
+  if (req.path === '/api/webhook/stripe') {
+    return next();
+  }
+  express.urlencoded({ extended: false })(req, res, next);
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
