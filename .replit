@@ -46,3 +46,4 @@ integrations = ["javascript_stripe:1.0.0", "resend:1.0.0"]
 
 [userenv.shared]
 PRODUCTION_DOMAIN = "break-free-app.com"
+STRIPE_WEBHOOK_SECRET = "whsec_j8GcvGUDqybHNMyJJRcyiwvgTGnH7JB5"
