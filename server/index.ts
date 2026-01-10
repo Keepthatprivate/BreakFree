@@ -30,13 +30,27 @@ declare module 'http' {
 }
 
 // For all other routes, parse JSON normally but also capture raw body as backup
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    // Store raw body for any routes that might need it
-    req.rawBody = buf;
+// IMPORTANT: Skip JSON parsing for webhook route since it needs raw body
+app.use((req, res, next) => {
+  // Skip JSON parsing for Stripe webhook - it needs raw body
+  if (req.path === '/api/webhook/stripe') {
+    return next();
   }
-}));
-app.use(express.urlencoded({ extended: false }));
+  express.json({
+    verify: (req, _res, buf) => {
+      // Store raw body for any routes that might need it
+      req.rawBody = buf;
+    }
+  })(req, res, next);
+});
+
+// Also skip urlencoded for webhook route
+app.use((req, res, next) => {
+  if (req.path === '/api/webhook/stripe') {
+    return next();
+  }
+  express.urlencoded({ extended: false })(req, res, next);
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
