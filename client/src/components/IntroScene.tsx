@@ -103,6 +103,9 @@ export default function IntroScene() {
           <motion.img
             src={isMobile ? kidsImageMobile : kidsImageDesktop}
             alt="Children playing"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover brightness-90"
             initial={{ scale: 1 }}
             animate={

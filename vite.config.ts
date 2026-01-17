@@ -30,6 +30,40 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Performance optimizations
+    target: "esnext",
+    minify: "esbuild",
+    cssMinify: true,
+    // Manual chunk splitting for optimal caching and faster initial load
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React - small, loads first
+          "vendor-react": ["react", "react-dom"],
+          // UI framework - lazy loaded with components
+          "vendor-radix": [
+            "@radix-ui/react-slot",
+            "@radix-ui/react-toast",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-progress",
+          ],
+          // Payment - only loaded on checkout
+          "vendor-stripe": ["@stripe/stripe-js", "@stripe/react-stripe-js"],
+          // Charts - only needed for results page
+          "vendor-charts": ["recharts"],
+          // Animation - lazy loaded
+          "vendor-animation": ["framer-motion"],
+        },
+      },
+    },
+    // Increase chunk size warning to avoid unnecessary splitting
+    chunkSizeWarningLimit: 500,
+  },
+  // Optimize dependency pre-bundling
+  optimizeDeps: {
+    include: ["react", "react-dom", "wouter"],
+    exclude: ["@stripe/stripe-js"],
   },
   server: {
     fs: {

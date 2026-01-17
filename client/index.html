@@ -9,10 +9,23 @@
     <meta property="og:description" content="A compassionate quiz designed to help you understand your patterns and start your journey toward emotional freedom." />
     <meta property="og:type" content="website" />
     <meta name="facebook-domain-verification" content="vc9zh33q930q9v49h6n4y8wtbionp5" />
+    <!-- Critical resource hints for faster loading -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload critical fonts - only what's needed for first paint -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+    <!-- Load fonts with display=swap for faster text rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
+    </noscript>
+    <!-- Inline critical CSS for instant background color -->
+    <style>
+      html, body, #root { background-color: #0d0d16; min-height: 100vh; margin: 0; }
+    </style>
     <script>
       (function() {
         var urlParams = new URLSearchParams(window.location.search);
