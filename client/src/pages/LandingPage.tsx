@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
-import logoImage from '@assets/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.png';
-import freedomImage from '@assets/pexels-andre-furtado-43594-1263986_1761942239297.jpg';
+// Optimized WebP images (90%+ smaller)
+import logoImage from '@assets/optimized/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.webp';
+import freedomImage from '@assets/optimized/pexels-andre-furtado-43594-1263986_1761942239297.webp';
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
@@ -13,10 +14,14 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0d0d16] flex flex-col items-center justify-center text-center p-8">
       {/* Logo - absolute positioned top-left */}
       <div className="absolute top-6 left-6 flex items-center gap-2 font-medium text-base text-white opacity-90">
-        <img 
-          src={logoImage} 
-          alt="BreakFree Logo" 
+        <img
+          src={logoImage}
+          alt="BreakFree Logo"
           className="w-[26px] h-[26px]"
+          loading="eager"
+          decoding="async"
+          width="26"
+          height="26"
         />
         <span>BreakFree</span>
       </div>
@@ -29,6 +34,11 @@ export default function LandingPage() {
           alt="Hands breaking free from chains"
           className="w-40 h-40 object-cover mb-4 rounded-full"
           style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.05))' }}
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+          width="160"
+          height="160"
         />
 
         {/* Headline */}
