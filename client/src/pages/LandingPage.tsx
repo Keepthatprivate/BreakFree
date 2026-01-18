@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
-import logoImage from '@assets/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.png';
-import freedomImage from '@assets/pexels-andre-furtado-43594-1263986_1761942239297.jpg';
+// Optimized WebP images (90%+ smaller)
+import logoImage from '@assets/optimized/ChatGPT Image 23 oct. 2025, 11_10_54_1761938952913.webp';
+import freedomImage from '@assets/optimized/pexels-andre-furtado-43594-1263986_1761942239297.webp';
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
