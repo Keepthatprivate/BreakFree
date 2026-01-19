@@ -23,9 +23,20 @@ const FbcValidator = lazy(() => import("@/pages/FbcValidator"));
 
 // Minimal loading fallback - matches landing page background for seamless UX
 const LoadingFallback = () => (
-  <div className="min-h-screen bg-[#0d0d16] flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-[#54d3bb] border-t-transparent rounded-full animate-spin" />
+  <div className="min-h-screen bg-[#0d0d16] flex items-center justify-center" role="status" aria-label="Loading">
+    <div className="w-8 h-8 border-2 border-[#54d3bb] border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+    <span className="sr-only">Loading content...</span>
   </div>
+);
+
+// Skip to content link for keyboard navigation (WCAG 2.4.1)
+const SkipToContent = () => (
+  <a
+    href="#main-content"
+    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#54d3bb] focus:text-[#0d0d16] focus:rounded-md focus:font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#54d3bb]"
+  >
+    Skip to main content
+  </a>
 );
 
 function Router() {
@@ -58,16 +69,21 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SkipToContent />
       {/* Defer tooltip provider and toaster until after first paint */}
       {isReady ? (
         <Suspense fallback={null}>
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <main id="main-content" role="main">
+              <Router />
+            </main>
           </TooltipProvider>
         </Suspense>
       ) : (
-        <Router />
+        <main id="main-content" role="main">
+          <Router />
+        </main>
       )}
     </QueryClientProvider>
   );
