@@ -20,6 +20,9 @@
     <link rel="preconnect" href="https://js.stripe.com" crossorigin />
     <!-- Preload critical fonts - only what's needed for first paint -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+    <!-- Preload hero images for faster LCP -->
+    <link rel="preload" as="image" type="image/webp" href="/assets/hero-desktop.webp" media="(min-width: 768px)" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/webp" href="/assets/hero-mobile.webp" media="(max-width: 767px)" fetchpriority="high" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <!-- Load fonts with display=swap for faster text rendering -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
