@@ -7,7 +7,7 @@ export default function LandingPage() {
   const [, setLocation] = useLocation();
 
   const handleStartQuiz = () => {
-    setLocation('/quiz');
+    setLocation('/intro');
   };
 
   return (

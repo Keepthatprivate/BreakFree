@@ -32,8 +32,8 @@ function Router() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
-        <Route path="/" component={IntroSceneShell} />
-        <Route path="/landing" component={LandingPage} />
+        <Route path="/" component={LandingPage} />
+        <Route path="/intro" component={IntroSceneShell} />
         <Route path="/quiz" component={Quiz} />
         <Route path="/signup" component={SignUp} />
         <Route path="/login" component={Login} />
