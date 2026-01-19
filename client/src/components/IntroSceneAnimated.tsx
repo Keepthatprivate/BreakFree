@@ -3,9 +3,10 @@ import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoOverlayQuestion from './VideoOverlayQuestion';
 import { introConfig, Gender } from '@/data/introConfig';
-// Optimized WebP images (90% smaller than original PNGs)
-import kidsImageDesktop from '@assets/optimized/ChatGPT Image 3 nov. 2025, 15_52_05_1762181570565.webp';
-import kidsImageMobile from '@assets/optimized/ChatGPT Image 3 nov. 2025, 15_56_30_1762181821528.webp';
+
+// Use the same optimized hero images from public folder (preloaded in index.html)
+const kidsImageDesktop = '/assets/hero-desktop.webp';
+const kidsImageMobile = '/assets/hero-mobile.webp';
 
 export default function IntroScene() {
   const [, setLocation] = useLocation();
@@ -107,18 +108,20 @@ export default function IntroScene() {
             loading="eager"
             decoding="async"
             fetchPriority="high"
+            width={isMobile ? 800 : 1536}
+            height={isMobile ? 1200 : 1024}
             className="absolute inset-0 w-full h-full object-cover brightness-90"
             initial={{ scale: 1 }}
             animate={
-              isZooming 
+              isZooming
                 ? getMindPlungeAnimation() // Deep zoom into child's mind after selection
-                : { 
+                : {
                     scale: introConfig.initialZoom.scale // Initial gentle zoom during playback
                   }
             }
             transition={
               isZooming
-                ? { 
+                ? {
                     // Mind plunge animation - dramatic zoom into selected child
                     scale: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },
                     x: { duration: introConfig.mindPlungeDuration, ease: "easeIn" },

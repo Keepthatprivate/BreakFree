@@ -36,10 +36,6 @@ export default defineConfig({
     cssMinify: true,
     // Enable CSS code splitting for route-based CSS loading
     cssCodeSplit: true,
-    // Reduce initial bundle size with better tree shaking
-    treeshake: {
-      moduleSideEffects: "no-external",
-    },
     // Manual chunk splitting for optimal caching and faster initial load
     rollupOptions: {
       output: {
