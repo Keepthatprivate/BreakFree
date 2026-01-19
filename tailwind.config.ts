@@ -2,7 +2,38 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  // Strict content paths for aggressive tree shaking
+  content: {
+    files: [
+      "./client/index.html",
+      "./client/src/**/*.{js,jsx,ts,tsx}",
+    ],
+    // Extract classes from string literals for better detection
+    extract: {
+      tsx: (content) => {
+        // Match Tailwind classes in className, class, and tw props
+        const matches = content.match(/(?:className|class|tw)=["'`]([^"'`]*)["'`]/g) || [];
+        const classNames = matches.flatMap(m => {
+          const match = m.match(/=["'`]([^"'`]*)["'`]/);
+          return match ? match[1].split(/\s+/) : [];
+        });
+        // Also match cn(), clsx(), twMerge() calls
+        const utilMatches = content.match(/(?:cn|clsx|twMerge)\(([^)]*)\)/g) || [];
+        const utilClasses = utilMatches.flatMap(m => {
+          const strings = m.match(/["'`]([^"'`]*)["'`]/g) || [];
+          return strings.flatMap(s => s.slice(1, -1).split(/\s+/));
+        });
+        return [...classNames, ...utilClasses];
+      },
+    },
+  },
+  // Minimal safelist - only dynamic classes that can't be detected
+  safelist: [
+    // Animation classes used dynamically
+    "animate-spin",
+    "animate-pulse",
+    "animate-shimmer",
+  ],
   theme: {
     extend: {
       borderRadius: {

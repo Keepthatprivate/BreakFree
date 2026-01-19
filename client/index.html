@@ -12,8 +12,12 @@
     <!-- Critical resource hints for faster loading -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
+    <link rel="dns-prefetch" href="https://api.stripe.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preconnect to Stripe (deferred - loaded on checkout) -->
+    <link rel="preconnect" href="https://js.stripe.com" crossorigin />
     <!-- Preload critical fonts - only what's needed for first paint -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -22,9 +26,26 @@
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
     </noscript>
-    <!-- Inline critical CSS for instant background color -->
+    <!-- Inline critical CSS for instant first paint (LCP optimization) -->
     <style>
+      /* Critical resets */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html, body, #root { background-color: #0d0d16; min-height: 100vh; margin: 0; }
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+
+      /* Critical IntroScene styles */
+      .intro-shell { position: relative; width: 100%; height: 100vh; overflow: hidden; background-color: #0d0d16; }
+      .intro-shell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
+      .intro-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent); pointer-events: none; }
+
+      /* Critical LandingPage styles */
+      .landing-container { min-height: 100vh; background-color: #0d0d16; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+      .landing-btn { width: 100%; max-width: 400px; background-color: #54d3bb; color: white; border: none; border-radius: 9999px; padding: 14px 42px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 250ms ease; }
+      .landing-btn:hover { transform: translateY(-2px) scale(1.03); background-color: #6ee7b7; }
+
+      /* Loading spinner */
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .loading-spinner { width: 2rem; height: 2rem; border: 2px solid #54d3bb; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
     </style>
     <script>
       (function() {
