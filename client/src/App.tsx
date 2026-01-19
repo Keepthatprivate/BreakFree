@@ -5,7 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 
 // Critical path - load shell immediately, animations load after first paint
 import IntroSceneShell from "@/components/IntroSceneShell";
-import LandingPage from "@/pages/LandingPage";
+import PreLanding from "@/pages/PreLanding";
 
 // Lazy load non-critical UI components
 const Toaster = lazy(() =>
@@ -32,7 +32,7 @@ function Router() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
-        <Route path="/" component={LandingPage} />
+        <Route path="/" component={PreLanding} />
         <Route path="/intro" component={IntroSceneShell} />
         <Route path="/quiz" component={Quiz} />
         <Route path="/signup" component={SignUp} />
