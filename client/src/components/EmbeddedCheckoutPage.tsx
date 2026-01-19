@@ -5,6 +5,8 @@ import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiRequest } from '@/lib/queryClient';
 import { trackViewContent, trackInitiateCheckout } from '@/lib/facebook-tracking';
+// Stripe-specific styles - loaded only on checkout pages
+import '@/styles/stripe.css';
 
 const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;

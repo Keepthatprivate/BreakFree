@@ -1,9 +1,28 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Enable compression for all responses (gzip/deflate)
+// This significantly reduces transfer size for HTML, CSS, JS, and JSON
+app.use(compression({
+  // Compress responses larger than 1KB
+  threshold: 1024,
+  // Compression level (1-9, higher = better compression but slower)
+  level: 6,
+  // Only compress text-based content types
+  filter: (req, res) => {
+    // Don't compress if client doesn't support it
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter defaults (compresses text/* and application/json, etc.)
+    return compression.filter(req, res);
+  }
+}));
 
 // Enable trust proxy for accurate IP detection (required for Facebook CAPI)
 app.set('trust proxy', true);
