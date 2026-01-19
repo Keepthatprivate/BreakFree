@@ -34,36 +34,79 @@ export default defineConfig({
     target: "esnext",
     minify: "esbuild",
     cssMinify: true,
+    // Enable CSS code splitting for route-based CSS loading
+    cssCodeSplit: true,
+    // Reduce initial bundle size with better tree shaking
+    treeshake: {
+      moduleSideEffects: "no-external",
+    },
     // Manual chunk splitting for optimal caching and faster initial load
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React - small, loads first
-          "vendor-react": ["react", "react-dom"],
-          // UI framework - lazy loaded with components
-          "vendor-radix": [
-            "@radix-ui/react-slot",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-progress",
-          ],
+        // Optimize chunk file names for better caching
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
+        manualChunks: (id) => {
+          // Core React - small, loads first (critical path)
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+            return "vendor-react";
+          }
+          // Router - critical path
+          if (id.includes("node_modules/wouter/")) {
+            return "vendor-react";
+          }
+          // Animation - lazy loaded after first paint
+          if (id.includes("node_modules/framer-motion/")) {
+            return "vendor-animation";
+          }
+          // Radix UI - lazy loaded with components that need it
+          if (id.includes("node_modules/@radix-ui/")) {
+            return "vendor-radix";
+          }
           // Payment - only loaded on checkout
-          "vendor-stripe": ["@stripe/stripe-js", "@stripe/react-stripe-js"],
+          if (id.includes("node_modules/@stripe/")) {
+            return "vendor-stripe";
+          }
           // Charts - only needed for results page
-          "vendor-charts": ["recharts"],
-          // Animation - lazy loaded
-          "vendor-animation": ["framer-motion"],
+          if (id.includes("node_modules/recharts/") || id.includes("node_modules/d3-")) {
+            return "vendor-charts";
+          }
+          // React Query - deferred loading
+          if (id.includes("node_modules/@tanstack/")) {
+            return "vendor-query";
+          }
+          // Forms - loaded when needed
+          if (id.includes("node_modules/react-hook-form/") || id.includes("node_modules/@hookform/")) {
+            return "vendor-forms";
+          }
+          // Zod validation - loaded with forms
+          if (id.includes("node_modules/zod/")) {
+            return "vendor-forms";
+          }
         },
       },
     },
     // Increase chunk size warning to avoid unnecessary splitting
     chunkSizeWarningLimit: 500,
+    // Improve source map generation for production debugging
+    sourcemap: false,
+    // Report compressed size for accurate bundle analysis
+    reportCompressedSize: true,
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
     include: ["react", "react-dom", "wouter"],
     exclude: ["@stripe/stripe-js"],
+  },
+  // Enable esbuild optimizations
+  esbuild: {
+    // Remove console.log in production
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+    // Minify identifiers
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true,
   },
   server: {
     fs: {

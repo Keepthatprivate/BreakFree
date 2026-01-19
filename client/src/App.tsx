@@ -1,14 +1,19 @@
 import { Switch, Route } from "wouter";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { initFacebookTracking } from "@/lib/facebook-tracking";
 
-// Critical path - load immediately for fastest landing page
-import IntroScene from "@/components/IntroScene";
+// Critical path - load shell immediately, animations load after first paint
+import IntroSceneShell from "@/components/IntroSceneShell";
 import LandingPage from "@/pages/LandingPage";
+
+// Lazy load non-critical UI components
+const Toaster = lazy(() =>
+  import("@/components/ui/toaster").then((m) => ({ default: m.Toaster }))
+);
+const TooltipProvider = lazy(() =>
+  import("@/components/ui/tooltip").then((m) => ({ default: m.TooltipProvider }))
+);
 
 // Lazy load all other routes - these won't block initial page load
 const Quiz = lazy(() => import("@/pages/Quiz"));
@@ -27,7 +32,7 @@ function Router() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
-        <Route path="/" component={IntroScene} />
+        <Route path="/" component={IntroSceneShell} />
         <Route path="/landing" component={LandingPage} />
         <Route path="/quiz" component={Quiz} />
         <Route path="/signup" component={SignUp} />
@@ -39,16 +44,31 @@ function Router() {
 }
 
 function App() {
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    initFacebookTracking();
+    // Defer non-critical initialization after first paint
+    const timer = requestAnimationFrame(() => {
+      // Initialize Facebook tracking after first paint
+      import("@/lib/facebook-tracking").then((m) => m.initFacebookTracking());
+      setIsReady(true);
+    });
+    return () => cancelAnimationFrame(timer);
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
+      {/* Defer tooltip provider and toaster until after first paint */}
+      {isReady ? (
+        <Suspense fallback={null}>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </Suspense>
+      ) : (
         <Router />
-      </TooltipProvider>
+      )}
     </QueryClientProvider>
   );
 }
