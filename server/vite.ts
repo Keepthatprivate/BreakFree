@@ -52,6 +52,13 @@ export async function setupVite(app: Express, server: Server) {
         "index.html",
       );
 
+      // Set Link headers for resource hints (development)
+      const criticalLinks = [
+        '<https://fonts.googleapis.com>; rel=preconnect',
+        '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
+      ];
+      res.setHeader('Link', criticalLinks.join(', '));
+
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
@@ -93,11 +100,30 @@ export function serveStatic(app: Express) {
   }));
 
   // fall through to index.html if the file doesn't exist
-  // HTML should not be cached to ensure users get latest version
-  app.use("*", (_req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+  // Use no-cache to ensure freshness while ALLOWING bfcache
+  // IMPORTANT: no-store blocks bfcache entirely - avoid it for HTML
+  // no-cache still revalidates but allows back/forward cache navigation
+  app.use("*", (req, res) => {
+    // Critical resource hints - used by both Early Hints and Link headers
+    const criticalLinks = [
+      '<https://fonts.googleapis.com>; rel=preconnect',
+      '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
+      '<https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap>; rel=preload; as=style; crossorigin',
+    ];
+
+    // Send 103 Early Hints for critical resources (reduces TTFB impact)
+    // This tells the browser to start loading resources before HTML arrives
+    if (req.httpVersionMajor >= 2) {
+      // Only send Early Hints on HTTP/2+
+      res.writeEarlyHints?.({
+        link: criticalLinks,
+      });
+    }
+
+    // Also set Link headers as fallback for browsers without Early Hints support
+    res.setHeader('Link', criticalLinks.join(', '));
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Vary', 'Accept-Encoding');
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

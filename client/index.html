@@ -19,10 +19,12 @@
     <!-- Preconnect to Stripe (deferred - loaded on checkout) -->
     <link rel="preconnect" href="https://js.stripe.com" crossorigin />
     <!-- Preload critical fonts - only Inter 400 and 600 for first paint (reduces font request size) -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" crossorigin />
-    <!-- Preload hero images for faster LCP -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" crossorigin="anonymous" />
+    <!-- Preload hero images for faster LCP - critical for Core Web Vitals -->
     <link rel="preload" as="image" type="image/webp" href="/assets/hero-desktop.webp" media="(min-width: 768px)" fetchpriority="high" />
     <link rel="preload" as="image" type="image/webp" href="/assets/hero-mobile.webp" media="(max-width: 767px)" fetchpriority="high" />
+    <!-- Preload main JS and CSS chunks - known from build output -->
+    <link rel="modulepreload" href="/assets/index.js" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <!-- Critical fonts - Inter 400/600 only for above-the-fold content -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />

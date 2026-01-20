@@ -27,6 +27,40 @@ app.use(compression({
 // Enable trust proxy for accurate IP detection (required for Facebook CAPI)
 app.set('trust proxy', true);
 
+// HTTPS redirect middleware - eliminates HTTP → HTTPS redirect latency
+// Only active in production (development uses HTTP)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    // Check x-forwarded-proto header (set by reverse proxy/load balancer)
+    const proto = req.headers['x-forwarded-proto'];
+    if (proto === 'http') {
+      // 301 permanent redirect to HTTPS - browser will remember
+      const httpsUrl = `https://${req.hostname}${req.originalUrl}`;
+      return res.redirect(301, httpsUrl);
+    }
+    next();
+  });
+}
+
+// Security and performance headers middleware
+app.use((_req, res, next) => {
+  // HSTS - force HTTPS for 1 year, including subdomains
+  // This eliminates future HTTP → HTTPS redirects after first visit
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Permissions Policy - disable unnecessary browser features for better security
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+  next();
+});
+
 // Enable CORS for cross-domain requests (e.g., from break-free-app.com)
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
