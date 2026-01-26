@@ -21,7 +21,7 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
   // Data Break
   if (breakScreen.type === 'data-break') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in duration-150">
         <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-primary/20 shadow-2xl">
           <div className="text-center mb-8">
             <div className="text-7xl mb-6">{breakScreen.emoji}</div>
@@ -52,7 +52,7 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
   // Quote Break
   if (breakScreen.type === 'quote-break') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in duration-150">
         <div className="bg-card rounded-3xl p-8 sm:p-12 border border-card-border/50 shadow-2xl">
           <div className="text-center mb-8">
             <div className="text-6xl text-primary mb-8">"</div>
@@ -83,7 +83,7 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
   // Testimonial Break
   if (breakScreen.type === 'testimonial-break') {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in duration-150">
         <div className="bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-primary/20 shadow-2xl">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
@@ -125,7 +125,7 @@ export default function BreakScreenComponent({ breakScreen, onContinue }: BreakS
   // Visual Pause
   if (breakScreen.type === 'visual-pause') {
     return (
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in zoom-in-95 duration-700">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16 animate-in fade-in duration-150">
         <div className="relative rounded-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-pink-500/30" />
           <div className="relative z-10 text-center p-8">

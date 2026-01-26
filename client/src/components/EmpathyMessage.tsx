@@ -17,7 +17,7 @@ export default function EmpathyMessage({ message, onContinue }: EmpathyMessagePr
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div
-        className="bg-card rounded-3xl p-10 sm:p-14 text-center animate-in fade-in duration-500 border border-card-border/50"
+        className="bg-card rounded-3xl p-10 sm:p-14 text-center animate-in fade-in duration-150 border border-card-border/50"
         data-testid="empathy-message"
       >
         <div className="flex justify-center mb-8">

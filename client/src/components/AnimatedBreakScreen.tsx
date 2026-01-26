@@ -47,9 +47,9 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
     }
 
     const displayTimings = [
-      1500,  // Image 1: 1.5s display
-      1500,  // Image 2: 1.5s display
-      2000,  // Image 3: 2.0s display
+      400,  // Image 1: 0.4s display
+      400,  // Image 2: 0.4s display
+      400,  // Image 3: 0.4s display
     ];
 
     const imageTimers: NodeJS.Timeout[] = [];
@@ -71,7 +71,7 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
 
     const completeTimer = setTimeout(() => {
       onContinue();
-    }, accumulatedTime + 300);
+    }, accumulatedTime + 100);
 
     return () => {
       imageTimers.forEach(clearTimeout);

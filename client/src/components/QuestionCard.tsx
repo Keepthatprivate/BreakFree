@@ -128,7 +128,7 @@ export default function QuestionCard({
 
     return (
       <>
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div className="text-center mb-4 sm:mb-6">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
               What is your gender identity?
@@ -207,7 +207,7 @@ export default function QuestionCard({
   if (question.type === 'slider') {
     return (
       <>
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -252,7 +252,7 @@ export default function QuestionCard({
   if (question.type === 'emoji-grid') {
     return (
       <>
-        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -301,7 +301,7 @@ export default function QuestionCard({
   if (question.type === 'image-choice') {
     return (
       <>
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -353,7 +353,7 @@ export default function QuestionCard({
   if (question.type === 'quote-reflection') {
     return (
       <>
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -470,7 +470,7 @@ export default function QuestionCard({
   if (question.type === 'audio-test') {
     return (
       <>
-        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -529,7 +529,7 @@ export default function QuestionCard({
   if (question.type === 'visual-test') {
     return (
       <>
-        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 pb-32 animate-in fade-in duration-150">
           <div
             className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
             data-testid="question-card"
@@ -594,7 +594,7 @@ export default function QuestionCard({
 
   return (
     <>
-      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-4 pb-32 animate-in fade-in duration-150">
         <div
           className="bg-card rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col border border-card-border/50"
           data-testid="question-card"

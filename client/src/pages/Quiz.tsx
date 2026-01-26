@@ -212,9 +212,7 @@ export default function Quiz() {
       }
       // 3. Regular advance
       else {
-        setTimeout(() => {
-          setCurrentQuestionIndex((prev) => prev + 1);
-        }, 300);
+        setCurrentQuestionIndex((prev) => prev + 1);
       }
     } else {
       // After last question, show animation 4 + final quote break before contact
@@ -227,17 +225,13 @@ export default function Quiz() {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setTimeout(() => {
-        setCurrentQuestionIndex((prev) => prev - 1);
-      }, 300);
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
   const handleEmpathyContinue = () => {
     setState('quiz');
-    setTimeout(() => {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }, 300);
+    setCurrentQuestionIndex((prev) => prev + 1);
   };
 
   const handleAnimationContinue = () => {
@@ -248,12 +242,8 @@ export default function Quiz() {
   const handleQuoteBreakContinue = () => {
     // After quote break, advance to next question or contact form
     if (currentQuestionIndex < questions.length - 1) {
-      // Update question index first to prevent visual flash
       setCurrentQuestionIndex((prev) => prev + 1);
-      // Then change state after a brief delay for smooth transition
-      setTimeout(() => {
-        setState('quiz');
-      }, 100);
+      setState('quiz');
     } else {
       // After last question's animation + quote, go to seven-days before contact
       setState('seven-days');
