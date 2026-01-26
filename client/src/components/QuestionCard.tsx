@@ -272,7 +272,7 @@ export default function QuestionCard({
                     onClick={() => handleOptionClick(emoji.value)}
                     className={`flex flex-col items-center gap-2 sm:gap-3 p-4 sm:p-6 rounded-2xl transition-all duration-200 border-2 ${
                       isSelected
-                        ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                        ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20 scale-105'
                         : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                     }`}
                     data-testid={`option-${emoji.value}`}
@@ -321,7 +321,7 @@ export default function QuestionCard({
                     onClick={() => handleOptionClick(option.value)}
                     className={`flex flex-col items-center gap-2 sm:gap-4 p-4 sm:p-6 rounded-2xl transition-all duration-200 border-2 ${
                       isSelected
-                        ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                        ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20 scale-105'
                         : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                     }`}
                     data-testid={`option-${option.value}`}
@@ -377,7 +377,7 @@ export default function QuestionCard({
                       onClick={() => handleOptionClick(option.value)}
                       className={`w-full p-5 rounded-2xl text-center transition-all duration-200 border-2 ${
                         isSelected
-                          ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
+                          ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20'
                           : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                       }`}
                       data-testid={`option-${option.value}`}
@@ -427,7 +427,7 @@ export default function QuestionCard({
                     onClick={() => handleOptionClick(option.value)}
                     className={`w-full p-5 rounded-2xl text-left transition-all duration-200 border-2 ${
                       isSelected
-                        ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
+                        ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20'
                         : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                     }`}
                     data-testid={`option-${option.value}`}
@@ -436,7 +436,7 @@ export default function QuestionCard({
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                           isSelected
-                            ? 'border-accent bg-accent'
+                            ? 'border-primary bg-primary'
                             : 'border-muted-foreground/40'
                         }`}
                       >
@@ -496,7 +496,7 @@ export default function QuestionCard({
                     onClick={() => handleOptionClick(option.value)}
                     className={`flex flex-col gap-3 p-5 rounded-2xl transition-all duration-200 border-2 ${
                       isSelected
-                        ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20 scale-105'
+                        ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20 scale-105'
                         : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                     }`}
                     data-testid={`option-${option.value}`}
@@ -562,7 +562,7 @@ export default function QuestionCard({
                     onClick={() => handleOptionClick(option.value)}
                     className={`flex flex-col gap-1.5 p-3 rounded-2xl transition-all duration-200 border-2 ${
                       isSelected
-                        ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
+                        ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20'
                         : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                     }`}
                     data-testid={`option-${option.value}`}
@@ -614,7 +614,7 @@ export default function QuestionCard({
                   onClick={() => handleOptionClick(option.value)}
                   className={`w-full p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 border-2 ${
                     isSelected
-                      ? 'border-accent bg-accent/15 shadow-lg shadow-accent/20'
+                      ? 'border-primary bg-primary/15 shadow-lg shadow-primary/20'
                       : 'border-muted/50 bg-muted/30 hover:border-muted hover:bg-muted/40'
                   }`}
                   data-testid={`option-${option.value}`}
@@ -623,7 +623,7 @@ export default function QuestionCard({
                     <div
                       className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                         isSelected
-                          ? 'border-accent bg-accent'
+                          ? 'border-primary bg-primary'
                           : 'border-muted-foreground/40'
                       }`}
                     >
