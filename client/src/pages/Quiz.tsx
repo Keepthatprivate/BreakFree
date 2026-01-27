@@ -24,6 +24,7 @@ import EmbeddedCheckoutPage from '@/components/EmbeddedCheckoutPage';
 import { questions, empathyMessages, chapters, breakScreens } from '@shared/quiz-data';
 import { animations } from '@/lib/animationAssets';
 import { trackViewContent, trackLead, getFacebookCookies } from '@/lib/facebook-tracking';
+import { preloadQuizAssets, preloadAnimationChapter, startBackgroundPreload } from '@/lib/progressivePreloader';
 import { type EmbeddedCheckoutProductType } from '@/components/EmbeddedCheckoutPage';
 import { apiRequest } from "@/lib/queryClient";
 import geometricPattern from '@assets/pexels-golnar-sabzpoush-rashidi-1317651-2530383_1761955317513.jpg';
@@ -89,48 +90,41 @@ export default function Quiz() {
   const [checkoutAmount, setCheckoutAmount] = useState(1499); // Default to guide price (€14.99)
   const [checkoutType, setCheckoutType] = useState<'upsell' | 'donation' | 'trial' | 'masterclass' | 'journal'>('upsell');
   const [checkoutProductName, setCheckoutProductName] = useState('Mental Well-Being Guides');
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [assetsLoaded] = useState(true);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentChapter = chapters.find((c) => c.id === currentQuestion?.chapter);
 
-  // Preload all images and audio assets
+  // Progressive asset loading - start preloading in background without blocking render
   useEffect(() => {
     const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
-    const allAssets: string[] = [];
-
-    // Collect all animation images for the selected gender
-    animations[gender].forEach((animation) => {
-      allAssets.push(...animation.images);
-    });
-
-    // Add other static assets
-    allAssets.push(geometricPattern);
-
-    // Preload images
-    const imagePromises = allAssets.map((src) => {
-      return new Promise<void>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
-        img.src = src;
-      });
-    });
-
-    // Preload audio files
-    const audioPromises = [footstepsAudio, doorClosingAudio].map((src) => {
-      return new Promise<void>((resolve) => {
-        const audio = new Audio();
-        audio.oncanplaythrough = () => resolve();
-        audio.onerror = () => resolve();
-        audio.src = src;
-      });
-    });
-
-    Promise.all([...imagePromises, ...audioPromises]).then(() => {
-      setAssetsLoaded(true);
-    });
+    preloadQuizAssets(
+      gender,
+      animations,
+      0,
+      geometricPattern,
+      [footstepsAudio, doorClosingAudio]
+    );
   }, []);
+
+  // Preload upcoming animation assets when user progresses through quiz
+  useEffect(() => {
+    const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
+    const genderAnimations = animations[gender];
+    const upcomingChapterIndex = getChapterTransitionIndex();
+    
+    if (upcomingChapterIndex >= 0 && upcomingChapterIndex < genderAnimations.length) {
+      preloadAnimationChapter(genderAnimations[upcomingChapterIndex].images, 'critical');
+    }
+    if (upcomingChapterIndex + 1 < genderAnimations.length) {
+      preloadAnimationChapter(genderAnimations[upcomingChapterIndex + 1].images, 'high');
+    }
+    
+    startBackgroundPreload(
+      genderAnimations.map((a) => a.images),
+      upcomingChapterIndex
+    );
+  }, [currentQuestionIndex]);
 
   useEffect(() => {
     localStorage.setItem('quizAnswers', JSON.stringify(answers));
