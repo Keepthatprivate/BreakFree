@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { animations } from '@/lib/animationAssets';
+import { isAssetLoaded, preloadImage } from '@/lib/progressivePreloader';
 
 interface AnimatedBreakScreenProps {
   animationIndex: number;
@@ -14,23 +15,20 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
   const gender = (localStorage.getItem('gender') || 'boy') as 'boy' | 'girl';
   const animationSequence = animations[gender][animationIndex];
 
-  // Preload all images before starting animation
+  // Check if images are already loaded (from progressive preloader) or load them
   useEffect(() => {
     if (!animationSequence) {
       onContinue();
       return;
     }
 
-    const imagePromises = animationSequence.images.map((imageSrc) => {
-      return new Promise<void>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = () => resolve(); // Still resolve on error to prevent blocking
-        img.src = imageSrc;
-      });
-    });
+    const allLoaded = animationSequence.images.every((src) => isAssetLoaded(src));
+    if (allLoaded) {
+      setImagesLoaded(true);
+      return;
+    }
 
-    Promise.all(imagePromises).then(() => {
+    Promise.all(animationSequence.images.map((src) => preloadImage(src))).then(() => {
       setImagesLoaded(true);
     });
   }, [animationSequence, onContinue]);
