@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { chapters } from '@shared/quiz-data';
 
 interface ProgressBarProps {
@@ -6,9 +7,9 @@ interface ProgressBarProps {
   totalQuestions: number;
 }
 
-export default function ProgressBar({ currentChapter, currentQuestionIndex, totalQuestions }: ProgressBarProps) {
+// Memoized ProgressBar to prevent unnecessary re-renders (INP optimization)
+const ProgressBar = memo(function ProgressBar({ currentChapter, currentQuestionIndex, totalQuestions }: ProgressBarProps) {
   const currentChapterIndex = chapters.findIndex((c) => c.id === currentChapter);
-  const progressPercentage = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
     <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
@@ -33,8 +34,9 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
                   >
                     {index < currentChapterIndex ? '✓' : index + 1}
                   </div>
+                  {/* Replaced animate-ping with opacity animation to prevent CLS */}
                   {index < currentChapterIndex && (
-                    <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                    <div className="absolute inset-0 rounded-full bg-primary/30 animate-pulse-glow" />
                   )}
                 </div>
                 <span
@@ -60,4 +62,6 @@ export default function ProgressBar({ currentChapter, currentQuestionIndex, tota
       </div>
     </div>
   );
-}
+});
+
+export default ProgressBar;

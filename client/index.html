@@ -9,65 +9,154 @@
     <meta property="og:description" content="A compassionate quiz designed to help you understand your patterns and start your journey toward emotional freedom." />
     <meta property="og:type" content="website" />
     <meta name="facebook-domain-verification" content="vc9zh33q930q9v49h6n4y8wtbionp5" />
-    <!-- Microsoft Clarity -->
-    <script type="text/javascript">
-      (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "v5y9v13j79");
-    </script>
-    <!-- Critical resource hints for faster loading -->
+
+    <!-- LCP OPTIMIZATION: Critical resource hints BEFORE any scripts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="dns-prefetch" href="https://js.stripe.com" />
     <link rel="dns-prefetch" href="https://api.stripe.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Preconnect to Stripe (deferred - loaded on checkout) -->
-    <link rel="preconnect" href="https://js.stripe.com" crossorigin />
-    <!-- Preload critical fonts - only Inter 400 and 600 for first paint (reduces font request size) -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" crossorigin />
-    <!-- Preload hero images for faster LCP -->
+    <link rel="dns-prefetch" href="https://www.clarity.ms" />
+
+    <!-- LCP OPTIMIZATION: Preload hero images with high priority -->
     <link rel="preload" as="image" type="image/webp" href="/assets/hero-desktop.webp" media="(min-width: 768px)" fetchpriority="high" />
     <link rel="preload" as="image" type="image/webp" href="/assets/hero-mobile.webp" media="(max-width: 767px)" fetchpriority="high" />
+
+    <!-- LCP OPTIMIZATION: Preload critical fonts with high priority -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" crossorigin fetchpriority="high" />
+
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- LCP OPTIMIZATION: Inline critical CSS for instant first paint -->
+    <style>
+      /* Critical resets - GPU optimized */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { background-color: #0d0d16; }
+      html, body, #root { min-height: 100vh; margin: 0; }
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #0d0d16;
+        color: #f5f5f5;
+      }
+
+      /* CLS PREVENTION: Reserve space for common elements */
+      img, video { max-width: 100%; height: auto; }
+
+      /* Critical IntroScene styles - GPU accelerated */
+      .intro-shell {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #0d0d16;
+        contain: layout style paint;
+      }
+      .intro-shell img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.9);
+        will-change: transform, opacity;
+      }
+      .intro-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent);
+        pointer-events: none;
+      }
+
+      /* Critical LandingPage styles */
+      .landing-container {
+        min-height: 100vh;
+        background-color: #0d0d16;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        contain: layout style;
+      }
+      .landing-btn {
+        width: 100%;
+        max-width: 400px;
+        background-color: #54d3bb;
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        padding: 14px 42px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 200ms ease, background-color 200ms ease;
+        will-change: transform;
+      }
+      .landing-btn:hover { transform: translateY(-2px) scale(1.03); background-color: #6ee7b7; }
+      .landing-btn:active { transform: translateY(0) scale(0.98); }
+
+      /* Loading spinner - GPU accelerated */
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .loading-spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 2px solid #54d3bb;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        will-change: transform;
+      }
+
+      /* INP OPTIMIZATION: Ensure touch targets are large enough */
+      button, a, input, select, textarea { touch-action: manipulation; }
+
+      /* GPU acceleration for animations */
+      .animate-in { will-change: opacity, transform; }
+    </style>
+
     <!-- Critical fonts - Inter 400/600 only for above-the-fold content -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-    <!-- Non-critical fonts - loaded async after first paint -->
+
+    <!-- Non-critical fonts - loaded async after first paint (LCP optimization) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
     </noscript>
-    <!-- Inline critical CSS for instant first paint (LCP optimization) -->
-    <style>
-      /* Critical resets */
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body, #root { background-color: #0d0d16; min-height: 100vh; margin: 0; }
-      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
 
-      /* Critical IntroScene styles */
-      .intro-shell { position: relative; width: 100%; height: 100vh; overflow: hidden; background-color: #0d0d16; }
-      .intro-shell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
-      .intro-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent); pointer-events: none; }
+    <!-- Stripe preconnect (deferred - only needed on checkout) -->
+    <link rel="preconnect" href="https://js.stripe.com" crossorigin />
 
-      /* Critical LandingPage styles */
-      .landing-container { min-height: 100vh; background-color: #0d0d16; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-      .landing-btn { width: 100%; max-width: 400px; background-color: #54d3bb; color: white; border: none; border-radius: 9999px; padding: 14px 42px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 250ms ease; }
-      .landing-btn:hover { transform: translateY(-2px) scale(1.03); background-color: #6ee7b7; }
-
-      /* Loading spinner */
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .loading-spinner { width: 2rem; height: 2rem; border: 2px solid #54d3bb; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
-    </style>
+    <!-- Minimal inline script - captures fbclid immediately (time-sensitive for attribution) -->
     <script>
-      // Minimal inline script - captures fbclid immediately (time-sensitive for attribution)
-      // Uses minimal blocking time with optimized code
       (function(){var s=location.search,f=s&&s.match(/fbclid=([^&]+)/);if(f){var t=Date.now(),v='fb.1.'+t+'.'+f[1],e=new Date(t+7776e6);document.cookie='_fbc='+v+';expires='+e.toUTCString()+';path=/;SameSite=Lax';try{localStorage.setItem('fb_fbc',v);localStorage.setItem('fb_click_id',f[1])}catch(x){}}else{try{var c=localStorage.getItem('fb_fbc');if(c){var p=c.split('.');if(p.length>2&&Date.now()-parseInt(p[2],10)>6048e5){localStorage.removeItem('fb_fbc');localStorage.removeItem('fb_click_id');document.cookie='_fbc=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/'}}}catch(x){}}if(document.cookie.indexOf('_fbp=')<0){var t=Date.now(),v='fb.1.'+t+'.'+Math.floor(Math.random()*2147483647);document.cookie='_fbp='+v+';expires='+new Date(t+7776e6).toUTCString()+';path=/;SameSite=Lax';try{localStorage.setItem('fb_fbp',v)}catch(x){}}})();
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- LCP/INP OPTIMIZATION: Defer non-critical analytics to after page load -->
+    <script>
+      // Load Clarity after first paint to not block LCP
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(function() {
+          var c = document.createElement('script');
+          c.async = true;
+          c.src = 'https://www.clarity.ms/tag/v5y9v13j79';
+          document.head.appendChild(c);
+        }, { timeout: 3000 });
+      } else {
+        setTimeout(function() {
+          var c = document.createElement('script');
+          c.async = true;
+          c.src = 'https://www.clarity.ms/tag/v5y9v13j79';
+          document.head.appendChild(c);
+        }, 1000);
+      }
+    </script>
   </body>
 </html>

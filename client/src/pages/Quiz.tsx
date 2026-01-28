@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import ProgressBar from '@/components/ProgressBar';
 import QuestionCard from '@/components/QuestionCard';
@@ -126,8 +126,38 @@ export default function Quiz() {
     );
   }, [currentQuestionIndex]);
 
+  // Debounced localStorage write using requestIdleCallback (INP optimization)
+  const saveTimeoutRef = useRef<number | null>(null);
   useEffect(() => {
-    localStorage.setItem('quizAnswers', JSON.stringify(answers));
+    // Cancel any pending save
+    if (saveTimeoutRef.current) {
+      if ('cancelIdleCallback' in window) {
+        cancelIdleCallback(saveTimeoutRef.current);
+      } else {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    }
+
+    // Defer localStorage write to idle time
+    const saveAnswers = () => {
+      localStorage.setItem('quizAnswers', JSON.stringify(answers));
+    };
+
+    if ('requestIdleCallback' in window) {
+      saveTimeoutRef.current = requestIdleCallback(saveAnswers, { timeout: 1000 });
+    } else {
+      saveTimeoutRef.current = window.setTimeout(saveAnswers, 100) as unknown as number;
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        if ('cancelIdleCallback' in window) {
+          cancelIdleCallback(saveTimeoutRef.current);
+        } else {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      }
+    };
   }, [answers]);
 
   // Track quiz page view on mount with funnel step identification
