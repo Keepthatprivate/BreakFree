@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Play, Pause } from 'lucide-react';
 
 interface AudioPlayerProps {
@@ -6,66 +6,108 @@ interface AudioPlayerProps {
   label: string;
 }
 
-export default function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
+// Memoized AudioPlayer to prevent unnecessary re-renders (INP optimization)
+const AudioPlayer = memo(function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastUpdateRef = useRef<number>(0);
+
+  // Throttled time update using RAF - prevents excessive re-renders (INP optimization)
+  const updateTimeThrottled = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !isPlaying) return;
+
+    const now = performance.now();
+    // Only update state every 250ms to reduce re-renders
+    if (now - lastUpdateRef.current >= 250) {
+      setCurrentTime(audio.currentTime);
+      lastUpdateRef.current = now;
+    }
+
+    rafRef.current = requestAnimationFrame(updateTimeThrottled);
+  }, [isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(audio.duration);
+    };
 
-    audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
-      
+
+      // Cancel RAF on cleanup
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
       // Pause audio on cleanup
       audio.pause();
     };
   }, [audioSrc]);
 
-  const togglePlay = () => {
+  // Start/stop RAF-based time updates based on playing state
+  useEffect(() => {
+    if (isPlaying) {
+      lastUpdateRef.current = performance.now();
+      rafRef.current = requestAnimationFrame(updateTimeThrottled);
+    } else if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [isPlaying, updateTimeThrottled]);
+
+  const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
       audio.pause();
+      // Update time immediately when pausing
+      setCurrentTime(audio.currentTime);
     } else {
       audio.play();
     }
     setIsPlaying(!isPlaying);
-  };
+  }, [isPlaying]);
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const newTime = Number(e.target.value);
     audio.currentTime = newTime;
     setCurrentTime(newTime);
-  };
+  }, []);
 
-  const formatTime = (time: number) => {
+  const formatTime = useCallback((time: number) => {
     if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
   return (
     <div className="bg-primary/10 border-2 border-primary/30 rounded-2xl p-3 sm:p-6" data-testid="audio-player">
       <audio ref={audioRef} src={audioSrc} preload="metadata" />
-      
+
       <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
         <button
           onClick={togglePlay}
@@ -79,7 +121,7 @@ export default function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
             <Play className="w-4 h-4 sm:w-6 sm:h-6 text-primary-foreground fill-current ml-0.5" />
           )}
         </button>
-        
+
         <div className="flex-1 min-w-0">
           <p className="text-sm sm:text-lg font-semibold text-primary mb-1 sm:mb-2 truncate">{label}</p>
           <div className="flex items-center gap-1.5 sm:gap-3">
@@ -94,10 +136,10 @@ export default function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
               onChange={handleSeek}
               className="flex-1 h-1.5 sm:h-2 bg-primary/20 rounded-full appearance-none cursor-pointer
                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4
-                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary 
+                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary
                 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg
-                [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full 
-                [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer 
+                [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full
+                [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer
                 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-lg"
               data-testid="audio-progress"
             />
@@ -109,8 +151,10 @@ export default function AudioPlayer({ audioSrc, label }: AudioPlayerProps) {
       </div>
 
       <p className="text-foreground/70 text-xs sm:text-sm leading-relaxed hidden sm:block">
-        🎧 Put on headphones for the best experience
+        Put on headphones for the best experience
       </p>
     </div>
   );
-}
+});
+
+export default AudioPlayer;

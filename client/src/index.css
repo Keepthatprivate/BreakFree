@@ -192,6 +192,33 @@
 }
 
 @layer utilities {
+  /* INP OPTIMIZATION: Faster touch responses */
+  button, a, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* GPU ACCELERATION: Use hardware acceleration for animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* CLS PREVENTION: Contain layout for cards and containers */
+  .contain-layout {
+    contain: layout style;
+  }
+
+  .contain-strict {
+    contain: strict;
+  }
+
+  /* Performance optimization for scrolling */
+  .scroll-optimized {
+    will-change: scroll-position;
+    overscroll-behavior: contain;
+  }
+
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
   }
@@ -262,18 +289,19 @@
     inset: -1px;
   }
 
+  /* GPU-accelerated float animation */
   @keyframes float {
     0%, 100% {
-      transform: translateY(0px) translateX(0px);
+      transform: translate3d(0, 0, 0);
     }
     25% {
-      transform: translateY(-15px) translateX(5px);
+      transform: translate3d(5px, -15px, 0);
     }
     50% {
-      transform: translateY(-25px) translateX(-5px);
+      transform: translate3d(-5px, -25px, 0);
     }
     75% {
-      transform: translateY(-15px) translateX(5px);
+      transform: translate3d(5px, -15px, 0);
     }
   }
 

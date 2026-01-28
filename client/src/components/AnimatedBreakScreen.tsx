@@ -89,9 +89,10 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
         <div className="text-muted-foreground animate-pulse">Loading...</div>
       ) : (
         <div
-          className={`relative w-[85vw] max-w-md aspect-[3/4] transition-opacity duration-300 ${
+          className={`relative w-[85vw] max-w-md transition-opacity duration-300 ${
             isVisible ? 'opacity-100' : 'opacity-0'
           }`}
+          style={{ aspectRatio: '3/4' }}
           data-testid="animated-break-screen"
         >
           {animationSequence.images.map((imageSrc, index) => (
@@ -99,6 +100,8 @@ export default function AnimatedBreakScreen({ animationIndex, onContinue }: Anim
               key={index}
               src={imageSrc}
               alt={`Animation frame ${index + 1}`}
+              width={400}
+              height={533}
               className={`absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-100 ${
                 currentImageIndex === index ? 'opacity-100' : 'opacity-0'
               }`}
