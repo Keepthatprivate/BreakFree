@@ -30,23 +30,108 @@ const LoadingFallback = () => (
 );
 
 /**
- * PageViewTracker - Tracks page views on every route change
+ * PageViewTracker - Tracks page views on every route/state change
  * Sends PageView event to Facebook Conversion API & Pixel
- * One event per route (e.g., /start, /start1, /start2, etc.)
+ * Tracks both path changes and query parameter changes (e.g., ?state=checkout)
+ *
+ * Tracked routes:
+ * - / (PreLanding)
+ * - /intro (IntroSceneShell)
+ * - /quiz (Quiz with various states via ?state= param)
+ * - /signup (Sign Up)
+ * - /login (Login)
+ * - /fbc-validator (FBC Validator)
  */
 function PageViewTracker() {
   const [location] = useLocation();
-  const lastTrackedPath = useRef<string | null>(null);
+  const lastTrackedKey = useRef<string | null>(null);
 
   useEffect(() => {
-    // Only track if the path has changed (prevents duplicate tracking)
-    if (location !== lastTrackedPath.current) {
-      lastTrackedPath.current = location;
+    // Build a unique key for this page view (path + state param)
+    const searchParams = new URLSearchParams(window.location.search);
+    const state = searchParams.get('state');
+    const question = searchParams.get('question');
+
+    // Create a unique tracking key based on path and relevant params
+    let trackingKey = location;
+    let contentName = location;
+
+    if (location === '/quiz') {
+      // For quiz, include state in the tracking key
+      if (state) {
+        trackingKey = `${location}?state=${state}`;
+        contentName = `/quiz/${state}`;
+      } else if (question) {
+        trackingKey = `${location}?question=${question}`;
+        contentName = `/quiz/question-${question}`;
+      } else {
+        contentName = '/quiz/start';
+      }
+    }
+
+    // Only track if the key has changed (prevents duplicate tracking)
+    if (trackingKey !== lastTrackedKey.current) {
+      lastTrackedKey.current = trackingKey;
       trackViewContent({
-        contentName: `PageView: ${location}`,
+        contentName: `PageView: ${contentName}`,
       });
     }
   }, [location]);
+
+  // Also listen for popstate (back/forward navigation) and pushState changes
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const state = searchParams.get('state');
+      const question = searchParams.get('question');
+      const pathname = window.location.pathname;
+
+      let trackingKey = pathname;
+      let contentName = pathname;
+
+      if (pathname === '/quiz') {
+        if (state) {
+          trackingKey = `${pathname}?state=${state}`;
+          contentName = `/quiz/${state}`;
+        } else if (question) {
+          trackingKey = `${pathname}?question=${question}`;
+          contentName = `/quiz/question-${question}`;
+        } else {
+          contentName = '/quiz/start';
+        }
+      }
+
+      if (trackingKey !== lastTrackedKey.current) {
+        lastTrackedKey.current = trackingKey;
+        trackViewContent({
+          contentName: `PageView: ${contentName}`,
+        });
+      }
+    };
+
+    // Listen for browser back/forward
+    window.addEventListener('popstate', handleUrlChange);
+
+    // Intercept pushState and replaceState to catch programmatic navigation
+    const originalPushState = history.pushState.bind(history);
+    const originalReplaceState = history.replaceState.bind(history);
+
+    history.pushState = (...args) => {
+      originalPushState(...args);
+      handleUrlChange();
+    };
+
+    history.replaceState = (...args) => {
+      originalReplaceState(...args);
+      handleUrlChange();
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
+  }, []);
 
   return null;
 }
