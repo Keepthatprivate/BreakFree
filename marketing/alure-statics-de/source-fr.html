@@ -47,6 +47,9 @@ img{display:block}
     <div class="logo"><b></b><i></i><i></i><i></i><span>ALURE</span></div>
     <p style="font-size:30px;margin-top:20px;font-weight:600">Une lame. Format standard.<br>Zéro abonnement cartouches.</p>
   </div>
+  <img src="source-assets/cartridge_head.png" style="position:absolute;left:80px;top:730px;width:400px;filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
+  <div style="position:absolute;left:80px;top:910px;font-size:24px;font-weight:700;letter-spacing:.12em;color:var(--red)">CARTOUCHE · 5 LAMES</div>
+  <div style="position:absolute;right:60px;top:615px;width:466px;text-align:center;font-size:24px;font-weight:700;letter-spacing:.12em;color:var(--sage-d)">ALURE · 1 LAME</div>
 </section>
 
 <!-- 03 DON'T BE AN IDIOT -->
@@ -57,9 +60,10 @@ img{display:block}
     <div class="serif" style="font-size:240px;line-height:.85;font-weight:800;color:var(--red);letter-spacing:-.02em;font-size:200px">PIGEON.</div>
     <p style="font-size:38px;margin-top:26px;font-weight:500">Arrête de payer des cartouches en plastique.</p>
   </div>
-  <img src="source-assets/razor_black.png" style="position:absolute;left:50%;transform:translateX(-50%);bottom:0;height:680px;filter:drop-shadow(0 25px 25px rgba(0,0,0,.22))">
-  <div style="position:absolute;left:70px;top:760px;background:#eee;border-radius:24px;padding:22px 28px;transform:rotate(-5deg);text-align:center">
-    <div style="font-size:22px;font-weight:600">Cartouche</div><div style="font-size:44px;font-weight:800;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:5px">6,25 €</div>
+  <img src="source-assets/razor_black.png" style="position:absolute;right:130px;bottom:0;height:680px;filter:drop-shadow(0 25px 25px rgba(0,0,0,.22))">
+  <img src="source-assets/cartridge_pack.png" style="position:absolute;left:110px;bottom:60px;height:500px;transform:rotate(-6deg);filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
+  <div style="position:absolute;left:60px;top:690px;background:#eee;border-radius:24px;padding:22px 28px;transform:rotate(-5deg);text-align:center;z-index:2">
+    <div style="font-size:22px;font-weight:600">Lot de 4 cartouches</div><div style="font-size:44px;font-weight:800;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:5px">25,00 €</div>
   </div>
   <div style="position:absolute;right:70px;top:960px;background:var(--sage);color:#fff;border-radius:24px;padding:22px 28px;transform:rotate(5deg);text-align:center">
     <div style="font-size:22px;font-weight:600">Lame ALURE</div><div style="font-size:44px;font-weight:800">0,25 €</div>
@@ -156,7 +160,7 @@ img{display:block}
   <div style="padding:70px 60px 30px;display:flex;justify-content:space-between;align-items:flex-end"><div style="font-size:64px;font-weight:900;letter-spacing:-.02em">Tier list des rasoirs</div><div style="font-size:22px;opacity:.6">(notre avis, assumé)</div></div>
   <div style="margin:0 60px" id="tiers"></div>
   <div class="foot" style="color:#fff"><div class="logo"><b></b><i></i><i></i><i></i><span>ALURE</span></div><div class="url">byalure.com</div></div>
-  <script>[["S","#e57373",'<div style="border-radius:10px;width:110px;height:150px;background:#dadde1;position:relative;overflow:hidden;flex:none"><img src="source-assets/razor_black.png" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:140px"></div> <span>Rasoir de sûreté à lame bloquée</span>'],["A","#f0a868","<span>Rasoir de sûreté classique</span>"],["B","#f3d36b","<span>Rasoir électrique</span>"],["C","#a5d68a","<span>Rasoir 5 lames à cartouches</span>"],["D","#7fb3e0","<span>Rasoir jetable en plastique</span>"]].forEach(t=>document.getElementById('tiers').insertAdjacentHTML('beforeend',`<div style="display:flex;min-height:${t[0]=='S'?190:170}px;margin-bottom:8px"><div style="width:170px;background:${t[1]};display:flex;align-items:center;justify-content:center;font-size:84px;font-weight:900;color:#161616">${t[0]}</div><div style="flex:1;background:#262626;display:flex;align-items:center;gap:26px;padding:0 30px;font-size:34px;font-weight:600">${t[2]}</div></div>`))</script>
+  <script>[["S","#e57373",'<div style="border-radius:10px;width:110px;height:150px;background:#dadde1;position:relative;overflow:hidden;flex:none"><img src="source-assets/razor_black.png" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:140px"></div> <span>Rasoir de sûreté à lame bloquée</span>'],["A","#f0a868",'<div style=\'width:110px;height:150px;background:#dadde1;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none\'><img src=\'source-assets/classic_safety.png\' style=\'max-width:95px;max-height:135px\'></div> <span>Rasoir de sûreté classique</span>'],["B","#f3d36b","<span>Rasoir électrique</span>"],["C","#a5d68a",'<div style=\'width:110px;height:150px;background:#dadde1;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none\'><img src=\'source-assets/five_blade.png\' style=\'max-width:95px;max-height:135px\'></div> <span>Rasoir 5 lames à cartouches</span>'],["D","#7fb3e0",'<div style=\'width:110px;height:150px;background:#dadde1;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none\'><img src=\'source-assets/disposable.png\' style=\'max-width:95px;max-height:135px\'></div> <span>Rasoir jetable en plastique</span>']].forEach(t=>document.getElementById('tiers').insertAdjacentHTML('beforeend',`<div style="display:flex;min-height:${t[0]=='S'?190:170}px;margin-bottom:8px"><div style="width:170px;background:${t[1]};display:flex;align-items:center;justify-content:center;font-size:84px;font-weight:900;color:#161616">${t[0]}</div><div style="flex:1;background:#262626;display:flex;align-items:center;gap:26px;padding:0 30px;font-size:34px;font-weight:600">${t[2]}</div></div>`))</script>
 </section>
 
 <!-- 11 VENN DIAGRAM -->
@@ -344,7 +348,7 @@ img{display:block}
   <div style="position:absolute;left:70px;top:70px;background:var(--ink);color:#fff;padding:12px 26px;border-radius:12px;font-weight:800;font-size:26px;letter-spacing:.1em">ALURE</div>
   <h1 style="position:absolute;left:70px;right:70px;top:150px;font-size:76px;line-height:1.02;font-weight:900;letter-spacing:-.02em">5 SIGNES QUE TU UTILISES LE MAUVAIS RASOIR</h1>
   <div id="signs" style="position:absolute;left:70px;top:520px;width:450px"></div>
-  <img src="source-assets/razor_black.png" style="position:absolute;right:20px;bottom:0;height:760px">
+  <img src="source-assets/five_blade.png" style="position:absolute;right:120px;top:560px;height:720px;transform:rotate(8deg);filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
   <script>["Tu rachètes des cartouches tous les mois.","Ton rasoir est en plastique.","Tu dois appuyer fort pour qu'il coupe.","Après rinçage, il reste encore des poils coincés.","Tu ne sais pas combien il te coûte par an."].forEach((s,i)=>document.getElementById('signs').insertAdjacentHTML('beforeend',`<div style="display:flex;gap:22px;align-items:flex-start;margin-bottom:30px"><div style="min-width:60px;height:60px;border-radius:50%;background:var(--sage-d);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:30px">${i+1}</div><div style="font-size:33px;font-weight:600;line-height:1.25;padding-top:8px">${s}</div></div>`))</script>
 </section>
 
@@ -400,7 +404,7 @@ img{display:block}
   <div style="position:absolute;inset:0;background:#f5f5f5;padding:60px 50px">
     <div style="background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px 26px;font-size:24px;color:#555">🔍 &nbsp;cartouches rasoir lot de 4</div>
     <div style="display:flex;gap:30px;margin-top:40px">
-      <div style="width:260px;height:260px;background:#e3eaf3;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:120px">📦</div>
+      <div style="width:260px;height:260px;background:#fff;border:1px solid #e3e3e3;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none"><img src="source-assets/cartridge_pack.png" style="max-height:236px"></div>
       <div style="font-size:30px;line-height:1.4"><div style="font-weight:700">Cartouches 5 lames, lot de 4</div><div style="color:#888">★★★★☆ (2.413)</div><div style="font-size:64px;font-weight:800;color:#B12704;margin-top:10px">25,00 €</div><div style="color:#888">6,25 € / pièce</div></div>
     </div>
   </div>
@@ -434,7 +438,8 @@ img{display:block}
       <div style="display:flex;justify-content:space-between;font-weight:700;font-size:34px"><span>TOTAL</span><span style="color:var(--sage-d)">74,00</span></div>
     </div>
   </div>
-  <img src="source-assets/razor_silver.png" style="position:absolute;left:50%;transform:translateX(-50%);bottom:0;height:380px;filter:drop-shadow(0 20px 24px rgba(0,0,0,.18))">
+  <img src="source-assets/five_blade.png" style="position:absolute;left:222px;bottom:40px;height:360px;filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
+  <img src="source-assets/razor_silver.png" style="position:absolute;left:674px;bottom:0;height:380px;filter:drop-shadow(0 20px 24px rgba(0,0,0,.18))">
   <div class="fn" style="position:absolute;left:70px;right:70px;top:905px;text-align:center">Calcul d'exemple : 1 cartouche toutes les 2 semaines, lot de 4 à 25 €. Les prix varient selon les magasins.</div>
 </section>
 
@@ -473,6 +478,8 @@ img{display:block}
     <p style="font-size:38px;line-height:1.35;margin-top:36px;max-width:820px">Ça marche aussi avec <b>une seule</b> lame. Bien serrée, angle déjà réglé, et sans abonnement.</p>
   </div>
   <img src="source-assets/razor_silver.png" style="position:absolute;right:90px;bottom:0;height:680px;filter:drop-shadow(0 30px 30px rgba(0,0,0,.18))">
+  <img src="source-assets/five_blade.png" style="position:absolute;left:130px;top:690px;height:430px;transform:rotate(-8deg);filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
+  <svg style="position:absolute;left:330px;top:840px" width="170" height="80" fill="none" stroke="#4F6E55" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 40 H150"/><path d="M118 10 L152 40 L118 70"/></svg>
   <div style="position:absolute;left:80px;bottom:90px"><div class="cta">Voir comment ça marche →</div></div>
 </section>
 
@@ -496,6 +503,8 @@ img{display:block}
     <div class="cta" style="background:var(--sage-d);margin-top:40px">VOIR LE RASOIR</div>
   </div>
   <img src="source-assets/razor_silver.png" style="position:absolute;right:40px;bottom:0;height:640px;filter:drop-shadow(0 30px 30px rgba(0,0,0,.2))">
+  <img src="source-assets/cartridge_pack.png" style="position:absolute;left:90px;bottom:130px;height:360px;filter:drop-shadow(0 20px 25px rgba(0,0,0,.2))">
+  <div style="position:absolute;left:300px;bottom:330px;background:#eee;border-radius:20px;padding:14px 22px;font-size:28px;font-weight:800;transform:rotate(-4deg)">Lot de 4 : 25 €</div>
   <div class="fn" style="position:absolute;left:70px;right:500px;bottom:40px">Calcul d'exemple : 1 cartouche toutes les 2 semaines, lot de 4 à 25 € · 100 lames ALURE à 25 € durent environ deux ans.</div>
 </section>
 
