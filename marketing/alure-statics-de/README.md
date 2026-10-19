@@ -9,4 +9,4 @@
 Prix utilisés : cartouche 3 ou 5 lames 25 € les 4 (6,25 €/pièce), lame DE ALURE 0,25 €, rasoir 49 €, 100 lames 25 €.
 Hypothèse de calcul : 1 cartouche toutes les 2 semaines → env. 162 €/an (2 ans : 335 € avec le manche) contre 12,50 €/an avec ALURE (2 ans : 74 €).
 
-À vérifier avant diffusion : partenaire barbier réel (a29), conversation WhatsApp illustrative (a21).
+À vérifier avant diffusion : mention partenariat seulement avec un vrai barbier partenaire (a29), conversation WhatsApp illustrative (a21).
